@@ -1,3 +1,13 @@
+pub struct Token {
+    pub kind: TokenKind,
+    pub span: Span,
+}
+
+pub struct Span {
+    pub start: usize,
+    pub end: usize,
+}
+
 pub enum TokenKind {
     // Special
     Illegal,

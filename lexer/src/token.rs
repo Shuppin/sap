@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+#[derive(PartialEq, Debug)]
 pub struct Token {
     pub kind: TokenKind,
     pub span: Span,
@@ -15,6 +16,7 @@ impl Display for Token {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct Span {
     pub start: usize,
     pub end: usize,

@@ -1,6 +1,18 @@
+use std::fmt::Display;
+
 pub struct Token {
     pub kind: TokenKind,
     pub span: Span,
+}
+
+impl Display for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Token::{:?} ('{}', <{}:{}>)",
+            self.kind, self.kind, self.span.start, self.span.end
+        )
+    }
 }
 
 pub struct Span {
@@ -8,6 +20,7 @@ pub struct Span {
     pub end: usize,
 }
 
+#[derive(PartialEq, Debug)]
 pub enum TokenKind {
     // Special
     Illegal,
@@ -28,12 +41,12 @@ pub enum TokenKind {
     Mod,    // %
 
     // Comparison operators
-    Less,   // <
-    LessEq, // <=
-    More,   // >
-    MoreEq, // >=
-    Eq,     // ==
-    NotEq,  // !=
+    Lt,    // <
+    LtEq,  // <=
+    Gt,    // >
+    GtEq,  // >=
+    Eq,    // ==
+    NotEq, // !=
 
     // Delimiters
     Comma,     // ,
@@ -68,7 +81,51 @@ impl TokenKind {
             "true" => TokenKind::True,
             "false" => TokenKind::False,
             "return" => TokenKind::Return,
-            _ => TokenKind::Identifier { name: ident.to_string() },
+            _ => TokenKind::Identifier {
+                name: ident.to_string(),
+            },
         }
+    }
+}
+
+impl Display for TokenKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let string_literal = match self {
+            Self::Identifier { name } => name,
+            Self::Int(num) => return write!(f, "{}", num),
+            Self::String(string) => string,
+            Self::Assign => "=",
+            Self::Plus => "+",
+            Self::Minus => "-",
+            Self::Mult => "*",
+            Self::Div => "/",
+            Self::Not => "!",
+            Self::Mod => "%",
+            Self::Lt => "<",
+            Self::LtEq => "<=",
+            Self::Gt => ">",
+            Self::GtEq => ">=",
+            Self::Eq => "==",
+            Self::NotEq => "!=",
+            Self::Comma => ",",
+            Self::Semicolon => ";",
+            Self::Colon => ":",
+            Self::LParen => "(",
+            Self::RParen => ")",
+            Self::LCurly => "{",
+            Self::RCurly => "}",
+            Self::LBracket => "[",
+            Self::RBracket => "]",
+            Self::Fn => "fn",
+            Self::Let => "let",
+            Self::If => "if",
+            Self::Else => "else",
+            Self::True => "true",
+            Self::False => "false",
+            Self::Return => "return",
+            Self::Illegal | Self::Eof => "",
+        }
+        .to_string();
+        write!(f, "{}", string_literal)
     }
 }

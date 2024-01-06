@@ -27,11 +27,11 @@ impl<'lexer> Lexer<'lexer> {
     fn read_char(&mut self) {
         match self.input.next() {
             Some(chr) => {
-                self.position += 1;
                 self.chr = chr;
             }
             None => self.chr = '\0',
         }
+        self.position += 1;
     }
 
     fn peek_char(&mut self) -> char {
@@ -45,7 +45,7 @@ impl<'lexer> Lexer<'lexer> {
         self.skip_comment();
 
         let start_position = self.position;
-
+        
         let token_kind = match self.chr {
             '+' => TokenKind::Plus,
             '-' => TokenKind::Minus,

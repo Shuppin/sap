@@ -31,6 +31,7 @@ pub enum TokenKind {
     // Value holders
     Identifier { name: String },
     Int(i64),
+    Float(f64),
     String(String),
 
     // Arithmetic operators
@@ -95,6 +96,7 @@ impl Display for TokenKind {
         let string_literal = match self {
             Self::Identifier { name } => name,
             Self::Int(num) => return write!(f, "{}", num),
+            Self::Float(num) => return write!(f, "{}", num),
             Self::String(string) => string,
             Self::Assign => "=",
             Self::Plus => "+",

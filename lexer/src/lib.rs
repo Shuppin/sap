@@ -118,14 +118,7 @@ impl<'lexer> Lexer<'lexer> {
                         kind: TokenKind::lookup_ident(&ident),
                     };
                 } else if is_digit(self.chr) {
-                    let number = self.read_number();
-                    return Token {
-                        span: Span {
-                            start: start_position - 1,
-                            end: self.position - 1,
-                        },
-                        kind: TokenKind::Int(number),
-                    };
+                    return self.read_number();
                 } else {
                     TokenKind::Illegal
                 }
@@ -168,13 +161,35 @@ impl<'lexer> Lexer<'lexer> {
         ident
     }
 
-    fn read_number(&mut self) -> i64 {
-        let mut number = String::new();
+    fn _read_int(&mut self, number: &mut String) {
         while is_digit(self.chr) {
             number.push(self.chr);
             self.read_char();
         }
-        number.parse().unwrap()
+    }
+
+    fn read_number(&mut self) -> Token {
+        let mut number = String::new();
+        self._read_int(&mut number);
+        if self.chr == '.' {
+            number.push(self.chr);
+            self.read_char();
+            self._read_int(&mut number);
+            return Token {
+                span: Span {
+                    start: self.position - number.len() - 1,
+                    end: self.position - 1,
+                },
+                kind: TokenKind::Float(number.parse().unwrap()),
+            };
+        }
+        return Token {
+            span: Span {
+                start: self.position - number.len() - 1,
+                end: self.position - 1,
+            },
+            kind: TokenKind::Int(number.parse().unwrap()),
+        };
     }
 
     fn skip_whitespace(&mut self) {

@@ -3,9 +3,9 @@
 version = 3
 
 [[package]]
-name = "monkey-lexer"
+name = "presap-lexer"
 version = "1.0.0"
 
 [[package]]
-name = "monkey-parser"
+name = "presap-parser"
 version = "0.1.0"

@@ -1,10 +1,10 @@
 [package]
-name = "monkey-lexer"
+name = "presap-lexer"
 version = "1.0.0"
 edition = "2021"
 
 
 [[bin]]
-name = "monkey-lexer"
+name = "presap-lexer"
 
 [dependencies]

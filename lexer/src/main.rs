@@ -1,6 +1,8 @@
 use monkey_lexer::{Lexer, token::TokenKind};
 
 fn main() {
+    println!("MR Interactive lexer");
+    println!("Enter an expression to generate tokens, or an empty line to exit.");
     loop {
         let mut input = String::new();
         std::io::stdin().read_line(&mut input).unwrap();
@@ -18,4 +20,5 @@ fn main() {
             }
         }
     }
+    println!("Bye");
 }

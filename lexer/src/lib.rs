@@ -45,7 +45,7 @@ impl<'lexer> Lexer<'lexer> {
         self.skip_comment();
 
         let start_position = self.position;
-        
+
         let token_kind = match self.chr {
             '+' => TokenKind::Plus,
             '-' => TokenKind::Minus,
@@ -101,8 +101,8 @@ impl<'lexer> Lexer<'lexer> {
                 let string = self.read_string();
                 return Token {
                     span: Span {
-                        start: start_position-1,
-                        end: self.position-1,
+                        start: start_position - 1,
+                        end: self.position - 1,
                     },
                     kind: TokenKind::String(string),
                 };
@@ -112,8 +112,8 @@ impl<'lexer> Lexer<'lexer> {
                     let ident = self.read_identifier();
                     return Token {
                         span: Span {
-                            start: start_position-1,
-                            end: self.position-1,
+                            start: start_position - 1,
+                            end: self.position - 1,
                         },
                         kind: TokenKind::lookup_ident(&ident),
                     };
@@ -121,8 +121,8 @@ impl<'lexer> Lexer<'lexer> {
                     let number = self.read_number();
                     return Token {
                         span: Span {
-                            start: start_position-1,
-                            end: self.position-1,
+                            start: start_position - 1,
+                            end: self.position - 1,
                         },
                         kind: TokenKind::Int(number),
                     };
@@ -135,8 +135,8 @@ impl<'lexer> Lexer<'lexer> {
 
         return Token {
             span: Span {
-                start: start_position-1,
-                end: self.position-1,
+                start: start_position - 1,
+                end: self.position - 1,
             },
             kind: token_kind,
         };
@@ -144,14 +144,18 @@ impl<'lexer> Lexer<'lexer> {
 
     fn read_string(&mut self) -> String {
         let mut string = String::new();
-        loop {
+        // Read opening '"'
+        self.read_char();
+
+        // Read string contents
+        while !(self.chr == '"' || self.chr == '\0') {
+            string.push(self.chr);
             self.read_char();
-            if self.chr == '"' || self.chr == '\0' {
-                break;
-            } else {
-                string.push(self.chr)
-            }
         }
+
+        // Read closing '"'
+        self.read_char();
+
         string
     }
 

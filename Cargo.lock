@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "ast"
+name = "presap-ast"
 version = "0.1.0"
 dependencies = [
  "presap-lexer",
@@ -17,5 +17,6 @@ version = "1.0.0"
 name = "presap-parser"
 version = "0.1.0"
 dependencies = [
+ "presap-ast",
  "presap-lexer",
 ]

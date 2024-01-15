@@ -1,10 +1,11 @@
-mod expressions;
-mod statements;
+pub mod expression;
+pub mod statement;
 
 use presap_lexer::token::Span;
 
-use crate::{expressions::*, statements::Statement};
+use crate::{expression::*, statement::Statement};
 
+#[derive(Debug)]
 pub enum Literal {
     Integer {
         value: i64,
@@ -28,6 +29,7 @@ pub enum Literal {
     },
 }
 
+#[derive(Debug)]
 pub struct Block {
     pub statements: Vec<Statement>,
     pub span: Span,
@@ -36,6 +38,15 @@ pub struct Block {
 pub struct Program {
     pub statements: Vec<Statement>,
     pub span: Span,
+}
+
+impl Program {
+    pub fn new() -> Self {
+        Self {
+            statements: vec![],
+            span: Span { start: 0, end: 0 },
+        }
+    }
 }
 
 pub enum Node {

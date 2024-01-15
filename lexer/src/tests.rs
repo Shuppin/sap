@@ -62,7 +62,7 @@ macro_rules! string {
     };
 }
 
-fn test_lexer_common(input: &str, expected_tokens: Vec<Token>) {
+fn lexer_common(input: &str, expected_tokens: Vec<Token>) {
     let mut lexer = Lexer::new(input);
     let mut tokens_iter = expected_tokens.into_iter();
     loop {
@@ -80,8 +80,8 @@ fn test_lexer_common(input: &str, expected_tokens: Vec<Token>) {
 }
 
 #[test]
-fn test_lexer_simple() {
-    test_lexer_common(
+fn lexer_simple() {
+    lexer_common(
         "=+(){},:;",
         vec![
             token!(Assign, 0, 1),
@@ -99,8 +99,8 @@ fn test_lexer_simple() {
 }
 
 #[test]
-fn test_lexer_numbers() {
-    test_lexer_common(
+fn lexer_numbers() {
+    lexer_common(
         "111 22 3.14 45",
         vec![
             int!(111, 0, 3),
@@ -113,8 +113,8 @@ fn test_lexer_numbers() {
 }
 
 #[test]
-fn test_lexer_let() {
-    test_lexer_common(
+fn lexer_let() {
+    lexer_common(
         "let x=5;",
         vec![
             token!(Let, 0, 3),
@@ -128,8 +128,8 @@ fn test_lexer_let() {
 }
 
 #[test]
-fn test_lexer_string() {
-    test_lexer_common(
+fn lexer_string() {
+    lexer_common(
         r#" "hello, world!" "This is 'weird'" "#,
         vec![
             string!("hello, world!".to_string(), 1, 16),
@@ -140,8 +140,8 @@ fn test_lexer_string() {
 }
 
 #[test]
-fn test_lexer_array() {
-    test_lexer_common(
+fn lexer_array() {
+    lexer_common(
         "[3, 4, 5, 6]",
         vec![
             token!(LBracket, 0, 1),
@@ -159,8 +159,8 @@ fn test_lexer_array() {
 }
 
 #[test]
-fn test_lexer_bool() {
-    test_lexer_common(
+fn lexer_bool() {
+    lexer_common(
         "let y=true",
         vec![
             token!(Let, 0, 3),
@@ -173,8 +173,8 @@ fn test_lexer_bool() {
 }
 
 #[test]
-fn test_lexer_function() {
-    test_lexer_common(
+fn lexer_function() {
+    lexer_common(
         "let add = fn(a,b) { a+b };",
         vec![
             token!(Let, 0, 3),
@@ -198,7 +198,7 @@ fn test_lexer_function() {
 }
 
 #[test]
-fn test_lexer_multiline() {
+fn lexer_multiline() {
     let input = "let five = 5;
 let ten = 10;
 let add = fn(x, y) {
@@ -207,7 +207,7 @@ let add = fn(x, y) {
 
 let result = add(five, ten);";
 
-    test_lexer_common(
+    lexer_common(
         input,
         vec![
             token!(Let, 0, 3),
@@ -252,7 +252,7 @@ let result = add(five, ten);";
 }
 
 #[test]
-fn test_lexer_conditional() {
+fn lexer_conditional() {
     let input = "let five = 5;
 let ten = 10;
 
@@ -261,7 +261,7 @@ if (5 < 10) {
 } else {
     return false;
 }";
-    test_lexer_common(
+    lexer_common(
         input,
         vec![
             token!(Let, 0, 3),

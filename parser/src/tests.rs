@@ -53,3 +53,25 @@ fn test_let_statement(stmt: &Statement, expected_identifier: &str) {
         _ => panic!("expected Statement::Let, got '{:?}'", stmt),
     }
 }
+
+#[test]
+fn parse_return_statements() {
+    // Initialise conditions
+    let input = "return 5;
+return 10;
+return 382939;";
+
+    let program = parse(input).expect("parse_program() failed");
+
+    test_program_length(&program, 3);
+
+    for stmt in program.statements {
+        match stmt {
+            Statement::Return(_ret_stmt) => {
+                // More tests may be implemented in future
+                todo!("Implement return statements test")
+            }
+            _ => panic!("expected Statement::Return, got '{:?}'", stmt),
+        }
+    }
+}

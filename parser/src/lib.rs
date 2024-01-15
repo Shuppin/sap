@@ -1,6 +1,6 @@
 use presap_ast::{
     expression::{Expression, Identifier},
-    statement::{Let, Statement},
+    statement::{Let, Return, Statement},
     Program,
 };
 use presap_lexer::{
@@ -141,6 +141,7 @@ impl<'lexer> Parser<'lexer> {
     pub fn parse_statement(&mut self) -> Result<Statement, ParseError> {
         match self.cur_token.kind {
             TokenKind::Let => self.parse_let_statement(),
+            TokenKind::Return => self.parse_return_statement(),
             _ => return Err(format!("unexpected token {:?}", self.cur_token)),
         }
     }
@@ -152,7 +153,7 @@ impl<'lexer> Parser<'lexer> {
     /// - `Ok(statement)` if the parsing is successful, where `statement` is the parsed let statement.
     /// - `Err(error)` if there is a parsing error, where `error` is the parse error.
     fn parse_let_statement(&mut self) -> Result<Statement, ParseError> {
-        // The struct of let statements consists of:
+        // The structure of a let statement consists of:
         // 'Let' <identifier> `Assign` <expression> `Semicolon`
 
         let start = self.cur_token.span.start;
@@ -180,6 +181,37 @@ impl<'lexer> Parser<'lexer> {
         Ok(Statement::Let(Let {
             ident,
             expr: Expression::None,
+            span: Span { start, end },
+        }))
+    }
+
+    /// Parses a return statement and returns the resulting AST.
+    ///
+    /// # Returns
+    ///
+    /// - `Ok(statement)` if the parsing is successful, where `statement` is the parsed return statement.
+    /// - `Err(error)` if there is a parsing error, where `error` is the parse error.
+    fn parse_return_statement(&mut self) -> Result<Statement, ParseError> {
+        // The structure of a return statement consists of:
+        // `Return` <expression> `Semicolon`
+
+        let start = self.cur_token.span.start;
+
+        // Advance over the `Return` token
+        self.next_token();
+
+        // TODO: For now we are just skipping expression parsing
+        while !self.cur_token_is(&TokenKind::Semicolon) {
+            if self.cur_token_is(&TokenKind::Eof) {
+                panic!("Unexpected EOF");
+            }
+            self.next_token();
+        }
+
+        let end = self.cur_token.span.end;
+
+        Ok(Statement::Return(Return {
+            value: Expression::None,
             span: Span { start, end },
         }))
     }

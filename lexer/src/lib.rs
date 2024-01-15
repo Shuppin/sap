@@ -3,7 +3,7 @@ use std::str::Chars;
 use token::{Span, Token, TokenKind};
 
 #[cfg(test)]
-mod tests;
+mod test;
 
 pub mod token;
 

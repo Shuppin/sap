@@ -12,7 +12,7 @@ use presap_lexer::{
 mod precedence;
 
 #[cfg(test)]
-mod tests;
+mod test;
 
 /// Temporary type which is used to represent an error produced by the parser.
 pub type ParseError = String;

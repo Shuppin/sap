@@ -108,7 +108,7 @@ fn test_lexer_numbers() {
             float!(3.14, 7, 11),
             int!(45, 12, 14),
             token!(Eof, 14, 15),
-        ]
+        ],
     )
 }
 
@@ -292,6 +292,6 @@ if (5 < 10) {
             token!(Semicolon, 85, 86),
             token!(RCurly, 87, 88),
             token!(Eof, 88, 89),
-        ]
+        ],
     );
 }

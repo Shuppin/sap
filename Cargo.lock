@@ -9,3 +9,6 @@ version = "1.0.0"
 [[package]]
 name = "presap-parser"
 version = "0.1.0"
+dependencies = [
+ "presap-lexer",
+]

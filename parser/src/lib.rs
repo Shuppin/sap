@@ -1,4 +1,4 @@
-mod ast;
-mod ast_expressions;
-mod ast_statements;
+#[cfg(test)]
+mod tests;
+
 mod precedence;

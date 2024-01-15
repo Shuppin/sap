@@ -1,6 +1,6 @@
 use presap_lexer::token::Span;
 
-use crate::ast::{Block, Literal};
+use crate::{Literal, Block};
 
 pub enum Expression {
     Identifier(IdentifierExpression),

@@ -1,6 +1,6 @@
 use presap_lexer::token::Span;
 
-use crate::ast_expressions::{Expression, IdentifierExpression};
+use crate::expressions::{Expression, IdentifierExpression};
 
 pub enum Statement {
     Let(LetStatement),

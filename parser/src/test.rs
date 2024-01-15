@@ -98,7 +98,7 @@ fn parse_identifier_expression() {
 #[test]
 fn parse_integer_literal_expression() {
     // Initialise conditions
-    let input = "5;";
+    let input = "554";
 
     // Perform tests
     let program = parse(input).expect("parse_program() failed");
@@ -111,8 +111,8 @@ fn parse_integer_literal_expression() {
         Statement::Expression(expr) => match expr {
             Expression::Literal(literal) => match literal {
                 Literal::Integer { value, span } => {
-                    assert_eq!(*value, 5);
-                    assert_eq!(*span, Span { start: 0, end: 1 })
+                    assert_eq!(*value, 554);
+                    assert_eq!(*span, Span { start: 0, end: 3 })
                 }
                 _ => panic!("expected Literal::Integer, got '{:?}'", expr),
             },

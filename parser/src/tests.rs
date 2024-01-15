@@ -1,5 +1,5 @@
-use presap_ast::{statement::Statement, Program};
-use presap_lexer::Lexer;
+use presap_ast::{expression::Expression, statement::Statement, Program};
+use presap_lexer::{Lexer, token::Span};
 
 use crate::{ParseError, Parser};
 
@@ -61,6 +61,7 @@ fn parse_return_statements() {
 return 10;
 return 382939;";
 
+    // Perform tests
     let program = parse(input).expect("parse_program() failed");
 
     test_program_length(&program, 3);
@@ -73,5 +74,32 @@ return 382939;";
             }
             _ => panic!("expected Statement::Return, got '{:?}'", stmt),
         }
+    }
+}
+
+#[test]
+fn parse_identifier_expression() {
+    // Initialise conditions
+    let input = "foobar";
+
+    // Perform tests
+    let program = parse(input).expect("parse_program() failed");
+
+    println!("{:#?}", program);
+
+    test_program_length(&program, 1);
+
+    let stmt = program.statements.first().unwrap();
+
+    match stmt {
+        Statement::Expression(expr) => match expr {
+            Expression::Identifier(ident) => {
+                let err_msg = format!("expected name 'foobar', got {:?}", expr);
+                assert_eq!(ident.name, "foobar", "{}", err_msg);
+                assert_eq!(ident.span, Span { start: 0, end: 6 })
+            }
+            _ => panic!("expected Expression::Identifier, got '{:?}'", expr),
+        },
+        _ => panic!("expected Statement::Expression, got '{:?}'", stmt),
     }
 }

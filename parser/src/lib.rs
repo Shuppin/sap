@@ -1,3 +1,4 @@
+use precedence::Precedence;
 use presap_ast::{
     expression::{Expression, Identifier},
     statement::{Let, Return, Statement},
@@ -142,7 +143,8 @@ impl<'lexer> Parser<'lexer> {
         match self.cur_token.kind {
             TokenKind::Let => self.parse_let_statement(),
             TokenKind::Return => self.parse_return_statement(),
-            _ => return Err(format!("unexpected token {:?}", self.cur_token)),
+            _ => self.parse_expression_statement(),
+            // _ => return Err(format!("unexpected token {:?}", self.cur_token)),
         }
     }
 
@@ -214,6 +216,32 @@ impl<'lexer> Parser<'lexer> {
             value: Expression::None,
             span: Span { start, end },
         }))
+    }
+
+    fn parse_expression_statement(&mut self) -> Result<Statement, ParseError> {
+        let expr = self.parse_expression(Precedence::Lowest)?;
+
+        // Since semicolons are optional, we only consume it if it's there.
+        if self.peek_token_is(&TokenKind::Semicolon) {
+            self.next_token();
+        }
+
+        Ok(Statement::Expression(expr))
+    }
+
+    fn parse_expression(&mut self, precedence: Precedence) -> Result<Expression, ParseError> {
+        let left_expression = self.parse_prefix_expression()?;
+        Ok(left_expression)
+    }
+
+    fn parse_prefix_expression(&mut self) -> Result<Expression, ParseError> {
+        match &self.cur_token.kind {
+            TokenKind::Identifier { name } => Ok(Expression::Identifier(Identifier {
+                name: name.to_string(),
+                span: self.cur_token.span.clone(),
+            })),
+            _ => return Err(format!("unexpected token {:?}", self.cur_token)),
+        }
     }
 
     /// Parses an identifier token and returns an identifier struct.

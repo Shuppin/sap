@@ -35,6 +35,7 @@ pub struct Block {
     pub span: Span,
 }
 
+#[derive(Debug)]
 pub struct Program {
     pub statements: Vec<Statement>,
     pub span: Span,

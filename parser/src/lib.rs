@@ -266,3 +266,10 @@ impl<'lexer> Parser<'lexer> {
         })
     }
 }
+
+pub fn parse(input: &str) -> Result<Program, Vec<ParseError>> {
+    let lexer = Lexer::new(input);
+    let mut parser = Parser::new(lexer);
+
+    parser.parse_program()
+}

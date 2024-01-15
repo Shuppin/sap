@@ -1,14 +1,7 @@
 use presap_ast::{expression::Expression, statement::Statement, Literal, Program};
-use presap_lexer::{token::Span, Lexer};
+use presap_lexer::token::Span;
 
-use crate::{ParseError, Parser};
-
-fn parse(input: &str) -> Result<Program, Vec<ParseError>> {
-    let lexer = Lexer::new(input);
-    let mut parser = Parser::new(lexer);
-
-    parser.parse_program()
-}
+use crate::parse;
 
 fn test_program_length(program: &Program, length: usize) {
     assert_eq!(

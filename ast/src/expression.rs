@@ -1,4 +1,4 @@
-use presap_lexer::token::Span;
+use presap_lexer::token::{Span, TokenKind};
 
 use crate::{Block, Literal};
 
@@ -23,14 +23,14 @@ pub struct Identifier {
 
 #[derive(Debug)]
 pub struct Unary {
-    pub operator: String,
+    pub operator: TokenKind,
     pub operand: Box<Expression>,
     pub span: Span,
 }
 
 #[derive(Debug)]
 pub struct Binary {
-    pub operator: String,
+    pub operator: TokenKind,
     pub left: Box<Expression>,
     pub right: Box<Expression>,
     pub span: Span,

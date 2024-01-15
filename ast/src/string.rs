@@ -1,10 +1,8 @@
 use std::fmt::{Display, Formatter, Result};
 
-use presap_lexer::token::TokenKind;
-
 use crate::{
     statement::{Let, Return, Statement},
-    Binary, Expression, FunctionDeclaration, Identifier, Literal, Node, Program, Selection, Unary,
+    Expression, Identifier, Literal, Node, Program, Unary,
 };
 
 fn format_items<T: ToString>(items: &Vec<T>) -> String {
@@ -50,6 +48,9 @@ impl Display for Expression {
         match self {
             Expression::Identifier(Identifier { name: id, .. }) => write!(f, "{}", id),
             Expression::Literal(l) => write!(f, "{}", l),
+            Expression::Unary(Unary {
+                operator, operand, ..
+            }) => write!(f, "({}{})", operator, operand),
             _ => unimplemented!(),
         }
     }

@@ -1,5 +1,5 @@
 use presap_ast::{expression::Expression, statement::Statement, Literal, Program};
-use presap_lexer::token::Span;
+use presap_lexer::token::{Span, TokenKind};
 
 use crate::parse;
 
@@ -119,5 +119,34 @@ fn parse_integer_literal_expression() {
             _ => panic!("expected Expression::Identifier, got '{:?}'", expr),
         },
         _ => panic!("expected Statement::Expression, got '{:?}'", stmt),
+    }
+}
+
+#[test]
+fn parse_prefix_expression() {
+    let tests = vec![("!5;", TokenKind::Not, 5), ("-15;", TokenKind::Minus, 15), ("-0", TokenKind::Minus, 0)];
+
+    for (input, operator, test_value) in tests {
+        let program = parse(input).expect("parse_program() failed");
+
+        test_program_length(&program, 1);
+
+        let stmt = program.statements.first().unwrap();
+
+        match stmt {
+            Statement::Expression(expr) => match expr {
+                Expression::Unary(unary) => {
+                    assert_eq!(unary.operator, operator);
+                    match &*unary.operand {
+                        Expression::Literal(Literal::Integer { value, .. }) => {
+                            assert_eq!(*value, test_value);
+                        }
+                        _ => panic!("expected Literal::Integer, got '{:?}'", unary.operand),
+                    }
+                }
+                _ => panic!("expected Expression::Unary, got '{:?}'", expr),
+            },
+            _ => panic!("expected Statement::Expression, got '{:?}'", stmt),
+        }
     }
 }

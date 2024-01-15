@@ -1,6 +1,6 @@
 use precedence::Precedence;
 use presap_ast::{
-    expression::{Expression, Identifier},
+    expression::{Expression, Identifier, Unary},
     statement::{Let, Return, Statement},
     Literal, Program,
 };
@@ -247,6 +247,18 @@ impl<'lexer> Parser<'lexer> {
                 value: *i,
                 span: self.cur_token.span.clone(),
             })),
+            TokenKind::Not | TokenKind::Minus => {
+                let start = self.cur_token.span.start;
+                let operator = self.cur_token.kind.clone();
+                self.next_token();
+                let expr = self.parse_expression(Precedence::Prefix)?;
+                let end = self.cur_token.span.end;
+                return Ok(Expression::Unary(Unary {
+                    operator,
+                    operand: Box::new(expr),
+                    span: Span { start, end },
+                }));
+            }
             _ => return Err(format!("unexpected token {:?}", self.cur_token)),
         }
     }

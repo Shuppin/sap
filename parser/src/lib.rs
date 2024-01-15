@@ -14,6 +14,9 @@ mod precedence;
 #[cfg(test)]
 mod test;
 
+#[cfg(test)]
+mod test_to_string;
+
 /// Temporary type which is used to represent an error produced by the parser.
 pub type ParseError = String;
 

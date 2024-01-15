@@ -1,5 +1,6 @@
 pub mod expression;
 pub mod statement;
+pub mod string;
 
 use presap_lexer::token::Span;
 

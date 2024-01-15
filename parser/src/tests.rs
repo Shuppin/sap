@@ -1,5 +1,5 @@
-use presap_ast::{expression::Expression, statement::Statement, Program};
-use presap_lexer::{Lexer, token::Span};
+use presap_ast::{expression::Expression, statement::Statement, Literal, Program};
+use presap_lexer::{token::Span, Lexer};
 
 use crate::{ParseError, Parser};
 
@@ -85,8 +85,6 @@ fn parse_identifier_expression() {
     // Perform tests
     let program = parse(input).expect("parse_program() failed");
 
-    println!("{:#?}", program);
-
     test_program_length(&program, 1);
 
     let stmt = program.statements.first().unwrap();
@@ -98,6 +96,33 @@ fn parse_identifier_expression() {
                 assert_eq!(ident.name, "foobar", "{}", err_msg);
                 assert_eq!(ident.span, Span { start: 0, end: 6 })
             }
+            _ => panic!("expected Expression::Identifier, got '{:?}'", expr),
+        },
+        _ => panic!("expected Statement::Expression, got '{:?}'", stmt),
+    }
+}
+
+#[test]
+fn parse_integer_literal_expression() {
+    // Initialise conditions
+    let input = "5;";
+
+    // Perform tests
+    let program = parse(input).expect("parse_program() failed");
+
+    test_program_length(&program, 1);
+
+    let stmt = program.statements.first().unwrap();
+
+    match stmt {
+        Statement::Expression(expr) => match expr {
+            Expression::Literal(literal) => match literal {
+                Literal::Integer { value, span } => {
+                    assert_eq!(*value, 5);
+                    assert_eq!(*span, Span { start: 0, end: 1 })
+                }
+                _ => panic!("expected Literal::Integer, got '{:?}'", expr),
+            },
             _ => panic!("expected Expression::Identifier, got '{:?}'", expr),
         },
         _ => panic!("expected Statement::Expression, got '{:?}'", stmt),

@@ -2,7 +2,7 @@ use precedence::Precedence;
 use presap_ast::{
     expression::{Expression, Identifier},
     statement::{Let, Return, Statement},
-    Program,
+    Literal, Program,
 };
 use presap_lexer::{
     token::{Span, Token, TokenKind},
@@ -238,6 +238,10 @@ impl<'lexer> Parser<'lexer> {
         match &self.cur_token.kind {
             TokenKind::Identifier { name } => Ok(Expression::Identifier(Identifier {
                 name: name.to_string(),
+                span: self.cur_token.span.clone(),
+            })),
+            TokenKind::Int(i) => Ok(Expression::Literal(Literal::Integer {
+                value: *i,
                 span: self.cur_token.span.clone(),
             })),
             _ => return Err(format!("unexpected token {:?}", self.cur_token)),

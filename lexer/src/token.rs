@@ -1,3 +1,4 @@
+use serde::Serialize;
 use std::fmt::Display;
 
 #[derive(PartialEq, Debug, Clone)]
@@ -16,13 +17,19 @@ impl Display for Token {
     }
 }
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Debug, Clone, Serialize)]
 pub struct Span {
     pub start: usize,
     pub end: usize,
 }
 
-#[derive(PartialEq, Debug, Clone)]
+impl Span {
+    pub fn new(start: usize, end: usize) -> Span {
+        Span { start, end }
+    }
+}
+
+#[derive(PartialEq, Debug, Clone, Serialize)]
 pub enum TokenKind {
     // Special
     Illegal,

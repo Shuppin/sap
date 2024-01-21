@@ -1,8 +1,8 @@
+use crate::{Block, GetSpan, Literal};
 use presap_lexer::token::{Span, TokenKind};
+use serde::Serialize;
 
-use crate::{Block, Literal};
-
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum Expression {
     Identifier(Identifier),
     Unary(Unary),
@@ -12,23 +12,37 @@ pub enum Expression {
     FunctionCall(FunctionCall),
     Index(Index),
     Literal(Literal),
-    None,
 }
 
-#[derive(Debug)]
+impl GetSpan for Expression {
+    fn span(&self) -> &Span {
+        match self {
+            Expression::Identifier(identifier) => &identifier.span,
+            Expression::Unary(unary) => &unary.span,
+            Expression::Binary(binary) => &binary.span,
+            Expression::Selection(selection) => &selection.span,
+            Expression::FunctionDeclaration(function_declaration) => &function_declaration.span,
+            Expression::FunctionCall(function_call) => &function_call.span,
+            Expression::Index(index) => &index.span,
+            Expression::Literal(literal) => literal.span(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
 pub struct Identifier {
     pub name: String,
     pub span: Span,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Unary {
     pub operator: TokenKind,
     pub operand: Box<Expression>,
     pub span: Span,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Binary {
     pub operator: TokenKind,
     pub left: Box<Expression>,
@@ -36,7 +50,7 @@ pub struct Binary {
     pub span: Span,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Selection {
     pub condition: Box<Expression>,
     pub conditional: Block,
@@ -44,7 +58,7 @@ pub struct Selection {
     pub span: Span,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct FunctionDeclaration {
     pub name: Identifier,
     pub parameters: Vec<Identifier>,
@@ -52,14 +66,14 @@ pub struct FunctionDeclaration {
     pub span: Span,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct FunctionCall {
-    pub name: Identifier,
+    pub callee: Box<Expression>,
     pub arguments: Vec<Expression>,
     pub span: Span,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Index {
     pub object: Box<Expression>,
     pub index: Box<Expression>,

@@ -1,132 +1,98 @@
-use precedence::Precedence;
+use log::info;
 use presap_ast::{
-    expression::{Expression, Identifier, Unary},
+    expression::{Binary, Expression, FunctionCall, Identifier, Index, Unary},
     statement::{Let, Return, Statement},
-    Literal, Program,
+    GetSpan, Literal, Program,
 };
 use presap_lexer::{
     token::{Span, Token, TokenKind},
     Lexer,
 };
 
-mod precedence;
-
 #[cfg(test)]
 mod test;
 
-#[cfg(test)]
-mod test_to_string;
-
-/// Temporary type which is used to represent an error produced by the parser.
 pub type ParseError = String;
 
-/// The Parser struct represents a parser for the input source code.
-///
-/// It is responsible for tokenising and parsing the source code to produce an Abstract Syntax Tree (AST).
 pub struct Parser<'lexer> {
     lexer: Lexer<'lexer>,
     cur_token: Token,
-    peek_token: Token,
 }
 
 impl<'lexer> Parser<'lexer> {
-    /// Creates a new Parser instance with the given lexer.
-    ///
-    /// # Arguments
-    ///
-    /// * `lexer` - The lexer to be used for tokenising the input.
-    ///
-    /// # Returns
-    ///
-    /// A new Parser instance.
     pub fn new(mut lexer: Lexer<'lexer>) -> Self {
         // Initialise the current and peek tokens by calling `next_token` twice.
         let cur = lexer.next_token();
-        let peek = lexer.next_token();
 
         Parser {
             lexer: lexer,
             cur_token: cur,
-            peek_token: peek,
         }
     }
 
-    /// Advances to the next token by replacing the peek token with the next token from the lexer,
-    /// and updates the current token with the peek token.
     fn next_token(&mut self) {
-        self.cur_token = std::mem::replace(&mut self.peek_token, self.lexer.next_token());
+        self.cur_token = self.lexer.next_token();
     }
 
-    /// Checks if the current token matches the given token kind.
-    ///
-    /// # Arguments
-    ///
-    /// * `token` - The token kind to compare against.
-    ///
-    /// # Returns
-    ///
-    /// `true` if the current token matches the given token kind, otherwise `false`.
     #[inline]
     fn cur_token_is(&mut self, token: &TokenKind) -> bool {
         self.cur_token.kind == *token
     }
 
-    /// Checks if the peek token matches the given token kind.
-    ///
-    /// # Arguments
-    ///
-    /// * `token` - The token kind to compare against.
-    ///
-    /// # Returns
-    ///
-    /// `true` if the peek token matches the given token kind, otherwise `false`.
-    #[inline]
-    fn peek_token_is(&mut self, token: &TokenKind) -> bool {
-        self.peek_token.kind == *token
-    }
-
-    /// Throws an error if the peek token does not match the expected token,
-    /// otherwise moves to the next token.
-    ///
-    /// # Arguments
-    ///
-    /// * `expected_token` - The expected token kind.
-    ///
-    /// # Returns
-    ///
-    /// `Ok(())` if the peek token matches the expected token, otherwise `Err` with an error message.
-    fn expect_token(&mut self, expected_token: TokenKind) -> Result<(), String> {
-        if self.peek_token_is(&expected_token) {
+    fn eat(&mut self, expected_kind: &TokenKind) -> Result<(), ParseError> {
+        if self.cur_token_is(expected_kind) {
             self.next_token();
             Ok(())
         } else {
             Err(format!(
-                "expected {:?}, got {:?}",
-                expected_token, self.peek_token
+                "expected {}, got {}",
+                expected_kind, self.cur_token.kind
             ))
         }
     }
 
-    /// Parses the entire program and returns the resulting AST.
-    ///
-    /// # Returns
-    ///
-    /// - `Ok(program)` if the parsing is successful, where `program` is the parsed program.
-    /// - `Err(errors)` if there are parsing errors, where `errors` is a vector of parse errors.
     pub fn parse_program(&mut self) -> Result<Program, Vec<ParseError>> {
+        // <program> -> ((<statement> `Semi`)* | <statement>) `Eof`
         let mut program = Program::new();
         let mut errors: Vec<ParseError> = Vec::new();
 
-        // Parse statements until the end of the input.
-        while !self.cur_token_is(&TokenKind::Eof) {
+        loop {
+            if self.cur_token_is(&TokenKind::Eof) {
+                self.next_token();
+                break;
+            }
+            info!("Begin {}", self.cur_token);
             match self.parse_statement() {
-                Ok(stmt) => program.statements.push(stmt),
-                Err(e) => errors.push(e),
+                Ok(stmt) => {
+                    info!("Parsed statement \"{}\"", stmt);
+                    program.statements.push(stmt);
+                }
+                Err(e) => {
+                    info!("ParserError: {}", e);
+                    errors.push(e);
+                    self.next_token();
+                    while !matches!(self.cur_token.kind, TokenKind::Eof | TokenKind::Semicolon) {
+                        info!("Skipping token {}", self.cur_token);
+                        self.next_token();
+                    }
+                }
             };
-            self.next_token()
+            match self.cur_token.kind {
+                TokenKind::Semicolon => {
+                    self.next_token();
+                }
+                TokenKind::Eof => {
+                    self.next_token();
+                    break;
+                }
+                _ => errors.push("Expected semicolon after statement".to_string()),
+            }
+            info!("End {}", self.cur_token);
         }
 
-        // Set the end span of the program to the end span of the current token.
+        // TokenKind has already been checked, so we can safely call next_token()
+        self.next_token();
+
         program.span.end = self.cur_token.span.end;
 
         if errors.is_empty() {
@@ -136,149 +102,341 @@ impl<'lexer> Parser<'lexer> {
         }
     }
 
-    /// Parses a statement and returns the resulting AST.
-    ///
-    /// # Returns
-    ///
-    /// - `Ok(statement)` if the parsing is successful, where `statement` is the parsed statement.
-    /// - `Err(error)` if there is a parsing error, where `error` is the parse error.
-    pub fn parse_statement(&mut self) -> Result<Statement, ParseError> {
+    fn parse_block(&mut self) {
+        todo!();
+        // while !matches!(self.cur_token.kind, TokenKind::RCurly | TokenKind::Eof) {}
+    }
+
+    fn parse_statement(&mut self) -> Result<Statement, ParseError> {
+        // <statement> -> <let_stmt> | <return_stmt> | <expression>
         match self.cur_token.kind {
-            TokenKind::Let => self.parse_let_statement(),
-            TokenKind::Return => self.parse_return_statement(),
-            _ => self.parse_expression_statement(),
-            // _ => return Err(format!("unexpected token {:?}", self.cur_token)),
+            TokenKind::Let => self.parse_let_stmt(),
+            TokenKind::Return => self.parse_return_stmt(),
+            _ => self.parse_expr_stmt(),
         }
     }
 
-    /// Parses a let statement and returns the resulting AST.
-    ///
-    /// # Returns
-    ///
-    /// - `Ok(statement)` if the parsing is successful, where `statement` is the parsed let statement.
-    /// - `Err(error)` if there is a parsing error, where `error` is the parse error.
-    fn parse_let_statement(&mut self) -> Result<Statement, ParseError> {
-        // The structure of a let statement consists of:
-        // 'Let' <identifier> `Assign` <expression> `Semicolon`
-
+    fn parse_let_stmt(&mut self) -> Result<Statement, ParseError> {
+        // <let_stmt> -> `Let` `Ident` `Assign` <expression>
         let start = self.cur_token.span.start;
-
-        // Advance over the `Let` token
-        self.next_token();
-
-        // Parse identifier
+        self.eat(&TokenKind::Let)?;
         let ident = self.parse_identifier()?;
+        self.eat(&TokenKind::Assign)?;
+        let expr = self.parse_expression()?;
+        let span = Span::new(start, self.cur_token.span.end);
 
-        // Advance over the 'Assign' token
-        self.expect_token(TokenKind::Assign)?;
-
-        // Parse expression
-        // TODO: For now we are just skipping expression parsing
-        while !self.cur_token_is(&TokenKind::Semicolon) {
-            if self.cur_token_is(&TokenKind::Eof) {
-                panic!("Unexpected EOF");
-            }
-            self.next_token();
-        }
-
-        let end = self.cur_token.span.end;
-
-        Ok(Statement::Let(Let {
-            ident,
-            expr: Expression::None,
-            span: Span { start, end },
-        }))
+        return Ok(Statement::Let(Let { ident, expr, span }));
     }
 
-    /// Parses a return statement and returns the resulting AST.
-    ///
-    /// # Returns
-    ///
-    /// - `Ok(statement)` if the parsing is successful, where `statement` is the parsed return statement.
-    /// - `Err(error)` if there is a parsing error, where `error` is the parse error.
-    fn parse_return_statement(&mut self) -> Result<Statement, ParseError> {
-        // The structure of a return statement consists of:
-        // `Return` <expression> `Semicolon`
-
+    fn parse_return_stmt(&mut self) -> Result<Statement, ParseError> {
+        // <return_stmt> -> `Return` <expression>
         let start = self.cur_token.span.start;
+        self.eat(&TokenKind::Return)?;
+        let return_value = self.parse_expression()?;
+        let span = Span::new(start, self.cur_token.span.end);
+        return Ok(Statement::Return(Return {
+            value: return_value,
+            span,
+        }));
+    }
 
-        // Advance over the `Return` token
-        self.next_token();
+    fn parse_expr_stmt(&mut self) -> Result<Statement, ParseError> {
+        // <expr_stmt> -> <expression>
+        let expr = self.parse_expression()?;
+        return Ok(Statement::Expression(expr));
+    }
 
-        // TODO: For now we are just skipping expression parsing
-        while !self.cur_token_is(&TokenKind::Semicolon) {
-            if self.cur_token_is(&TokenKind::Eof) {
-                panic!("Unexpected EOF");
-            }
+    fn parse_expression(&mut self) -> Result<Expression, ParseError> {
+        // <expression> -> <bool_expr>
+        // self.parse_bool_expr()
+        self.parse_eq_expr()
+    }
+
+    // fn parse_bool_expr(&mut self) -> Result<Expression, ParseError> {
+    //     <bool_expr> -> <eq_expr> ((`And` | `Or`) <eq_expr>)*
+    //     let start = self.cur_token.span.start;
+
+    //     let mut node = self.parse_not_expr();
+
+    //     while self.cur_token_is(&TokenKind::And) || self.cur_token_is(&TokenKind::Or) {
+    //         // stuff
+    //     }
+    // }
+
+    fn parse_eq_expr(&mut self) -> Result<Expression, ParseError> {
+        // <eq_expr> -> <comp_expr> ((`Eq`|`NotEq`) <comp_expr>)*
+        let start = self.cur_token.span.start;
+        let mut node = self.parse_comp_expr()?;
+
+        while matches!(&self.cur_token.kind, TokenKind::Eq | TokenKind::NotEq) {
+            let operator = self.cur_token.kind.clone();
+            // TokenKind has already been checked, so we can safely call next_token()
+            self.next_token();
+            let right = self.parse_comp_expr()?;
+            let span = Span::new(start, self.cur_token.span.end);
+            node = Expression::Binary(Binary {
+                operator,
+                left: Box::new(node),
+                right: Box::new(right),
+                span,
+            });
+        }
+
+        return Ok(node);
+    }
+
+    fn parse_comp_expr(&mut self) -> Result<Expression, ParseError> {
+        // <comp_expr> -> <sum_expr> ((`Less`|`LessEq`|`More`|`MoreEq`) <sum_expr>)*
+        let start = self.cur_token.span.start;
+        let mut node = self.parse_sum_expr()?;
+
+        while matches!(
+            &self.cur_token.kind,
+            TokenKind::Lt | TokenKind::LtEq | TokenKind::Gt | TokenKind::GtEq
+        ) {
+            let operator = self.cur_token.kind.clone();
+            // TokenKind has already been checked, so we can safely call next_token()
+            self.next_token();
+            let right = self.parse_sum_expr()?;
+            let span = Span::new(start, self.cur_token.span.end);
+            node = Expression::Binary(Binary {
+                operator,
+                left: Box::new(node),
+                right: Box::new(right),
+                span,
+            });
+        }
+
+        return Ok(node);
+    }
+
+    fn parse_sum_expr(&mut self) -> Result<Expression, ParseError> {
+        // <sum_expr> -> <product_expr> ((`Plus` | `Minus`) <product_expr>)
+        let start = self.cur_token.span.start;
+        let mut node = self.parse_product_expr()?;
+
+        while matches!(self.cur_token.kind, TokenKind::Plus | TokenKind::Minus) {
+            let operator = self.cur_token.kind.clone();
+            // TokenKind has already been checked, so we can safely call next_token()
+            self.next_token();
+            info!("{}", self.cur_token);
+            let right = self.parse_product_expr()?;
+            let span = Span::new(start, self.cur_token.span.start);
+            info!("{}", self.cur_token);
+            info!("{:?}", span);
+            node = Expression::Binary(Binary {
+                operator,
+                left: Box::new(node),
+                right: Box::new(right),
+                span,
+            });
+        }
+
+        return Ok(node);
+    }
+
+    fn parse_product_expr(&mut self) -> Result<Expression, ParseError> {
+        // <product_expr> -> <postfix_expr> ((`Mult` | `Div` | `Mod`) <postfix_expr>)*
+        let start = self.cur_token.span.start;
+        let mut node = self.parse_postfix_expr()?;
+
+        while matches!(
+            self.cur_token.kind,
+            TokenKind::Mult | TokenKind::Div | TokenKind::Mod
+        ) {
+            let operator = self.cur_token.kind.clone();
+            // TokenKind has already been checked, so we can safely call next_token()
+            self.next_token();
+            let right = self.parse_postfix_expr()?;
+            let span = Span::new(start, self.cur_token.span.end);
+            node = Expression::Binary(Binary {
+                operator,
+                left: Box::new(node),
+                right: Box::new(right),
+                span,
+            });
+        }
+
+        return Ok(node);
+    }
+
+    fn parse_postfix_expr(&mut self) -> Result<Expression, ParseError> {
+        // <postfix_expr> -> <prefix_expr> (<fn_call> | <array_index>)*
+        //
+        // <array_index> -> `LBracket` <expression> `RBracket`
+        //
+        // <fn_call> -> `LParen` <fn_arguments>? `RParen`
+        let start = self.cur_token.span.start;
+        let mut node = self.parse_prefix_expr()?;
+
+        loop {
+            match &self.cur_token.kind {
+                TokenKind::LBracket => {
+                    self.eat(&TokenKind::LBracket)?;
+                    let index_expr = self.parse_expression()?;
+                    self.eat(&TokenKind::RBracket)?;
+                    let span = Span::new(start, self.cur_token.span.end);
+                    node = Expression::Index(Index {
+                        object: Box::new(node),
+                        index: Box::new(index_expr),
+                        span,
+                    })
+                }
+                TokenKind::LParen => {
+                    self.eat(&TokenKind::LParen)?;
+                    let arguments = match self.cur_token_is(&TokenKind::RParen) {
+                        false => self.parse_fn_arguments()?,
+                        true => vec![],
+                    };
+                    self.eat(&TokenKind::RParen)?;
+                    let span = Span::new(start, self.cur_token.span.end);
+                    node = Expression::FunctionCall(FunctionCall {
+                        callee: Box::new(node),
+                        arguments,
+                        span,
+                    })
+                }
+                _ => break,
+            };
+        }
+
+        return Ok(node);
+    }
+
+    fn parse_fn_arguments(&mut self) -> Result<Vec<Expression>, ParseError> {
+        // <fn_arguments> -> <expression> (`,` <expression>)*
+        let mut expressions: Vec<Expression> = Vec::new();
+        expressions.push(self.parse_expression()?);
+        while self.cur_token_is(&TokenKind::Comma) {
+            self.eat(&TokenKind::Comma)?;
+            expressions.push(self.parse_expression()?);
+        }
+        return Ok(expressions);
+    }
+
+    fn parse_prefix_expr(&mut self) -> Result<Expression, ParseError> {
+        // <prefix_expr> -> (`Not`|`Minus`)* <ident_expr>
+
+        // !-hello;
+        // ["!", "-"]
+
+        // node = Ident(Hello)
+        // node = Unary("-", Ident(Hello))
+        // node = Unary("!", Unary("-", Ident(Hello)))
+        let mut prefix_operations = Vec::new();
+        while matches!(&self.cur_token.kind, TokenKind::Not | TokenKind::Minus) {
+            prefix_operations.push(self.cur_token.clone());
             self.next_token();
         }
 
-        let end = self.cur_token.span.end;
+        let mut node: Expression = self.parse_ident_expr()?;
 
-        Ok(Statement::Return(Return {
-            value: Expression::None,
-            span: Span { start, end },
-        }))
-    }
-
-    fn parse_expression_statement(&mut self) -> Result<Statement, ParseError> {
-        let expr = self.parse_expression(Precedence::Lowest)?;
-
-        // Since semicolons are optional, we only consume it if it's there.
-        if self.peek_token_is(&TokenKind::Semicolon) {
-            self.next_token();
+        for operation in prefix_operations.into_iter().rev() {
+            let operator = operation.kind.clone();
+            let span = Span::new(operation.span.start, node.span().end);
+            node = Expression::Unary(Unary {
+                operator,
+                operand: Box::new(node),
+                span,
+            })
         }
 
-        Ok(Statement::Expression(expr))
+        return Ok(node);
     }
 
-    fn parse_expression(&mut self, precedence: Precedence) -> Result<Expression, ParseError> {
-        let left_expression = self.parse_prefix_expression()?;
-        Ok(left_expression)
+    fn parse_ident_expr(&mut self) -> Result<Expression, ParseError> {
+        // <ident_expr> -> `Ident` | <group_expr>
+        match &self.cur_token.kind.clone() {
+            TokenKind::Identifier { .. } => Ok(Expression::Identifier(self.parse_identifier()?)),
+            _ => self.parse_group_expr(),
+        }
     }
 
-    fn parse_prefix_expression(&mut self) -> Result<Expression, ParseError> {
+    fn parse_group_expr(&mut self) -> Result<Expression, ParseError> {
+        // <group_expr> -> (`LParen` <expression> `RParen`) | <entity_expr>
+        if self.cur_token_is(&TokenKind::LParen) {
+            self.eat(&TokenKind::LParen)?;
+            let expr = self.parse_expression()?;
+            self.eat(&TokenKind::RParen)?;
+            return Ok(expr);
+        } else {
+            return self.parse_entity_expr();
+        }
+    }
+
+    fn parse_entity_expr(&mut self) -> Result<Expression, ParseError> {
+        // <entity_expr> -> <selection_expr>
+        //                | <fn_decl_expr>
+        //                | <literal>
         match &self.cur_token.kind {
-            TokenKind::Identifier { name } => Ok(Expression::Identifier(Identifier {
-                name: name.to_string(),
-                span: self.cur_token.span.clone(),
-            })),
-            TokenKind::Int(i) => Ok(Expression::Literal(Literal::Integer {
-                value: *i,
-                span: self.cur_token.span.clone(),
-            })),
-            TokenKind::Not | TokenKind::Minus => {
-                let start = self.cur_token.span.start;
-                let operator = self.cur_token.kind.clone();
-                self.next_token();
-                let expr = self.parse_expression(Precedence::Prefix)?;
-                let end = self.cur_token.span.end;
-                return Ok(Expression::Unary(Unary {
-                    operator,
-                    operand: Box::new(expr),
-                    span: Span { start, end },
-                }));
+            // TokenKind::If => self.parse_selection_expr(),
+            // TokenKind::Fn => self.parse_fn_decl_expr(),
+            _ => {
+                let literal = self.parse_literal()?;
+                return Ok(Expression::Literal(literal));
             }
-            _ => return Err(format!("unexpected token {:?}", self.cur_token)),
         }
     }
 
-    /// Parses an identifier token and returns an identifier struct.
-    ///
-    /// # Returns
-    ///
-    /// - `Ok(identifier)` - where `identifier` is the parsed identifier.
-    /// - `Err(error)` - if the current token is not an identifier.
-    fn parse_identifier(&self) -> Result<Identifier, ParseError> {
+    fn parse_selection_expr(&mut self) -> Result<Expression, ParseError> {
+        // <selection_expr> -> `If` <expr> <block> `Else` <block>
+        // let start = self.cur_token.span.start;
+        // self.eat(&TokenKind::If)?;
+        // let condition_expr = self.parse_expression()?;
+        // let conditional_block = self.parse_block()?;
+        // self.eat(&TokenKind::Else)?;
+        // let else_conditional_block = self.parse_block()?;
+        // let span = Span::new(start, self.cur_token.span.end);
+        // return Ok(Expression::Selection(Selection {
+        //     condition: Box::new(condition_expr),
+        //     conditional: conditional_block,
+        //     else_conditional: else_conditional_block,
+        //     span,
+        // }));
+        todo!()
+    }
+
+    fn parse_fn_decl_expr(&mut self) -> Result<Expression, ParseError> {
+        todo!()
+    }
+
+    fn parse_literal(&mut self) -> Result<Literal, ParseError> {
+        // <literal> -> `Int`
+        //     | `Float`
+        //     | `Bool`
+        let span = self.cur_token.span.clone();
+        match &self.cur_token.kind.clone() {
+            TokenKind::Int(n) => {
+                self.next_token();
+                Ok(Literal::Integer { value: *n, span })
+            }
+            TokenKind::Float(n) => {
+                self.next_token();
+                Ok(Literal::Float { value: *n, span })
+            }
+            TokenKind::True => {
+                self.next_token();
+                Ok(Literal::Boolean { value: true, span: span })
+            }
+            TokenKind::False => {
+                self.next_token();
+                Ok(Literal::Boolean { value: false, span: span })
+            }
+            // TODO: TokenKind::Bool ...
+            _ => Err(format!("Expected Literal, got {}", self.cur_token.kind)),
+        }
+    }
+
+    fn parse_identifier(&mut self) -> Result<Identifier, ParseError> {
+        let span = self.cur_token.span.clone();
         let name = match &self.cur_token.kind {
             TokenKind::Identifier { name } => name.to_string(),
-            _ => return Err(format!("expected Identifier, got {:?}", self.peek_token)),
+            _ => return Err(format!("expected Identifier, got {}", self.cur_token.kind)),
         };
+        // TokenKind has already been checked, so we can safely call next_token()
+        self.next_token();
 
-        Ok(Identifier {
-            name,
-            span: self.cur_token.span.clone(),
-        })
+        Ok(Identifier { name, span })
     }
 }
 

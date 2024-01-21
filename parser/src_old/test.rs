@@ -18,9 +18,9 @@ fn parse_let_statements() {
     // Initialise conditions
     let input = "let x = 5;
 let y = 10;
-let foo_bar = 838383;";
+let foobar = 838383;";
 
-    let expected_identifiers = vec!["x", "y", "foo_bar"];
+    let expected_identifiers = vec!["x", "y", "foobar"];
 
     // Perform tests
     let program = parse(input).expect("parse_program() failed");
@@ -50,29 +50,22 @@ fn test_let_statement(stmt: &Statement, expected_identifier: &str) {
 #[test]
 fn parse_return_statements() {
     // Initialise conditions
-    let tests = [
-        ("return 5;", 5),
-        ("return 10;", 10),
-        ("return 382939;", 382939),
-    ];
+    let input = "return 5;
+return 10;
+return 382939;";
 
     // Perform tests
-    for (input, return_value) in tests {
-        let program = parse(input).expect("parse_program() failed");
+    let program = parse(input).expect("parse_program() failed");
 
-        for stmt in program.statements {
-            match stmt {
-                Statement::Return(ret_stmt) => match ret_stmt.value {
-                    Expression::Literal(literal) => match literal {
-                        Literal::Integer { value, .. } => {
-                            assert_eq!(value, return_value);
-                        }
-                        _ => panic!("expected Literal::Integer, got '{:?}'", literal),
-                    },
-                    _ => panic!("expected Expression::Literal, got '{:?}'", ret_stmt.value),
-                },
-                _ => panic!("expected Statement::Return, got '{:?}'", stmt),
+    test_program_length(&program, 3);
+
+    for stmt in program.statements {
+        match stmt {
+            Statement::Return(_ret_stmt) => {
+                // More tests may be implemented in future
+                todo!("Implement return statements test")
             }
+            _ => panic!("expected Statement::Return, got '{:?}'", stmt),
         }
     }
 }
@@ -131,11 +124,7 @@ fn parse_integer_literal_expression() {
 
 #[test]
 fn parse_prefix_expression() {
-    let tests = [
-        ("!5;", TokenKind::Not, 5),
-        ("-15;", TokenKind::Minus, 15),
-        ("-0", TokenKind::Minus, 0),
-    ];
+    let tests = vec![("!5;", TokenKind::Not, 5), ("-15;", TokenKind::Minus, 15), ("-0", TokenKind::Minus, 0)];
 
     for (input, operator, test_value) in tests {
         let program = parse(input).expect("parse_program() failed");
@@ -162,9 +151,10 @@ fn parse_prefix_expression() {
     }
 }
 
+
 #[test]
 fn parse_infix_expression() {
-    let tests = [
+    let tests = vec![
         ("5+ 5;", 5, TokenKind::Plus, 5),
         ("5 - 5;", 5, TokenKind::Minus, 5),
         ("5 * 5;", 5, TokenKind::Mult, 5),
@@ -177,6 +167,8 @@ fn parse_infix_expression() {
 
     for (input, left, operator, right) in tests {
         let program = parse(input).expect("parse_program() failed");
+
+        test_program_length(&program, 1);
 
         let stmt = program.statements.first().unwrap();
 
@@ -201,76 +193,5 @@ fn parse_infix_expression() {
             },
             _ => panic!("expected Statement::Expression, got '{:?}'", stmt),
         }
-    }
-}
-
-#[test]
-fn parse_binary_expression() {
-    let tests = [
-        ("-a * b", "((-a) * b)"),
-        ("!-a", "(!(-a))"),
-        ("a + b + c", "((a + b) + c)"),
-        ("a + b - c", "((a + b) - c)"),
-        ("a * b * c", "((a * b) * c)"),
-        ("a * b / c", "((a * b) / c)"),
-        ("a + b / c", "(a + (b / c))"),
-        ("a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"),
-        ("3 + 4; -5 * 5", "(3 + 4), ((-5) * 5)"),
-        ("5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"),
-        ("5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"),
-        (
-            "3 + 4 * 5 == 3 * 1 + 4 * 5",
-            "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
-        ),
-        ("true", "true"),
-        ("false", "false"),
-        ("3 > 5 == false", "((3 > 5) == false)"),
-        ("3 < 5 == true", "((3 < 5) == true)"),
-    ];
-
-    for (input, stringified_output) in tests {
-        let program = parse(input).expect("parse_program() failed");
-
-        assert_eq!(stringified_output, program.to_string());
-    }
-}
-
-#[test]
-fn parse_brace_expression() {
-    let tests = [
-        ("1 + (2 + 3) + 4", "((1 + (2 + 3)) + 4)"),
-        ("(5 + 5) * 2", "((5 + 5) * 2)"),
-        ("2 / (5 + 5)", "(2 / (5 + 5))"),
-        ("(5 + 5) * 2 * (5 + 5)", "(((5 + 5) * 2) * (5 + 5))"),
-        ("-(5 + 5)", "(-(5 + 5))"),
-        ("!(true == true)", "(!(true == true))"),
-    ];
-
-    for (input, stringified_output) in tests {
-        let program = parse(input).expect("parse_program() failed");
-
-        assert_eq!(stringified_output, program.to_string());
-    }
-}
-
-#[test]
-fn parse_fn_call() {
-    let tests = [("add(1, 2 * 3, 4 + 5);", "add(1, (2 * 3), (4 + 5))")];
-
-    for (input, stringified_output) in tests {
-        let program = parse(input).expect("parse_program() failed");
-
-        assert_eq!(stringified_output, program.to_string());
-    }
-}
-
-#[test]
-fn parse_index_expression() {
-    let tests = [("a[1]", "a[1]"), ("a[1 + 1]", "a[(1 + 1)]+")];
-
-    for (input, stringified_output) in tests {
-        let program = parse(input).expect("parse_program() failed");
-
-        assert_eq!(stringified_output, program.to_string());
     }
 }

@@ -3,10 +3,15 @@ pub mod statement;
 pub mod string;
 
 use presap_lexer::token::Span;
+use serde::Serialize;
 
 use crate::{expression::*, statement::Statement};
 
-#[derive(Debug)]
+pub trait GetSpan {
+    fn span(&self) -> &Span;
+}
+
+#[derive(Debug, Serialize)]
 pub enum Literal {
     Integer {
         value: i64,
@@ -30,13 +35,25 @@ pub enum Literal {
     },
 }
 
-#[derive(Debug)]
+impl GetSpan for Literal {
+    fn span(&self) -> &Span {
+        match self {
+            Self::Integer { span, .. } => span,
+            Self::Float { span, .. } => span,
+            Self::String { span, .. } => span,
+            Self::Boolean { span, .. } => span,
+            Self::Array { span, .. } => span,
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
 pub struct Block {
     pub statements: Vec<Statement>,
     pub span: Span,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Program {
     pub statements: Vec<Statement>,
     pub span: Span,

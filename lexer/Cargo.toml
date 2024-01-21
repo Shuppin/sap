@@ -8,3 +8,4 @@ edition = "2021"
 name = "presap-lexer"
 
 [dependencies]
+serde = { version = "1.0.195", features = ["derive"] }

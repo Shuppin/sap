@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter, Result};
 
 use crate::{
     statement::{Let, Return, Statement},
-    Expression, Identifier, Literal, Node, Program, Unary,
+    Binary, Expression, FunctionCall, Identifier, Literal, Node, Program, Unary, Index,
 };
 
 fn format_items<T: ToString>(items: &Vec<T>) -> String {
@@ -51,6 +51,25 @@ impl Display for Expression {
             Expression::Unary(Unary {
                 operator, operand, ..
             }) => write!(f, "({}{})", operator, operand),
+            Expression::Binary(Binary {
+                operator,
+                left,
+                right,
+                ..
+            }) => write!(f, "({} {} {})", left, operator, right),
+            Expression::FunctionCall(FunctionCall {
+                callee, arguments, ..
+            }) => write!(
+                f,
+                "{}({})",
+                callee,
+                arguments
+                    .iter()
+                    .map(|expr| expr.to_string())
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            ),
+            Expression::Index(Index { object, index, .. }) => write!(f, "{}[{}]", object, index),
             _ => unimplemented!(),
         }
     }
@@ -60,6 +79,7 @@ impl Display for Literal {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
             Literal::Integer { value, .. } => write!(f, "{}", value),
+            Literal::Boolean { value, .. } => write!(f, "{}", value),
             _ => unimplemented!(),
         }
     }

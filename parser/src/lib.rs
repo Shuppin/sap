@@ -1,8 +1,9 @@
 use log::info;
 use presap_ast::{
     expression::{Binary, Expression, FunctionCall, Identifier, Index, Unary},
+    literal::Literal,
     statement::{Let, Return, Statement},
-    GetSpan, Literal, Program,
+    GetSpan, Program,
 };
 use presap_lexer::{
     token::{Span, Token, TokenKind},
@@ -416,11 +417,18 @@ impl<'lexer> Parser<'lexer> {
             }
             TokenKind::True => {
                 self.next_token();
-                Ok(Literal::Boolean { value: true, span: span })
+                Ok(Literal::Boolean { value: true, span })
             }
             TokenKind::False => {
                 self.next_token();
-                Ok(Literal::Boolean { value: false, span: span })
+                Ok(Literal::Boolean { value: false, span })
+            }
+            TokenKind::String(string) => {
+                self.next_token();
+                Ok(Literal::String {
+                    value: string.to_owned(),
+                    span,
+                })
             }
             // TODO: TokenKind::Bool ...
             _ => Err(format!("Expected Literal, got {}", self.cur_token.kind)),

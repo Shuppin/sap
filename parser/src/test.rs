@@ -1,4 +1,4 @@
-use presap_ast::{expression::Expression, statement::Statement, Literal, Program};
+use presap_ast::{expression::Expression, statement::Statement, Program, literal::Literal};
 use presap_lexer::token::{Span, TokenKind};
 
 use crate::parse;
@@ -267,6 +267,18 @@ fn parse_fn_call() {
 #[test]
 fn parse_index_expression() {
     let tests = [("a[1]", "a[1]"), ("a[1 + 1]", "a[(1 + 1)]+")];
+
+    for (input, stringified_output) in tests {
+        let program = parse(input).expect("parse_program() failed");
+
+        assert_eq!(stringified_output, program.to_string());
+    }
+}
+
+
+#[test]
+fn parse_string_expression() {
+    let tests = [(r#""hello world";"#, r#""hello world""#)];
 
     for (input, stringified_output) in tests {
         let program = parse(input).expect("parse_program() failed");

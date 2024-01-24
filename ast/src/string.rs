@@ -1,8 +1,7 @@
 use std::fmt::{Display, Formatter, Result};
 
 use crate::{
-    statement::{Let, Return, Statement},
-    Binary, Expression, FunctionCall, Identifier, Literal, Node, Program, Unary, Index,
+    statement::{Let, Return, Statement}, Node, Program, expression::*, literal::Literal,
 };
 
 fn format_items<T: ToString>(items: &Vec<T>) -> String {
@@ -80,6 +79,8 @@ impl Display for Literal {
         match self {
             Literal::Integer { value, .. } => write!(f, "{}", value),
             Literal::Boolean { value, .. } => write!(f, "{}", value),
+            Literal::Float { value, .. } => write!(f, "{}", value),
+            Literal::String { value, .. } => write!(f, "\"{}\"", value),
             _ => unimplemented!(),
         }
     }

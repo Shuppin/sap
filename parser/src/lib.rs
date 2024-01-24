@@ -53,48 +53,36 @@ impl<'lexer> Parser<'lexer> {
     }
 
     pub fn parse_program(&mut self) -> Result<Program, Vec<ParseError>> {
-        // <program> -> ((<statement> `Semi`)* | <statement>) `Eof`
+        // <program> -> <statements>? `Eof`
+        // <statements> -> <statement> (`Semi` <statement>)* `Semi`?
         let mut program = Program::new();
         let mut errors: Vec<ParseError> = Vec::new();
 
-        loop {
-            if self.cur_token_is(&TokenKind::Eof) {
-                self.next_token();
-                break;
-            }
-            info!("Begin {}", self.cur_token);
+        while !self.cur_token_is(&TokenKind::Eof) {
+            info!("parsing statement begining with {}", self.cur_token);
             match self.parse_statement() {
                 Ok(stmt) => {
-                    info!("Parsed statement \"{}\"", stmt);
+                    info!("Parsed statement: \"{}\"", stmt);
                     program.statements.push(stmt);
                 }
-                Err(e) => {
-                    info!("ParserError: {}", e);
-                    errors.push(e);
-                    self.next_token();
-                    while !matches!(self.cur_token.kind, TokenKind::Eof | TokenKind::Semicolon) {
-                        info!("Skipping token {}", self.cur_token);
-                        self.next_token();
-                    }
+                Err(err) => {
+                    info!("Parser error: {}", err);
+                    errors.push(err);
+                    self.skip_to_next_statement();
                 }
-            };
-            match self.cur_token.kind {
-                TokenKind::Semicolon => {
-                    self.next_token();
-                }
-                TokenKind::Eof => {
-                    self.next_token();
-                    break;
-                }
-                _ => errors.push("Expected semicolon after statement".to_string()),
             }
-            info!("End {}", self.cur_token);
+
+            if self.cur_token_is(&TokenKind::Semicolon) {
+                self.next_token()
+            };
+
+            info!("parsing statement ending with {}", self.cur_token);
         }
 
-        // TokenKind has already been checked, so we can safely call next_token()
-        self.next_token();
-
         program.span.end = self.cur_token.span.end;
+
+        // Consume the Eof token
+        self.next_token();
 
         if errors.is_empty() {
             Ok(program)
@@ -102,6 +90,65 @@ impl<'lexer> Parser<'lexer> {
             Err(errors)
         }
     }
+
+    /// Advances the current token upto the next semicolon or EOF, without consuming it
+    fn skip_to_next_statement(&mut self) {
+        while !matches!(self.cur_token.kind, TokenKind::Eof | TokenKind::Semicolon) {
+            info!("Skipping token {}", self.cur_token);
+            self.next_token();
+        }
+    }
+
+    // pub fn parse_program(&mut self) -> Result<Program, Vec<ParseError>> {
+    //     // <program> -> ((<statement> `Semi`)* | <statement>) `Eof`
+    //     let mut program = Program::new();
+    //     let mut errors: Vec<ParseError> = Vec::new();
+
+    //     loop {
+    //         if self.cur_token_is(&TokenKind::Eof) {
+    //             self.next_token();
+    //             break;
+    //         }
+    //         info!("Begin {}", self.cur_token);
+    //         match self.parse_statement() {
+    //             Ok(stmt) => {
+    //                 info!("Parsed statement \"{}\"", stmt);
+    //                 program.statements.push(stmt);
+    //             }
+    //             Err(e) => {
+    //                 info!("ParserError: {}", e);
+    //                 errors.push(e);
+    //                 self.next_token();
+    //                 while !matches!(self.cur_token.kind, TokenKind::Eof | TokenKind::Semicolon) {
+    //                     info!("Skipping token {}", self.cur_token);
+    //                     self.next_token();
+    //                 }
+    //             }
+    //         };
+    //         match self.cur_token.kind {
+    //             TokenKind::Semicolon => {
+    //                 self.next_token();
+    //             }
+    //             TokenKind::Eof => {
+    //                 self.next_token();
+    //                 break;
+    //             }
+    //             _ => errors.push("Expected semicolon after statement".to_string()),
+    //         }
+    //         info!("End {}", self.cur_token);
+    //     }
+
+    //     // TokenKind has already been checked, so we can safely call next_token()
+    //     self.next_token();
+
+    //     program.span.end = self.cur_token.span.end;
+
+    //     if errors.is_empty() {
+    //         Ok(program)
+    //     } else {
+    //         Err(errors)
+    //     }
+    // }
 
     fn parse_block(&mut self) {
         todo!();

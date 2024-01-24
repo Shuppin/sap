@@ -22,11 +22,10 @@ pub struct Parser<'lexer> {
 
 impl<'lexer> Parser<'lexer> {
     pub fn new(mut lexer: Lexer<'lexer>) -> Self {
-        // Initialise the current and peek tokens by calling `next_token` twice.
         let cur = lexer.next_token();
 
         Parser {
-            lexer: lexer,
+            lexer,
             cur_token: cur,
         }
     }
@@ -59,7 +58,7 @@ impl<'lexer> Parser<'lexer> {
         let mut errors: Vec<ParseError> = Vec::new();
 
         while !self.cur_token_is(&TokenKind::Eof) {
-            info!("parsing statement begining with {}", self.cur_token);
+            info!("Parsing statement begining with {}", self.cur_token);
             match self.parse_statement() {
                 Ok(stmt) => {
                     info!("Parsed statement: \"{}\"", stmt);
@@ -75,14 +74,9 @@ impl<'lexer> Parser<'lexer> {
             if self.cur_token_is(&TokenKind::Semicolon) {
                 self.next_token()
             };
-
-            info!("parsing statement ending with {}", self.cur_token);
         }
 
         program.span.end = self.cur_token.span.end;
-
-        // Consume the Eof token
-        self.next_token();
 
         if errors.is_empty() {
             Ok(program)
@@ -94,61 +88,10 @@ impl<'lexer> Parser<'lexer> {
     /// Advances the current token upto the next semicolon or EOF, without consuming it
     fn skip_to_next_statement(&mut self) {
         while !matches!(self.cur_token.kind, TokenKind::Eof | TokenKind::Semicolon) {
-            info!("Skipping token {}", self.cur_token);
+            info!("skip_to_next_statement(): {}", self.cur_token);
             self.next_token();
         }
     }
-
-    // pub fn parse_program(&mut self) -> Result<Program, Vec<ParseError>> {
-    //     // <program> -> ((<statement> `Semi`)* | <statement>) `Eof`
-    //     let mut program = Program::new();
-    //     let mut errors: Vec<ParseError> = Vec::new();
-
-    //     loop {
-    //         if self.cur_token_is(&TokenKind::Eof) {
-    //             self.next_token();
-    //             break;
-    //         }
-    //         info!("Begin {}", self.cur_token);
-    //         match self.parse_statement() {
-    //             Ok(stmt) => {
-    //                 info!("Parsed statement \"{}\"", stmt);
-    //                 program.statements.push(stmt);
-    //             }
-    //             Err(e) => {
-    //                 info!("ParserError: {}", e);
-    //                 errors.push(e);
-    //                 self.next_token();
-    //                 while !matches!(self.cur_token.kind, TokenKind::Eof | TokenKind::Semicolon) {
-    //                     info!("Skipping token {}", self.cur_token);
-    //                     self.next_token();
-    //                 }
-    //             }
-    //         };
-    //         match self.cur_token.kind {
-    //             TokenKind::Semicolon => {
-    //                 self.next_token();
-    //             }
-    //             TokenKind::Eof => {
-    //                 self.next_token();
-    //                 break;
-    //             }
-    //             _ => errors.push("Expected semicolon after statement".to_string()),
-    //         }
-    //         info!("End {}", self.cur_token);
-    //     }
-
-    //     // TokenKind has already been checked, so we can safely call next_token()
-    //     self.next_token();
-
-    //     program.span.end = self.cur_token.span.end;
-
-    //     if errors.is_empty() {
-    //         Ok(program)
-    //     } else {
-    //         Err(errors)
-    //     }
-    // }
 
     fn parse_block(&mut self) {
         todo!();
@@ -267,11 +210,8 @@ impl<'lexer> Parser<'lexer> {
             let operator = self.cur_token.kind.clone();
             // TokenKind has already been checked, so we can safely call next_token()
             self.next_token();
-            info!("{}", self.cur_token);
             let right = self.parse_product_expr()?;
             let span = Span::new(start, self.cur_token.span.start);
-            info!("{}", self.cur_token);
-            info!("{:?}", span);
             node = Expression::Binary(Binary {
                 operator,
                 left: Box::new(node),

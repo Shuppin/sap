@@ -93,7 +93,7 @@ fn lexer_simple() {
             token!(Comma, 6, 7),
             token!(Colon, 7, 8),
             token!(Semicolon, 8, 9),
-            token!(Eof, 9, 10),
+            token!(Eof, 9, 9),
         ],
     );
 }
@@ -107,7 +107,7 @@ fn lexer_numbers() {
             int!(22, 4, 6),
             float!(3.14, 7, 11),
             int!(45, 12, 14),
-            token!(Eof, 14, 15),
+            token!(Eof, 14, 14),
         ],
     )
 }
@@ -122,7 +122,7 @@ fn lexer_let() {
             token!(Assign, 5, 6),
             int!(5, 6, 7),
             token!(Semicolon, 7, 8),
-            token!(Eof, 8, 9),
+            token!(Eof, 8, 8),
         ],
     );
 }
@@ -134,7 +134,7 @@ fn lexer_string() {
         vec![
             string!("hello, world!".to_string(), 1, 16),
             string!("This is 'weird'".to_string(), 17, 34),
-            token!(Eof, 35, 36),
+            token!(Eof, 35, 35),
         ],
     )
 }
@@ -153,7 +153,7 @@ fn lexer_array() {
             token!(Comma, 8, 9),
             int!(6, 10, 11),
             token!(RBracket, 11, 12),
-            token!(Eof, 12, 13),
+            token!(Eof, 12, 12),
         ],
     );
 }
@@ -167,7 +167,7 @@ fn lexer_bool() {
             ident!("y".to_string(), 4, 5),
             token!(Assign, 5, 6),
             token!(True, 6, 10),
-            token!(Eof, 10, 11),
+            token!(Eof, 10, 10),
         ],
     )
 }
@@ -192,7 +192,7 @@ fn lexer_function() {
             ident!("b".to_string(), 22, 23),
             token!(RCurly, 24, 25),
             token!(Semicolon, 25, 26),
-            token!(Eof, 26, 27),
+            token!(Eof, 26, 26),
         ],
     )
 }
@@ -246,7 +246,7 @@ let result = add(five, ten);";
             ident!("ten".to_string(), 85, 88),
             token!(RParen, 88, 89),
             token!(Semicolon, 89, 90),
-            token!(Eof, 90, 91),
+            token!(Eof, 90, 90),
         ],
     );
 }
@@ -291,7 +291,7 @@ if (5 < 10) {
             token!(False, 80, 85),
             token!(Semicolon, 85, 86),
             token!(RCurly, 87, 88),
-            token!(Eof, 88, 89),
+            token!(Eof, 88, 88),
         ],
     );
 }

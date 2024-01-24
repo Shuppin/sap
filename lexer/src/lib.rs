@@ -21,6 +21,7 @@ impl<'lexer> Lexer<'lexer> {
             position: 0,
         };
         lexer.read_char();
+        lexer.position = 0;
         lexer
     }
 
@@ -28,10 +29,15 @@ impl<'lexer> Lexer<'lexer> {
         match self.input.next() {
             Some(chr) => {
                 self.chr = chr;
+                self.position += 1
             }
-            None => self.chr = '\0',
+            None => {
+                if self.chr != '\0' {
+                    self.chr = '\0';
+                    self.position += 1
+                }
+            }
         }
-        self.position += 1;
     }
 
     fn peek_char(&mut self) -> char {
@@ -101,8 +107,8 @@ impl<'lexer> Lexer<'lexer> {
                 let string = self.read_string();
                 return Token {
                     span: Span {
-                        start: start_position - 1,
-                        end: self.position - 1,
+                        start: start_position,
+                        end: self.position,
                     },
                     kind: TokenKind::String(string),
                 };
@@ -112,8 +118,8 @@ impl<'lexer> Lexer<'lexer> {
                     let ident = self.read_identifier();
                     return Token {
                         span: Span {
-                            start: start_position - 1,
-                            end: self.position - 1,
+                            start: start_position,
+                            end: self.position,
                         },
                         kind: TokenKind::lookup_ident(&ident),
                     };
@@ -128,8 +134,8 @@ impl<'lexer> Lexer<'lexer> {
 
         return Token {
             span: Span {
-                start: start_position - 1,
-                end: self.position - 1,
+                start: start_position,
+                end: self.position,
             },
             kind: token_kind,
         };
@@ -177,16 +183,16 @@ impl<'lexer> Lexer<'lexer> {
             self._read_int(&mut number);
             return Token {
                 span: Span {
-                    start: self.position - number.len() - 1,
-                    end: self.position - 1,
+                    start: self.position - number.len(),
+                    end: self.position,
                 },
                 kind: TokenKind::Float(number.parse().unwrap()),
             };
         }
         return Token {
             span: Span {
-                start: self.position - number.len() - 1,
-                end: self.position - 1,
+                start: self.position - number.len(),
+                end: self.position,
             },
             kind: TokenKind::Int(number.parse().unwrap()),
         };

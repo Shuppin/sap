@@ -13,6 +13,14 @@ fn test_program_length(program: &Program, length: usize) {
     )
 }
 
+fn validate_parse_to_string(tests: &[(&str, &str)]) {
+    for &(input, stringified_output) in tests {
+        let program = parse(input).expect("parse_program() failed");
+
+        assert_eq!(stringified_output, program.to_string());
+    }
+}
+
 #[test]
 fn parse_let_statements() {
     // Initialise conditions
@@ -228,11 +236,7 @@ fn parse_binary_expression() {
         ("3 < 5 == true", "((3 < 5) == true)"),
     ];
 
-    for (input, stringified_output) in tests {
-        let program = parse(input).expect("parse_program() failed");
-
-        assert_eq!(stringified_output, program.to_string());
-    }
+    validate_parse_to_string(&tests);
 }
 
 #[test]
@@ -246,33 +250,21 @@ fn parse_brace_expression() {
         ("!(true == true)", "(!(true == true))"),
     ];
 
-    for (input, stringified_output) in tests {
-        let program = parse(input).expect("parse_program() failed");
-
-        assert_eq!(stringified_output, program.to_string());
-    }
+    validate_parse_to_string(&tests);
 }
 
 #[test]
 fn parse_fn_call() {
     let tests = [("add(1, 2 * 3, 4 + 5);", "add(1, (2 * 3), (4 + 5))")];
 
-    for (input, stringified_output) in tests {
-        let program = parse(input).expect("parse_program() failed");
-
-        assert_eq!(stringified_output, program.to_string());
-    }
+    validate_parse_to_string(&tests);
 }
 
 #[test]
 fn parse_index_expression() {
-    let tests = [("a[1]", "a[1]"), ("a[1 + 1]", "a[(1 + 1)]+")];
+    let tests = [("a[1]", "a[1]"), ("a[1 + 1]", "a[(1 + 1)]")];
 
-    for (input, stringified_output) in tests {
-        let program = parse(input).expect("parse_program() failed");
-
-        assert_eq!(stringified_output, program.to_string());
-    }
+    validate_parse_to_string(&tests);
 }
 
 
@@ -280,9 +272,5 @@ fn parse_index_expression() {
 fn parse_string_expression() {
     let tests = [(r#""hello world";"#, r#""hello world""#)];
 
-    for (input, stringified_output) in tests {
-        let program = parse(input).expect("parse_program() failed");
-
-        assert_eq!(stringified_output, program.to_string());
-    }
+    validate_parse_to_string(&tests);
 }

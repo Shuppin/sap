@@ -11,6 +11,35 @@ pub trait GetSpan {
     fn span(&self) -> &Span;
 }
 
+#[derive(Serialize)]
+pub enum Node {
+    Program(Program),
+    Statement(Statement),
+    Expression(Expression),
+}
+
+#[derive(Debug, Serialize)]
+#[serde(tag = "type")]
+pub struct Program {
+    pub statements: Vec<Statement>,
+    pub span: Span,
+}
+
+impl Program {
+    pub fn new() -> Self {
+        Self {
+            statements: vec![],
+            span: Span { start: 0, end: 0 },
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct Block {
+    pub statements: Vec<Statement>,
+    pub span: Span,
+}
+
 #[derive(Debug, Serialize)]
 #[serde(tag = "type")]
 pub enum Literal {
@@ -46,33 +75,4 @@ impl GetSpan for Literal {
             Self::Array { span, .. } => span,
         }
     }
-}
-
-#[derive(Debug, Serialize)]
-pub struct Block {
-    pub statements: Vec<Statement>,
-    pub span: Span,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(tag = "type")]
-pub struct Program {
-    pub statements: Vec<Statement>,
-    pub span: Span,
-}
-
-impl Program {
-    pub fn new() -> Self {
-        Self {
-            statements: vec![],
-            span: Span { start: 0, end: 0 },
-        }
-    }
-}
-
-#[derive(Serialize)]
-pub enum Node {
-    Program(Program),
-    Statement(Statement),
-    Expression(Expression),
 }

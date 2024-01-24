@@ -1,7 +1,10 @@
 use std::fmt::{Display, Formatter, Result};
 
 use crate::{
-    statement::{Let, Return, Statement}, Node, Program, expression::*, literal::Literal,
+    expression::*,
+    literal::Literal,
+    statement::{Let, Return, Statement},
+    Node, Program,
 };
 
 fn format_items<T: ToString>(items: &Vec<T>) -> String {
@@ -69,7 +72,17 @@ impl Display for Expression {
                     .join(", ")
             ),
             Expression::Index(Index { object, index, .. }) => write!(f, "{}[{}]", object, index),
-            _ => unimplemented!(),
+            Expression::Selection(_) => todo!(),
+            Expression::FunctionDeclaration(_) => todo!(),
+            Expression::Array(Array { elements, .. }) => write!(
+                f,
+                "[{}]",
+                elements
+                    .iter()
+                    .map(|expr| expr.to_string())
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            ),
         }
     }
 }
@@ -81,7 +94,6 @@ impl Display for Literal {
             Literal::Boolean { value, .. } => write!(f, "{}", value),
             Literal::Float { value, .. } => write!(f, "{}", value),
             Literal::String { value, .. } => write!(f, "\"{}\"", value),
-            _ => unimplemented!(),
         }
     }
 }

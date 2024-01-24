@@ -1,6 +1,6 @@
 use log::info;
 use presap_ast::{
-    expression::{Binary, Expression, FunctionCall, Identifier, Index, Unary},
+    expression::{Array, Binary, Expression, FunctionCall, Identifier, Index, Unary},
     literal::Literal,
     statement::{Let, Return, Statement},
     GetSpan, Program,
@@ -266,7 +266,7 @@ impl<'lexer> Parser<'lexer> {
         //
         // <array_index> -> `LBracket` <expression> `RBracket`
         //
-        // <fn_call> -> `LParen` <fn_arguments>? `RParen`
+        // <fn_call> -> `LParen` <expr_list>? `RParen`
         let start = self.cur_token.span.start;
         let mut node = self.parse_prefix_expr()?;
 
@@ -286,7 +286,7 @@ impl<'lexer> Parser<'lexer> {
                 TokenKind::LParen => {
                     self.eat(&TokenKind::LParen)?;
                     let arguments = match self.cur_token_is(&TokenKind::RParen) {
-                        false => self.parse_fn_arguments()?,
+                        false => self.parse_expr_list()?,
                         true => vec![],
                     };
                     self.eat(&TokenKind::RParen)?;
@@ -304,8 +304,8 @@ impl<'lexer> Parser<'lexer> {
         return Ok(node);
     }
 
-    fn parse_fn_arguments(&mut self) -> Result<Vec<Expression>, ParseError> {
-        // <fn_arguments> -> <expression> (`,` <expression>)*
+    fn parse_expr_list(&mut self) -> Result<Vec<Expression>, ParseError> {
+        // <expr_list> -> <expression> (`,` <expression>)*
         let mut expressions: Vec<Expression> = Vec::new();
         expressions.push(self.parse_expression()?);
         while self.cur_token_is(&TokenKind::Comma) {
@@ -368,15 +368,32 @@ impl<'lexer> Parser<'lexer> {
     fn parse_entity_expr(&mut self) -> Result<Expression, ParseError> {
         // <entity_expr> -> <selection_expr>
         //                | <fn_decl_expr>
+        //                | <array_expr>
         //                | <literal>
         match &self.cur_token.kind {
             // TokenKind::If => self.parse_selection_expr(),
             // TokenKind::Fn => self.parse_fn_decl_expr(),
+            TokenKind::LBracket => self.parse_array_expr(),
             _ => {
                 let literal = self.parse_literal()?;
                 return Ok(Expression::Literal(literal));
             }
         }
+    }
+
+    fn parse_array_expr(&mut self) -> Result<Expression, ParseError> {
+        // <array_expr> -> `LBracket` <expr_list>? `LBracket`
+
+        let start = self.cur_token.span.start;
+        self.eat(&TokenKind::LBracket)?;
+        let elements = match self.cur_token_is(&TokenKind::RBracket) {
+            false => self.parse_expr_list()?,
+            true => vec![],
+        };
+        self.eat(&TokenKind::RBracket)?;
+        let span = Span::new(start, self.cur_token.span.end);
+
+        return Ok(Expression::Array(Array { elements, span }));
     }
 
     fn parse_selection_expr(&mut self) -> Result<Expression, ParseError> {

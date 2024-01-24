@@ -1,4 +1,4 @@
-use crate::{Block, GetSpan, literal::Literal};
+use crate::{literal::Literal, Block, GetSpan};
 use presap_lexer::token::{Span, TokenKind};
 use serde::Serialize;
 
@@ -11,6 +11,7 @@ pub enum Expression {
     Selection(Selection),
     FunctionDeclaration(FunctionDeclaration),
     FunctionCall(FunctionCall),
+    Array(Array),
     Index(Index),
     Literal(Literal),
 }
@@ -24,6 +25,7 @@ impl GetSpan for Expression {
             Expression::Selection(selection) => &selection.span,
             Expression::FunctionDeclaration(function_declaration) => &function_declaration.span,
             Expression::FunctionCall(function_call) => &function_call.span,
+            Expression::Array(array) => &array.span,
             Expression::Index(index) => &index.span,
             Expression::Literal(literal) => literal.span(),
         }
@@ -77,6 +79,13 @@ pub struct FunctionDeclaration {
 pub struct FunctionCall {
     pub callee: Box<Expression>,
     pub arguments: Vec<Expression>,
+    pub span: Span,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(tag = "type")]
+pub struct Array {
+    pub elements: Vec<Expression>,
     pub span: Span,
 }
 

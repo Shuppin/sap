@@ -49,11 +49,14 @@ The order of statements is representative of the hierarchy of the AST.
     Entities
         <entity_expr> -> <selection_expr>
                     | <fn_decl_expr>
+                    | <array_expr>
                     | <literal>
 
         <selection_expr> -> `If` <expr> <block> `Else` <block>
 
         <fn_decl_expr> -> `Fn` `LParen` <fn_params> `RParen` <block>
+
+        <array_expr> -> `LBracket` <expr_list>? `LBracket`
 
 ## Literals 
 
@@ -68,7 +71,7 @@ The order of statements is representative of the hierarchy of the AST.
 
     <array_index> -> `LBracket` <expression> `RBracket`
 
-    <fn_call> -> `LParen` <fn_arguments>? `RParen`
+    <fn_call> -> `LParen` <expr_list>? `RParen`
 
-    <fn_arguments> -> <expression> (`,` <expression>)*
+    <expr_list> -> <expression> (`,` <expression>)*
 

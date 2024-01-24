@@ -1,4 +1,4 @@
-use presap_ast::{expression::Expression, statement::Statement, Program, literal::Literal};
+use presap_ast::{expression::Expression, literal::Literal, statement::Statement, Program};
 use presap_lexer::token::{Span, TokenKind};
 
 use crate::parse;
@@ -267,10 +267,16 @@ fn parse_index_expression() {
     validate_parse_to_string(&tests);
 }
 
-
 #[test]
 fn parse_string_expression() {
     let tests = [(r#""hello world";"#, r#""hello world""#)];
+
+    validate_parse_to_string(&tests);
+}
+
+#[test]
+fn parse_array_expression() {
+    let tests = [("[]", "[]"), ("[1, 2 * 2, 3 + 3]", "[1, (2 * 2), (3 + 3)]")];
 
     validate_parse_to_string(&tests);
 }

@@ -405,6 +405,7 @@ impl<'lexer> Parser<'lexer> {
         // <literal> -> `Int`
         //     | `Float`
         //     | `Bool`
+        //     | `String`
         let span = self.cur_token.span.clone();
         match &self.cur_token.kind.clone() {
             TokenKind::Int(n) => {

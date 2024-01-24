@@ -60,6 +60,7 @@ The order of statements is representative of the hierarchy of the AST.
     <literal> -> `Int`
             | `Float`
             | `Bool`
+            | `String`
 
 ## Aliases
 

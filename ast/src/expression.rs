@@ -3,6 +3,7 @@ use presap_lexer::token::{Span, TokenKind};
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
+#[serde(untagged)]
 pub enum Expression {
     Identifier(Identifier),
     Unary(Unary),
@@ -30,12 +31,14 @@ impl GetSpan for Expression {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(tag = "type")]
 pub struct Identifier {
     pub name: String,
     pub span: Span,
 }
 
 #[derive(Debug, Serialize)]
+#[serde(tag = "type")]
 pub struct Unary {
     pub operator: TokenKind,
     pub operand: Box<Expression>,
@@ -43,6 +46,7 @@ pub struct Unary {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(tag = "type")]
 pub struct Binary {
     pub operator: TokenKind,
     pub left: Box<Expression>,
@@ -51,6 +55,7 @@ pub struct Binary {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(tag = "type")]
 pub struct Selection {
     pub condition: Box<Expression>,
     pub conditional: Block,
@@ -59,6 +64,7 @@ pub struct Selection {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(tag = "type")]
 pub struct FunctionDeclaration {
     pub name: Identifier,
     pub parameters: Vec<Identifier>,
@@ -67,6 +73,7 @@ pub struct FunctionDeclaration {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(tag = "type")]
 pub struct FunctionCall {
     pub callee: Box<Expression>,
     pub arguments: Vec<Expression>,
@@ -74,6 +81,7 @@ pub struct FunctionCall {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(tag = "type")]
 pub struct Index {
     pub object: Box<Expression>,
     pub index: Box<Expression>,

@@ -7,6 +7,7 @@ use crate::{
 };
 
 #[derive(Debug, Serialize)]
+#[serde(untagged)]
 pub enum Statement {
     Let(Let),
     Return(Return),
@@ -24,6 +25,7 @@ impl GetSpan for Statement {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(tag = "type")]
 pub struct Let {
     pub ident: Identifier,
     pub expr: Expression,
@@ -31,6 +33,7 @@ pub struct Let {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(tag = "type")]
 pub struct Return {
     pub value: Expression,
     pub span: Span,

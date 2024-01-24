@@ -25,11 +25,11 @@ fn main() {
 
         match parse(&input) {
             Ok(parsed_ast) => {
-                info!("{:#?}", parsed_ast);
-                info!("\n\n------------------\n");
-                info!("{}", serde_json::to_string_pretty(&parsed_ast).unwrap());
-                info!("\n\n------------------\n");
-                info!("{}", parsed_ast);
+                info!(
+                    "=== Serialised AST START ===\n{}",
+                    serde_json::to_string_pretty(&parsed_ast).unwrap()
+                );
+                info!("=== Serialised AST END ===");
                 println!("\nParsed as:\n{}", parsed_ast);
             }
             Err(err) => {

@@ -12,6 +12,7 @@ pub trait GetSpan {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(tag = "type")]
 pub enum Literal {
     Integer {
         value: i64,
@@ -54,6 +55,7 @@ pub struct Block {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(tag = "type")]
 pub struct Program {
     pub statements: Vec<Statement>,
     pub span: Span,
@@ -68,6 +70,7 @@ impl Program {
     }
 }
 
+#[derive(Serialize)]
 pub enum Node {
     Program(Program),
     Statement(Statement),

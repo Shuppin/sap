@@ -32,7 +32,7 @@ impl Span {
 #[derive(PartialEq, Debug, Clone, Serialize)]
 pub enum TokenKind {
     // Special
-    Illegal,
+    Illegal(String),
     Eof,
 
     // Value holders
@@ -105,6 +105,7 @@ impl Display for TokenKind {
             Self::Int(num) => return write!(f, "{}", num),
             Self::Float(num) => return write!(f, "{}", num),
             Self::String(string) => string,
+            Self::Illegal(string) => string,
             Self::Assign => "=",
             Self::Plus => "+",
             Self::Minus => "-",
@@ -134,7 +135,7 @@ impl Display for TokenKind {
             Self::True => "true",
             Self::False => "false",
             Self::Return => "return",
-            Self::Illegal | Self::Eof => "",
+            Self::Eof => "<EOF>",
         }
         .to_string();
         write!(f, "{}", string_literal)

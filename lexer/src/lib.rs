@@ -120,7 +120,7 @@ impl<'lexer> Lexer<'lexer> {
                 } else if is_digit(self.chr) {
                     return self.read_number();
                 } else {
-                    TokenKind::Illegal
+                    TokenKind::Illegal(self.chr.to_string())
                 }
             }
         };

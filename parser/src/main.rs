@@ -32,7 +32,10 @@ fn main() {
                 info!("{}", parsed_ast);
                 println!("\nParsed as:\n{}", parsed_ast);
             }
-            Err(err) => error!("{:?}", err),
+            Err(err) => {
+                println!("Parser generated {} error(s): {:#?}", err.len(), err);
+                error!("{:?}", err);
+            }
         }
     }
     println!("Bye");

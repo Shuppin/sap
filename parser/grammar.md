@@ -6,7 +6,7 @@ The order of statements is representative of the hierarchy of the AST.
 
     <program> -> <statements> `Eof`
 
-    <block> -> `LCurly` <statements> `RCurly
+    <block> -> `LCurly` <statements> `RCurly`
 
 
 ## Statements

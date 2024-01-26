@@ -76,7 +76,6 @@ pub enum TokenKind {
     Minus,  // -
     Mult,   // *
     Div,    // /
-    Not,    // !
     Mod,    // %
 
     // Comparison operators
@@ -86,6 +85,11 @@ pub enum TokenKind {
     GtEq,  // >=
     Eq,    // ==
     NotEq, // !=
+
+    // Boolean operators
+    Not, // !
+    And, // &&
+    Or,  // ||
 
     // Delimiters
     Comma,     // ,
@@ -156,7 +160,6 @@ impl Display for TokenKind {
             Self::Minus => "-",
             Self::Mult => "*",
             Self::Div => "/",
-            Self::Not => "!",
             Self::Mod => "%",
             Self::Lt => "<",
             Self::LtEq => "<=",
@@ -164,6 +167,9 @@ impl Display for TokenKind {
             Self::GtEq => ">=",
             Self::Eq => "==",
             Self::NotEq => "!=",
+            Self::Not => "!",
+            Self::And => "&&",
+            Self::Or => "||",
             Self::Comma => ",",
             Self::Semicolon => ";",
             Self::Colon => ":",

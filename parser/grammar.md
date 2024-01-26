@@ -19,11 +19,13 @@ The order of statements is representative of the hierarchy of the AST.
 
 ## Expressions
 
-    <expression> -> <bool_expr>
+    <expression> -> <or_expr>
 
     Infix operations
 
-        <bool_expr> -> <eq_expr> ((`And` | `Or`) <eq_expr>)*
+        <or_expr> -> <and_expr> (`Or` <and_expr>)*
+
+        <and_expr> -> <eq_expr> (`And` <eq_expr>)*
 
         <eq_expr> -> <comp_expr> ((`Eq`|`NotEq`) <comp_expr>)*
 

@@ -145,6 +145,22 @@ impl<'lexer> Lexer<'lexer> {
                     TokenKind::Gt
                 }
             }
+            '&' => {
+                if self.peek_char() == '&' {
+                    self.read_char();
+                    TokenKind::And
+                } else {
+                    TokenKind::Illegal(self.chr.to_string())
+                }
+            }
+            '|' => {
+                if self.peek_char() == '|' {
+                    self.read_char();
+                    TokenKind::Or
+                } else {
+                    TokenKind::Illegal(self.chr.to_string())
+                }
+            }
             '"' => {
                 let string = self.read_string();
                 return Token {

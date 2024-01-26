@@ -20,7 +20,7 @@ fn validate_parse_to_string(tests: &[(&str, &str)]) {
     for &(input, stringified_output) in tests {
         let program = parse(input).expect("parse_program() failed");
 
-        assert_eq!(stringified_output, program.to_string());
+        assert_eq!(program.to_string(), stringified_output);
     }
 }
 
@@ -237,6 +237,13 @@ fn parse_binary_expression() {
         ("false", "false"),
         ("3 > 5 == false", "((3 > 5) == false)"),
         ("3 < 5 == true", "((3 < 5) == true)"),
+        ("a || b && c", "(a || (b && c))"),
+        ("a && b || c", "((a && b) || c)"),
+        ("a && b == c", "(a && (b == c))"),
+        ("a == b && c", "((a == b) && c)"),
+        ("a && b + c", "(a && (b + c))"),
+        ("a + b && c", "((a + b) && c)"),
+        ("6 || 5 || 7 && 6 || 9 && 3", "(((6 || 5) || (7 && 6)) || (9 && 3))")
     ];
 
     validate_parse_to_string(&tests);
@@ -307,7 +314,6 @@ fn parse_fn_decl_expression() {
         ("fn() {};", "fn () {}"),
         ("fn(x) {};", "fn (x) {}"),
         ("fn(x, y, z) { x };", "fn (x, y, z) { x }"),
-        
     ];
     validate_parse_to_string(&tests);
 }

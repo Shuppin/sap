@@ -100,6 +100,31 @@ fn lexer_simple() {
 }
 
 #[test]
+fn lexer_operators() {
+    lexer_common(
+        "= + - * / % < <= > >= == != ! && ||",
+        vec![
+            token!(Assign, 0, 1),
+            token!(Plus, 2, 3),
+            token!(Minus, 4, 5),
+            token!(Mult, 6, 7),
+            token!(Div, 8, 9),
+            token!(Mod, 10, 11),
+            token!(Lt, 12, 13),
+            token!(LtEq, 14, 16),
+            token!(Gt, 17, 18),
+            token!(GtEq, 19, 21),
+            token!(Eq, 22, 24),
+            token!(NotEq, 25, 27),
+            token!(Not, 28, 29),
+            token!(And, 30, 32),
+            token!(Or, 33, 35),
+            token!(Eof, 35, 35),
+        ],
+    );
+}
+
+#[test]
 fn lexer_numbers() {
     lexer_common(
         "111 22 3.14 45",

@@ -180,20 +180,52 @@ impl<'lexer> Parser<'lexer> {
 
     fn parse_expression(&mut self) -> Result<Expression, ParseError> {
         // <expression> -> <bool_expr>
-        // self.parse_bool_expr()
-        self.parse_eq_expr()
+        self.parse_or_expr()
     }
 
-    // fn parse_bool_expr(&mut self) -> Result<Expression, ParseError> {
-    //     <bool_expr> -> <eq_expr> ((`And` | `Or`) <eq_expr>)*
-    //     let start = self.cur_token.span.start;
+    fn parse_or_expr(&mut self) -> Result<Expression, ParseError> {
+        // <or_expr> -> <and_expr> (`Or` <and_expr>)*
+        let start = self.cur_token.span.start;
+        let mut node = self.parse_and_expr()?;
 
-    //     let mut node = self.parse_not_expr();
+        while matches!(&self.cur_token.kind, TokenKind::Or) {
+            let operator = self.cur_token.kind.clone();
+            // TokenKind has already been checked, so we can safely call next_token()
+            self.next_token();
+            let right = self.parse_and_expr()?;
+            let span = Span::new(start, self.cur_token.span.end);
+            node = Expression::Binary(Binary {
+                operator,
+                left: Box::new(node),
+                right: Box::new(right),
+                span,
+            });
+        }
 
-    //     while self.cur_token_is(&TokenKind::And) || self.cur_token_is(&TokenKind::Or) {
-    //         // stuff
-    //     }
-    // }
+        return Ok(node);
+    }
+
+    fn parse_and_expr(&mut self) -> Result<Expression, ParseError> {
+        // <and_expr> -> <eq_expr> (`And` <eq_expr>)*
+        let start = self.cur_token.span.start;
+        let mut node = self.parse_eq_expr()?;
+
+        while matches!(&self.cur_token.kind, TokenKind::And) {
+            let operator = self.cur_token.kind.clone();
+            // TokenKind has already been checked, so we can safely call next_token()
+            self.next_token();
+            let right = self.parse_eq_expr()?;
+            let span = Span::new(start, self.cur_token.span.end);
+            node = Expression::Binary(Binary {
+                operator,
+                left: Box::new(node),
+                right: Box::new(right),
+                span,
+            });
+        }
+
+        return Ok(node);
+    }
 
     fn parse_eq_expr(&mut self) -> Result<Expression, ParseError> {
         // <eq_expr> -> <comp_expr> ((`Eq`|`NotEq`) <comp_expr>)*

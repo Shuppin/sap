@@ -1,5 +1,7 @@
 use log::info;
-use presap_ast::expression::{Array, Binary, Expression, FunctionCall, Identifier, Index, Unary};
+use presap_ast::expression::{
+    Array, Binary, Expression, FunctionCall, Identifier, Index, Selection, Unary,
+};
 use presap_ast::literal::Literal;
 use presap_ast::statement::{Let, Return, Statement};
 use presap_ast::{Block, GetSpan, Program};
@@ -87,9 +89,12 @@ impl<'lexer> Parser<'lexer> {
         // <statements> -> <statement> (`Semi` <statement>)* `Semi`?
         // <block> -> `LCurly` <statements> `RCurly`
         let mut block = Block::new();
-        let mut errors: Vec<ParseError> = Vec::new();
 
-        while !self.cur_token_is(&TokenKind::Eof) {
+        block.span.start = self.cur_token.span.start;
+
+        self.eat(&TokenKind::LCurly)?;
+
+        while !self.cur_token_is(&TokenKind::RCurly) {
             info!("(Block) Parsing statement begining with {}", self.cur_token);
             match self.parse_statement() {
                 Ok(stmt) => {
@@ -98,7 +103,7 @@ impl<'lexer> Parser<'lexer> {
                 }
                 Err(err) => {
                     info!("(Block) Parser error: {}", err);
-                    errors.push(err);
+                    self.errors.push(err);
                     self.skip_to_next_statement();
                 }
             }
@@ -106,16 +111,23 @@ impl<'lexer> Parser<'lexer> {
             if self.cur_token_is(&TokenKind::Semicolon) {
                 self.next_token()
             };
+
+            if self.cur_token_is(&TokenKind::Eof) {
+                return Err("unexpected end of file while parsing block".to_string());
+            }
         }
 
         block.span.end = self.cur_token.span.end;
 
+        self.eat(&TokenKind::RCurly)?;
+
         if self.errors.is_empty() {
             Ok(block)
         } else {
-            let last_error = errors.pop().unwrap();
-            self.errors.append(&mut errors);
-            Err(last_error)
+            // Any previous errors have already been added to `self.errors()`.
+            // Here, we pop the last error and return it to initiate the error handling system in
+            // `parse_program()`
+            Err(self.errors.pop().unwrap())
         }
     }
 
@@ -387,7 +399,7 @@ impl<'lexer> Parser<'lexer> {
         //                | <array_expr>
         //                | <literal>
         match &self.cur_token.kind {
-            // TokenKind::If => self.parse_selection_expr(),
+            TokenKind::If => self.parse_selection_expr(),
             // TokenKind::Fn => self.parse_fn_decl_expr(),
             TokenKind::LBracket => self.parse_array_expr(),
             _ => {
@@ -399,7 +411,6 @@ impl<'lexer> Parser<'lexer> {
 
     fn parse_array_expr(&mut self) -> Result<Expression, ParseError> {
         // <array_expr> -> `LBracket` <expr_list>? `LBracket`
-
         let start = self.cur_token.span.start;
         self.eat(&TokenKind::LBracket)?;
         let elements = match self.cur_token_is(&TokenKind::RBracket) {
@@ -414,20 +425,22 @@ impl<'lexer> Parser<'lexer> {
 
     fn parse_selection_expr(&mut self) -> Result<Expression, ParseError> {
         // <selection_expr> -> `If` <expr> <block> `Else` <block>
-        // let start = self.cur_token.span.start;
-        // self.eat(&TokenKind::If)?;
-        // let condition_expr = self.parse_expression()?;
-        // let conditional_block = self.parse_block()?;
-        // self.eat(&TokenKind::Else)?;
-        // let else_conditional_block = self.parse_block()?;
-        // let span = Span::new(start, self.cur_token.span.end);
-        // return Ok(Expression::Selection(Selection {
-        //     condition: Box::new(condition_expr),
-        //     conditional: conditional_block,
-        //     else_conditional: else_conditional_block,
-        //     span,
-        // }));
-        todo!()
+        let start = self.cur_token.span.start;
+
+        self.eat(&TokenKind::If)?;
+        let condition_expr = self.parse_expression()?;
+        let conditional_block = self.parse_block()?;
+
+        self.eat(&TokenKind::Else)?;
+        let else_conditional_block = self.parse_block()?;
+        let span = Span::new(start, self.cur_token.span.end);
+
+        return Ok(Expression::Selection(Selection {
+            condition: Box::new(condition_expr),
+            conditional: conditional_block,
+            else_conditional: else_conditional_block,
+            span,
+        }));
     }
 
     fn parse_fn_decl_expr(&mut self) -> Result<Expression, ParseError> {

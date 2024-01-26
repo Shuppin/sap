@@ -283,3 +283,19 @@ fn parse_array_expression() {
 
     validate_parse_to_string(&tests);
 }
+
+#[test]
+fn parse_if_else_expression() {
+    let tests = [
+        ("if x < y { x } else { y }", "if (x < y) { x } else { y }"),
+        (
+            "if x > y { x } else { if x < z { z } else { y } }",
+            "if (x > y) { x } else { if (x < z) { z } else { y } }",
+        ),
+        (
+            "if x == y { if y == z { x } else { z } } else { if x > z { x } else { z } }",
+            "if (x == y) { if (y == z) { x } else { z } } else { if (x > z) { x } else { z } }",
+        ),
+    ];
+    validate_parse_to_string(&tests);
+}

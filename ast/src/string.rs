@@ -3,14 +3,14 @@ use std::fmt::{Display, Formatter, Result};
 use crate::expression::*;
 use crate::literal::Literal;
 use crate::statement::{Let, Return, Statement};
-use crate::{Node, Program};
+use crate::{Block, Node, Program};
 
 fn format_items<T: ToString>(items: &Vec<T>) -> String {
     return items
         .iter()
         .map(|item| item.to_string())
         .collect::<Vec<String>>()
-        .join(", ");
+        .join("; ");
 }
 
 impl Display for Node {
@@ -24,6 +24,12 @@ impl Display for Node {
 }
 
 impl Display for Program {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{}", format_items(&self.statements))
+    }
+}
+
+impl Display for Block {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{}", format_items(&self.statements))
     }
@@ -70,7 +76,16 @@ impl Display for Expression {
                     .join(", ")
             ),
             Expression::Index(Index { object, index, .. }) => write!(f, "{}[{}]", object, index),
-            Expression::Selection(_) => todo!(),
+            Expression::Selection(Selection {
+                condition,
+                conditional,
+                else_conditional,
+                ..
+            }) => write!(
+                f,
+                "if {} {{ {} }} else {{ {} }}",
+                condition, conditional, else_conditional
+            ),
             Expression::FunctionDeclaration(_) => todo!(),
             Expression::Array(Array { elements, .. }) => write!(
                 f,

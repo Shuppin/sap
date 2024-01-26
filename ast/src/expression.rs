@@ -1,6 +1,8 @@
-use crate::{literal::Literal, Block, GetSpan};
 use presap_lexer::token::{Span, TokenKind};
 use serde::Serialize;
+
+use crate::literal::Literal;
+use crate::{Block, GetSpan};
 
 #[derive(Debug, Serialize)]
 #[serde(untagged)]

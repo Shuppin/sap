@@ -1,10 +1,8 @@
 use presap_lexer::token::Span;
 use serde::Serialize;
 
-use crate::{
-    expression::{Expression, Identifier},
-    GetSpan,
-};
+use crate::expression::{Expression, Identifier};
+use crate::GetSpan;
 
 #[derive(Debug, Serialize)]
 #[serde(untagged)]

@@ -1,11 +1,9 @@
 use std::fmt::{Display, Formatter, Result};
 
-use crate::{
-    expression::*,
-    literal::Literal,
-    statement::{Let, Return, Statement},
-    Node, Program,
-};
+use crate::expression::*;
+use crate::literal::Literal;
+use crate::statement::{Let, Return, Statement};
+use crate::{Node, Program};
 
 fn format_items<T: ToString>(items: &Vec<T>) -> String {
     return items

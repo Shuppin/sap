@@ -1,8 +1,8 @@
-use log::{error, info, LevelFilter};
-use serde_json;
 use std::io::Write;
 
+use log::{error, info, LevelFilter};
 use presap_parser::parse;
+use serde_json;
 
 fn main() {
     simple_logging::log_to_file("runtime.log", LevelFilter::Info).unwrap();

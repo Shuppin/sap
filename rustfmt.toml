@@ -1,0 +1,21 @@
+# If the unstable features are causing problems, try the following:
+# 1) Make sure rustfmt nightly is installed
+#    > `rustup toolchain install nightly`
+# 2) If using vscode, enable rustfmt nightly in your `settings.json`:
+#       "rust-analyzer.rustfmt.extraArgs": [
+#           "+nightly"
+#       ],
+
+# Stable features
+use_field_init_shorthand = true
+
+# Unstable features
+# improves readability of printed code
+wrap_comments = true
+comment_width = 90
+# better import formatting
+imports_granularity = "Module"
+group_imports = "StdExternalCrate"
+# prevents me accidentally commiting unformatted code
+error_on_unformatted = true
+error_on_line_overflow = true

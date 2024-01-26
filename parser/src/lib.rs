@@ -1,14 +1,10 @@
 use log::info;
-use presap_ast::{
-    expression::{Array, Binary, Expression, FunctionCall, Identifier, Index, Unary},
-    literal::Literal,
-    statement::{Let, Return, Statement},
-    GetSpan, Program,
-};
-use presap_lexer::{
-    token::{Span, Token, TokenKind},
-    Lexer,
-};
+use presap_ast::expression::{Array, Binary, Expression, FunctionCall, Identifier, Index, Unary};
+use presap_ast::literal::Literal;
+use presap_ast::statement::{Let, Return, Statement};
+use presap_ast::{Block, GetSpan, Program};
+use presap_lexer::token::{Span, Token, TokenKind};
+use presap_lexer::Lexer;
 
 #[cfg(test)]
 mod test;
@@ -18,6 +14,7 @@ pub type ParseError = String;
 pub struct Parser<'lexer> {
     lexer: Lexer<'lexer>,
     cur_token: Token,
+    errors: Vec<ParseError>,
 }
 
 impl<'lexer> Parser<'lexer> {
@@ -27,6 +24,7 @@ impl<'lexer> Parser<'lexer> {
         Parser {
             lexer,
             cur_token: cur,
+            errors: Vec::new(),
         }
     }
 
@@ -55,7 +53,6 @@ impl<'lexer> Parser<'lexer> {
         // <program> -> <statements>? `Eof`
         // <statements> -> <statement> (`Semi` <statement>)* `Semi`?
         let mut program = Program::new();
-        let mut errors: Vec<ParseError> = Vec::new();
 
         while !self.cur_token_is(&TokenKind::Eof) {
             info!("Parsing statement begining with {}", self.cur_token);
@@ -66,7 +63,7 @@ impl<'lexer> Parser<'lexer> {
                 }
                 Err(err) => {
                     info!("Parser error: {}", err);
-                    errors.push(err);
+                    self.errors.push(err);
                     self.skip_to_next_statement();
                 }
             }
@@ -78,10 +75,47 @@ impl<'lexer> Parser<'lexer> {
 
         program.span.end = self.cur_token.span.end;
 
-        if errors.is_empty() {
+        if self.errors.is_empty() {
             Ok(program)
         } else {
-            Err(errors)
+            Err(self.errors.clone())
+        }
+    }
+
+    fn parse_block(&mut self) -> Result<Block, ParseError> {
+        // <program> -> <statements>? `Eof`
+        // <statements> -> <statement> (`Semi` <statement>)* `Semi`?
+        // <block> -> `LCurly` <statements> `RCurly`
+        let mut block = Block::new();
+        let mut errors: Vec<ParseError> = Vec::new();
+
+        while !self.cur_token_is(&TokenKind::Eof) {
+            info!("(Block) Parsing statement begining with {}", self.cur_token);
+            match self.parse_statement() {
+                Ok(stmt) => {
+                    info!("(Block) Parsed statement: \"{}\"", stmt);
+                    block.statements.push(stmt);
+                }
+                Err(err) => {
+                    info!("(Block) Parser error: {}", err);
+                    errors.push(err);
+                    self.skip_to_next_statement();
+                }
+            }
+
+            if self.cur_token_is(&TokenKind::Semicolon) {
+                self.next_token()
+            };
+        }
+
+        block.span.end = self.cur_token.span.end;
+
+        if self.errors.is_empty() {
+            Ok(block)
+        } else {
+            let last_error = errors.pop().unwrap();
+            self.errors.append(&mut errors);
+            Err(last_error)
         }
     }
 
@@ -91,11 +125,6 @@ impl<'lexer> Parser<'lexer> {
             info!("skip_to_next_statement(): {}", self.cur_token);
             self.next_token();
         }
-    }
-
-    fn parse_block(&mut self) {
-        todo!();
-        // while !matches!(self.cur_token.kind, TokenKind::RCurly | TokenKind::Eof) {}
     }
 
     fn parse_statement(&mut self) -> Result<Statement, ParseError> {

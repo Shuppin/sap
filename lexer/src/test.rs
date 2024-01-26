@@ -1,4 +1,5 @@
-use crate::{token::Token, Lexer, Span, TokenKind};
+use crate::token::Token;
+use crate::{Lexer, Span, TokenKind};
 
 /// Ignore these absoultely cursed macros, they're an internal shorthand
 /// used to reduce the boilerplate needed for writing tests.

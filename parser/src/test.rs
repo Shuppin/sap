@@ -1,4 +1,7 @@
-use presap_ast::{expression::Expression, literal::Literal, statement::Statement, Program};
+use presap_ast::expression::Expression;
+use presap_ast::literal::Literal;
+use presap_ast::statement::Statement;
+use presap_ast::Program;
 use presap_lexer::token::{Span, TokenKind};
 
 use crate::parse;

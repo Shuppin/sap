@@ -40,3 +40,12 @@ pub struct Block {
     pub statements: Vec<Statement>,
     pub span: Span,
 }
+
+impl Block {
+    pub fn new() -> Self {
+        Self {
+            statements: vec![],
+            span: Span { start: 0, end: 0 },
+        }
+    }
+}

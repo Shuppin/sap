@@ -85,9 +85,8 @@ impl<'lexer> Parser<'lexer> {
     }
 
     fn parse_block(&mut self) -> Result<Block, ParseError> {
-        // <program> -> <statements>? `Eof`
+        // <block> -> `LCurly` <statements>? `RCurly`
         // <statements> -> <statement> (`Semi` <statement>)* `Semi`?
-        // <block> -> `LCurly` <statements> `RCurly`
         let mut block = Block::new();
 
         block.span.start = self.cur_token.span.start;

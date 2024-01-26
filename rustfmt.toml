@@ -1,4 +1,5 @@
 # If the unstable features are causing problems, try the following:
+# (https://github.com/rust-lang/rust-analyzer/issues/3627#issuecomment-1030857804)
 # 1) Make sure rustfmt nightly is installed
 #    > `rustup toolchain install nightly`
 # 2) If using vscode, enable rustfmt nightly in your `settings.json`:
@@ -7,6 +8,7 @@
 #       ],
 
 # Stable features
+# better struct initialisation readability
 use_field_init_shorthand = true
 
 # Unstable features

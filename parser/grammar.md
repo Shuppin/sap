@@ -4,9 +4,9 @@ The order of statements is representative of the hierarchy of the AST.
 
 ## Foundation
 
-    <program> -> <statements> `Eof`
+    <program> -> <statements>? `Eof`
 
-    <block> -> `LCurly` <statements> `RCurly`
+    <block> -> `LCurly` <statements>? `RCurly`
 
 
 ## Statements
@@ -67,7 +67,7 @@ The order of statements is representative of the hierarchy of the AST.
 
 ## Aliases
 
-    <statements> -> (<statement> `Semi`)* | <statement>
+    <statements> -> <statement> (`Semi` <statement>)* `Semi`?
 
     <array_index> -> `LBracket` <expression> `RBracket`
 

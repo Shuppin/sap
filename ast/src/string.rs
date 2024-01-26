@@ -52,7 +52,7 @@ impl Display for Statement {
 impl Display for Expression {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
-            Expression::Identifier(Identifier { name: id, .. }) => write!(f, "{}", id),
+            Expression::Identifier(ident) => write!(f, "{}", ident),
             Expression::Literal(l) => write!(f, "{}", l),
             Expression::Unary(Unary {
                 operator, operand, ..
@@ -99,7 +99,25 @@ impl Display for Expression {
                 )
             }
 
-            Expression::FunctionDeclaration(_) => todo!(),
+            Expression::FunctionDeclaration(FunctionDeclaration {
+                parameters, body, ..
+            }) => {
+                let body_block = match body.statements.is_empty() {
+                    true => "{}".to_string(),
+                    false => format!("{{ {} }}", body),
+                };
+
+                write!(
+                    f,
+                    "fn ({}) {}",
+                    parameters
+                        .iter()
+                        .map(|expr| expr.to_string())
+                        .collect::<Vec<String>>()
+                        .join(", "),
+                    body_block
+                )
+            }
             Expression::Array(Array { elements, .. }) => write!(
                 f,
                 "[{}]",
@@ -110,6 +128,12 @@ impl Display for Expression {
                     .join(", ")
             ),
         }
+    }
+}
+
+impl Display for Identifier {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{}", self.name)
     }
 }
 

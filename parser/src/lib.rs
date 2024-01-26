@@ -1,6 +1,7 @@
 use log::info;
 use presap_ast::expression::{
-    Array, Binary, Expression, FunctionCall, Identifier, Index, Selection, Unary,
+    Array, Binary, Expression, FunctionCall, FunctionDeclaration, Identifier, Index, Selection,
+    Unary,
 };
 use presap_ast::literal::Literal;
 use presap_ast::statement::{Let, Return, Statement};
@@ -331,17 +332,6 @@ impl<'lexer> Parser<'lexer> {
         return Ok(node);
     }
 
-    fn parse_expr_list(&mut self) -> Result<Vec<Expression>, ParseError> {
-        // <expr_list> -> <expression> (`,` <expression>)*
-        let mut expressions: Vec<Expression> = Vec::new();
-        expressions.push(self.parse_expression()?);
-        while self.cur_token_is(&TokenKind::Comma) {
-            self.eat(&TokenKind::Comma)?;
-            expressions.push(self.parse_expression()?);
-        }
-        return Ok(expressions);
-    }
-
     fn parse_prefix_expr(&mut self) -> Result<Expression, ParseError> {
         // <prefix_expr> -> (`Not`|`Minus`)* <ident_expr>
 
@@ -399,7 +389,7 @@ impl<'lexer> Parser<'lexer> {
         //                | <literal>
         match &self.cur_token.kind {
             TokenKind::If => self.parse_selection_expr(),
-            // TokenKind::Fn => self.parse_fn_decl_expr(),
+            TokenKind::Fn => self.parse_fn_decl_expr(),
             TokenKind::LBracket => self.parse_array_expr(),
             _ => {
                 let literal = self.parse_literal()?;
@@ -432,7 +422,7 @@ impl<'lexer> Parser<'lexer> {
 
         self.eat(&TokenKind::Else)?;
         let else_conditional_block = self.parse_block()?;
-        let span = Span::new(start, self.cur_token.span.end);
+        let span = Span::new(start, else_conditional_block.span.end);
 
         return Ok(Expression::Selection(Selection {
             condition: Box::new(condition_expr),
@@ -443,7 +433,43 @@ impl<'lexer> Parser<'lexer> {
     }
 
     fn parse_fn_decl_expr(&mut self) -> Result<Expression, ParseError> {
-        todo!()
+        // <fn_decl_expr> -> `Fn` `LParen` <fn_params> `RParen` <block>
+        // <fn_params> -> `LParen` (`Ident` (`,` `Ident`)*)? `RParen`
+        let start = self.cur_token.span.start;
+
+        self.eat(&TokenKind::Fn)?;
+
+        self.eat(&TokenKind::LParen)?;
+        let parameters = match self.cur_token_is(&TokenKind::RParen) {
+            false => {
+                // `Ident` (`,` `Ident`)*
+                let mut identifiers: Vec<Identifier> = Vec::new();
+                let prev_token_kind = self.cur_token.kind.clone();
+                identifiers.push(self.parse_identifier().map_err(|_| {
+                    format!("expected function parameter, got {}", prev_token_kind)
+                })?);
+                while self.cur_token_is(&TokenKind::Comma) {
+                    self.eat(&TokenKind::Comma)?;
+                    let prev_token_kind = self.cur_token.kind.clone();
+                    identifiers.push(self.parse_identifier().map_err(|_| {
+                        format!("expected function parameter, got {}", prev_token_kind)
+                    })?);
+                }
+                identifiers
+            }
+            true => vec![],
+        };
+        self.eat(&TokenKind::RParen)?;
+
+        let body = self.parse_block()?;
+
+        let span = Span::new(start, body.span.end);
+
+        return Ok(Expression::FunctionDeclaration(FunctionDeclaration {
+            parameters,
+            body,
+            span,
+        }));
     }
 
     fn parse_literal(&mut self) -> Result<Literal, ParseError> {
@@ -477,7 +503,7 @@ impl<'lexer> Parser<'lexer> {
                 })
             }
             // TODO: TokenKind::Bool ...
-            _ => Err(format!("Expected Literal, got {}", self.cur_token.kind)),
+            _ => Err(format!("expected Literal, got {}", self.cur_token.kind)),
         }
     }
 
@@ -491,6 +517,17 @@ impl<'lexer> Parser<'lexer> {
         self.next_token();
 
         Ok(Identifier { name, span })
+    }
+
+    fn parse_expr_list(&mut self) -> Result<Vec<Expression>, ParseError> {
+        // <expr_list> -> <expression> (`,` <expression>)*
+        let mut expressions: Vec<Expression> = Vec::new();
+        expressions.push(self.parse_expression()?);
+        while self.cur_token_is(&TokenKind::Comma) {
+            self.eat(&TokenKind::Comma)?;
+            expressions.push(self.parse_expression()?);
+        }
+        return Ok(expressions);
     }
 }
 

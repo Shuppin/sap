@@ -300,3 +300,14 @@ fn parse_if_else_expression() {
     ];
     validate_parse_to_string(&tests);
 }
+
+#[test]
+fn parse_fn_decl_expression() {
+    let tests = [
+        ("fn() {};", "fn () {}"),
+        ("fn(x) {};", "fn (x) {}"),
+        ("fn(x, y, z) { x };", "fn (x, y, z) { x }"),
+        
+    ];
+    validate_parse_to_string(&tests);
+}

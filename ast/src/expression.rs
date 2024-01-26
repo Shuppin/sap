@@ -70,7 +70,6 @@ pub struct Selection {
 #[derive(Debug, Serialize)]
 #[serde(tag = "type")]
 pub struct FunctionDeclaration {
-    pub name: Identifier,
     pub parameters: Vec<Identifier>,
     pub body: Block,
     pub span: Span,

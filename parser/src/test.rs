@@ -226,7 +226,7 @@ fn parse_binary_expression() {
         ("a * b / c", "((a * b) / c)"),
         ("a + b / c", "(a + (b / c))"),
         ("a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"),
-        ("3 + 4; -5 * 5", "(3 + 4), ((-5) * 5)"),
+        ("3 + 4; -5 * 5", "(3 + 4); ((-5) * 5)"),
         ("5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"),
         ("5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"),
         (
@@ -296,6 +296,7 @@ fn parse_if_else_expression() {
             "if x == y { if y == z { x } else { z } } else { if x > z { x } else { z } }",
             "if (x == y) { if (y == z) { x } else { z } } else { if (x > z) { x } else { z } }",
         ),
+        ("if x !=y{}else{}", "if (x != y) {} else {}"),
     ];
     validate_parse_to_string(&tests);
 }

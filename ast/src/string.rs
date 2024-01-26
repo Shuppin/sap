@@ -81,11 +81,24 @@ impl Display for Expression {
                 conditional,
                 else_conditional,
                 ..
-            }) => write!(
-                f,
-                "if {} {{ {} }} else {{ {} }}",
-                condition, conditional, else_conditional
-            ),
+            }) => {
+                let conditional_block = match conditional.statements.is_empty() {
+                    true => "{}".to_string(),
+                    false => format!("{{ {} }}", conditional),
+                };
+
+                let else_conditional_block = match else_conditional.statements.is_empty() {
+                    true => "{}".to_string(),
+                    false => format!("{{ {} }}", else_conditional),
+                };
+
+                write!(
+                    f,
+                    "if {} {} else {}",
+                    condition, conditional_block, else_conditional_block
+                )
+            }
+
             Expression::FunctionDeclaration(_) => todo!(),
             Expression::Array(Array { elements, .. }) => write!(
                 f,

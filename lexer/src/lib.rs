@@ -30,7 +30,7 @@ impl<'lexer> Lexer<'lexer> {
     ///
     /// # Arguments
     ///
-    /// * `input` - The input string to be tokenized.
+    /// * `input` - The input string to be tokenised.
     pub fn new(input: &'lexer str) -> Self {
         let mut lexer = Lexer {
             input: input.chars(),

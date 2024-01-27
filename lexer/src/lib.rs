@@ -80,9 +80,11 @@ impl<'lexer> Lexer<'lexer> {
 
     /// Advances the lexer to the next token in the input stream and returns the token.
     ///
-    /// This function skips any whitespace and comments before identifying the next token.
-    /// The token is represented by a `Token` struct, which contains information about its
-    /// kind (e.g., identifier, operator, literal) and its span in the input stream.
+    /// This function is essentially a large switch statement, containing branches
+    /// corresponding to every token type. This function skips any whitespace and
+    /// comments before identifying the next token. The token is represented by a
+    /// `Token` struct, which contains information about its kind (e.g., identifier,
+    /// operator, literal) and its span in the input stream.
     ///
     /// # Returns
     ///
@@ -94,7 +96,9 @@ impl<'lexer> Lexer<'lexer> {
 
         let start_position = self.position;
 
+        // Determine what type of token we are dealing with.
         let token_kind = match self.chr {
+            // Single character symbols
             '+' => TokenKind::Plus,
             '-' => TokenKind::Minus,
             '*' => TokenKind::Mult,
@@ -113,6 +117,8 @@ impl<'lexer> Lexer<'lexer> {
             ']' => TokenKind::RBracket,
 
             '\0' => TokenKind::Eof,
+
+            // Potentially double character symbols
             '=' => {
                 if self.peek_char() == '=' {
                     self.read_char();
@@ -161,6 +167,8 @@ impl<'lexer> Lexer<'lexer> {
                     TokenKind::Illegal(self.chr.to_string())
                 }
             }
+
+            // String literals
             '"' => {
                 let string = self.read_string();
                 return Token {
@@ -171,6 +179,8 @@ impl<'lexer> Lexer<'lexer> {
                     kind: TokenKind::String(string),
                 };
             }
+
+            // Else, we a dealing with a keyword, identifier, number of an illegal character.
             _ => {
                 if is_letter(self.chr) {
                     let ident = self.read_identifier();
@@ -188,6 +198,9 @@ impl<'lexer> Lexer<'lexer> {
                 }
             }
         };
+
+        // Since every branch advances the character by at least one, we move the function out
+        // here to simplify the syntax.
         self.read_char();
 
         return Token {
@@ -199,6 +212,11 @@ impl<'lexer> Lexer<'lexer> {
         };
     }
 
+    /// Reads a string literal (including quotes) from the current position in the input.
+    ///
+    /// # Returns
+    ///
+    /// A `String` containing the contents of the string literal.
     fn read_string(&mut self) -> String {
         let mut string = String::new();
         // Read opening '"'
@@ -216,6 +234,11 @@ impl<'lexer> Lexer<'lexer> {
         string
     }
 
+    /// Reads an identifier starting from the current character position.
+    ///
+    /// # Returns
+    ///
+    /// A `String` representing the identifier extracted from the input.
     fn read_identifier(&mut self) -> String {
         let mut ident = String::new();
         while is_letter(self.chr) {
@@ -225,6 +248,11 @@ impl<'lexer> Lexer<'lexer> {
         ident
     }
 
+    /// Reads and appends digits to a given string from the current position in the input.
+    ///
+    /// # Arguments
+    ///
+    /// * `number` - A mutable reference to a `String` where the digits are appended.
     fn _read_int(&mut self, number: &mut String) {
         while is_digit(self.chr) {
             number.push(self.chr);
@@ -232,6 +260,16 @@ impl<'lexer> Lexer<'lexer> {
         }
     }
 
+    /// Reads a number from the current position in the input and constructs a `Token`.
+    ///
+    /// This function reads a sequence of digits as an integer. If a decimal point is
+    /// encountered, it continues to read the fractional part, constructing a
+    /// floating-point number.
+    ///
+    /// # Returns
+    ///
+    /// A `Token` representing either an integer or a floating-point number, depending on
+    /// the input.
     fn read_number(&mut self) -> Token {
         let mut number = String::new();
         self._read_int(&mut number);
@@ -256,12 +294,18 @@ impl<'lexer> Lexer<'lexer> {
         };
     }
 
+    /// Skips over any whitespace characters in the current input.
     fn skip_whitespace(&mut self) {
         while matches!(self.chr, ' ' | '\t' | '\n' | '\r') {
             self.read_char();
         }
     }
 
+    /// Skips over a single-line comment (`//`) in the current input.
+    ///
+    /// It reads characters until it reaches the end of the line or the end of the input.
+    ///
+    /// Assumes that the current character (`self.chr`) is the first slash.
     fn skip_comment(&mut self) {
         if self.chr == '/' && self.peek_char() == '/' {
             self.read_char();
@@ -280,10 +324,12 @@ impl<'lexer> Lexer<'lexer> {
     }
 }
 
+/// Serves as a source of truth for the definition of a 'letter'.
 fn is_letter(chr: char) -> bool {
     chr.is_ascii_alphabetic() || chr == '_'
 }
 
+/// Serves as a source of truth for the definition of a 'digit'.
 fn is_digit(chr: char) -> bool {
     chr.is_ascii_digit()
 }

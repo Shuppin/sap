@@ -3,7 +3,7 @@ pub mod literal;
 pub mod statement;
 pub mod string;
 
-use presap_lexer::token::Span;
+use lexer::token::Span;
 use serde::Serialize;
 use statement::Statement;
 

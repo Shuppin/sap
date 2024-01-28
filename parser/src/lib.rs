@@ -1,13 +1,13 @@
-use log::info;
-use presap_ast::expression::{
+use ast::expression::{
     Array, Binary, Expression, FunctionCall, FunctionDeclaration, Identifier, Index, Selection,
     Unary,
 };
-use presap_ast::literal::Literal;
-use presap_ast::statement::{Let, Return, Statement};
-use presap_ast::{Block, GetSpan, Program};
-use presap_lexer::token::{Span, Token, TokenKind};
-use presap_lexer::Lexer;
+use ast::literal::Literal;
+use ast::statement::{Let, Return, Statement};
+use ast::{Block, GetSpan, Program};
+use lexer::token::{Span, Token, TokenKind};
+use lexer::Lexer;
+use log::info;
 
 #[cfg(test)]
 mod test;

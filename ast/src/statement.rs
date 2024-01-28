@@ -1,4 +1,4 @@
-use presap_lexer::token::Span;
+use lexer::token::Span;
 use serde::Serialize;
 
 use crate::expression::{Expression, Identifier};

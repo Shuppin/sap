@@ -1,4 +1,4 @@
-use presap_lexer::token::{Span, TokenKind};
+use lexer::token::{Span, TokenKind};
 use serde::Serialize;
 
 use crate::literal::Literal;

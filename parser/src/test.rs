@@ -1,8 +1,8 @@
-use presap_ast::expression::Expression;
-use presap_ast::literal::Literal;
-use presap_ast::statement::Statement;
-use presap_ast::Program;
-use presap_lexer::token::{Span, TokenKind};
+use ast::expression::Expression;
+use ast::literal::Literal;
+use ast::statement::Statement;
+use ast::Program;
+use lexer::token::{Span, TokenKind};
 
 use crate::parse;
 

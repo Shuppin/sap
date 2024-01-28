@@ -2,8 +2,8 @@
 //! It prompts the user to enter an expression and generates tokens based on the input.
 //! The tokens are then printed to the console until an empty line is entered to exit the
 //! program.
-use presap_lexer::token::TokenKind;
-use presap_lexer::Lexer;
+use lexer::token::TokenKind;
+use lexer::Lexer;
 
 fn main() {
     println!("MR Interactive lexer");

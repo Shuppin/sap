@@ -1,7 +1,7 @@
 pub mod expression;
 pub mod literal;
 pub mod statement;
-pub mod string;
+pub mod tostring;
 
 use lexer::token::Span;
 use serde::Serialize;

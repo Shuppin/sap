@@ -154,14 +154,7 @@ impl<'lexer> Parser<'lexer> {
 
         self.eat(&TokenKind::RCurly)?;
 
-        if self.errors.is_empty() {
-            Ok(block)
-        } else {
-            // Any previous errors have already been added to `self.errors()`.
-            // Here, we pop the last error and return it to initiate the error handling system in
-            // `parse_program()`
-            Err(self.errors.pop().unwrap())
-        }
+        return Ok(block);
     }
 
     /// Advances the current token upto the next semicolon or EOF, without consuming it
@@ -467,7 +460,6 @@ impl<'lexer> Parser<'lexer> {
                     span,
                 })
             }
-            // TODO: TokenKind::Bool ...
             _ => Err(format!("expected Literal, got {}", self.cur_token.kind)),
         }
     }

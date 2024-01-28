@@ -2,9 +2,12 @@
 name = "presap-parser"
 version = "0.1.0"
 edition = "2021"
+default-run = "presap-parser"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 presap-lexer = { path = "../lexer" }
 presap-ast = {path = "../ast"}
+log = "0.4.20"
+simple-logging = "2.0.2"

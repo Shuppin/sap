@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter, Result};
 use crate::expression::*;
 use crate::literal::Literal;
 use crate::statement::{Let, Return, Statement};
-use crate::{Block, Node, Program};
+use crate::{Block, Program};
 
 fn format_items<T: ToString>(items: &Vec<T>) -> String {
     return items
@@ -11,16 +11,6 @@ fn format_items<T: ToString>(items: &Vec<T>) -> String {
         .map(|item| item.to_string())
         .collect::<Vec<String>>()
         .join("; ");
-}
-
-impl Display for Node {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        match self {
-            Node::Program(p) => write!(f, "{}", p),
-            Node::Statement(s) => write!(f, "{}", s),
-            Node::Expression(e) => write!(f, "{}", e),
-        }
-    }
 }
 
 impl Display for Program {

@@ -3,20 +3,12 @@ pub mod literal;
 pub mod statement;
 pub mod string;
 
-use expression::Expression;
 use presap_lexer::token::Span;
 use serde::Serialize;
 use statement::Statement;
 
 pub trait GetSpan {
     fn span(&self) -> &Span;
-}
-
-#[derive(Serialize)]
-pub enum Node {
-    Program(Program),
-    Statement(Statement),
-    Expression(Expression),
 }
 
 #[derive(Debug, Serialize)]

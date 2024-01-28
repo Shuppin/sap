@@ -2,7 +2,6 @@ use std::io::Write;
 
 use log::{error, info, LevelFilter};
 use presap_parser::parse;
-use serde_json;
 
 fn main() {
     simple_logging::log_to_file("runtime.log", LevelFilter::Info).unwrap();
@@ -27,7 +26,7 @@ fn main() {
             Ok(parsed_ast) => {
                 info!(
                     "=== Serialised AST START ===\n{}",
-                    serde_json::to_string_pretty(&parsed_ast).unwrap()
+                    presap_ast::ast_to_json(&parsed_ast).unwrap()
                 );
                 info!("=== Serialised AST END ===");
                 println!("\nParsed as:\n{}", parsed_ast);

@@ -10,5 +10,4 @@ default-run = "presap-parser"
 presap-lexer = { path = "../lexer" }
 presap-ast = {path = "../ast"}
 log = "0.4.20"
-serde_json = "1.0.111"
 simple-logging = "2.0.2"

@@ -243,7 +243,10 @@ fn parse_binary_expression() {
         ("a == b && c", "((a == b) && c)"),
         ("a && b + c", "(a && (b + c))"),
         ("a + b && c", "((a + b) && c)"),
-        ("6 || 5 || 7 && 6 || 9 && 3", "(((6 || 5) || (7 && 6)) || (9 && 3))")
+        (
+            "6 || 5 || 7 && 6 || 9 && 3",
+            "(((6 || 5) || (7 && 6)) || (9 && 3))",
+        ),
     ];
 
     validate_parse_to_string(&tests);
@@ -315,5 +318,61 @@ fn parse_fn_decl_expression() {
         ("fn(x) {};", "fn (x) {}"),
         ("fn(x, y, z) { x };", "fn (x, y, z) { x }"),
     ];
+    validate_parse_to_string(&tests);
+}
+
+#[test]
+fn parse_complex_expression() {
+    let tests = [
+        (
+            "a + b * c == d - e / f && g || h[1] + i(2, 3) * j[4]",
+            "((((a + (b * c)) == (d - (e / f))) && g) || (h[1] + (i(2, 3) * j[4])))",
+        ),
+        (
+            "a + b * c == d - e / f && g || h[1] + i(2, 3) * j[4] && k || l + m * n == o - p / q && r || s[5] + t(6, 7) * u[8]",
+            "((((((a + (b * c)) == (d - (e / f))) && g) || ((h[1] + (i(2, 3) * j[4])) && k)) || (((l + (m * n)) == (o - (p / q))) && r)) || (s[5] + (t(6, 7) * u[8])))",
+        ),
+        (
+            "a + b * c == d - e / f && g || h[1] + i(2, 3) * j[4] && k || l + m * n == o - p / q && r || s[5] + t(6, 7) * u[8] && v || w + x * y == z - aa / bb && cc || dd[9] + ee(10, 11) * ff[12] && gg || hh[13] + ii(14, 15) * jj[16]",
+            "(((((((((a + (b * c)) == (d - (e / f))) && g) || ((h[1] + (i(2, 3) * j[4])) && k)) || (((l + (m * n)) == (o - (p / q))) && r)) || ((s[5] + (t(6, 7) * u[8])) && v)) || (((w + (x * y)) == (z - (aa / bb))) && cc)) || ((dd[9] + (ee(10, 11) * ff[12])) && gg)) || (hh[13] + (ii(14, 15) * jj[16])))",
+        ),
+    ];
+
+    validate_parse_to_string(&tests);
+}
+
+#[test]
+fn parse_complex_program() {
+    let tests = [
+        (
+            r#"let fizzbuzz = fn(n) {
+            if n % 3 == 0 && n % 5 != 0 {
+                print("Fizz");
+            } else {
+                if n % 5 == 0 && n % 3 != 0 {
+                    print("Buzz");
+                } else {
+                    if n % 5 == 0 && n % 3 == 0 {
+                        print("FizzBuzz");
+                    } else {
+                        print(n);
+                    };
+                };
+            };
+        };"#,
+            r#"let fizzbuzz = fn (n) { if (((n % 3) == 0) && ((n % 5) != 0)) { print("Fizz") } else { if (((n % 5) == 0) && ((n % 3) != 0)) { print("Buzz") } else { if (((n % 5) == 0) && ((n % 3) == 0)) { print("FizzBuzz") } else { print(n) } } } }"#,
+        ),
+        (
+            r#"let hello_world = "Hello, world";
+let x = (true||false) && 1==5;
+let y = 2.5;
+1 + 2;
+let ADD = fn (a, b) {
+    return a + b;
+};"#,
+            r#"let hello_world = "Hello, world"; let x = ((true || false) && (1 == 5)); let y = 2.5; (1 + 2); let ADD = fn (a, b) { return (a + b) }"#,
+        ),
+    ];
+
     validate_parse_to_string(&tests);
 }

@@ -29,10 +29,10 @@ impl Display for Statement {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
             Statement::Let(Let { ident, expr, .. }) => {
-                return write!(f, "let {} = {};", ident.name, expr);
+                return write!(f, "let {} = {}", ident.name, expr);
             }
             Statement::Return(Return { value, .. }) => {
-                write!(f, "return {};", value)
+                write!(f, "return {}", value)
             }
             Statement::Expression(expr) => write!(f, "{}", expr),
         }

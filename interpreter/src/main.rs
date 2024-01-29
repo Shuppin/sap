@@ -20,7 +20,10 @@ fn main() {
         match parse(&input) {
             Ok(parsed_ast) => {
                 let evaluation = eval(parsed_ast);
-                println!("{}", evaluation);
+                match evaluation {
+                    Ok(value) => println!("{}", value),
+                    Err(err) => println!("{}", err.message),
+                }
             }
             Err(err) => {
                 println!("Parser generated {} error(s): {:#?}", err.len(), err);

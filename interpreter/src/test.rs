@@ -36,7 +36,7 @@ fn eval_boolean_literals() {
 fn eval_prefix_operations() {
     let tests = [
         ("!true", false),
-        ("!false", false),
+        ("!false", true),
         ("!!true", true),
         ("!5", false),
         ("!0", true),

@@ -9,4 +9,5 @@ default-run = "interpreter"
 [dependencies]
 ast = { version = "0.1.0", path = "../ast" }
 core = { version = "0.1.0", path = "../core" }
+lexer = { version = "1.0.0", path = "../lexer" }
 parser = { version = "0.1.0", path = "../parser" }

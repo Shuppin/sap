@@ -46,7 +46,7 @@ The order of statements is representative of the hierarchy of the AST.
     Mono operations (not really operating on anything tho, could be an entity?)
         <ident_expr> -> `Ident` | <group_expr>
 
-        <group_expr> -> `LParen` <expression> `RParen`
+        <group_expr> -> (`LParen` <expression> `RParen`) | <entity_expr>
 
     Entities
         <entity_expr> -> <selection_expr>

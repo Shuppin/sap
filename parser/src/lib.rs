@@ -329,7 +329,7 @@ impl<'lexer> Parser<'lexer> {
     }
 
     fn parse_group_expr(&mut self) -> Result<Expression, ParseError> {
-        // <group_expr> -> (`LParen` <expression> `RParen`) | <entity_expr>
+        // <group_expr> -> (`LParen` <expression>? `RParen`) | <entity_expr>
         if self.cur_token_is(&TokenKind::LParen) {
             self.eat(&TokenKind::LParen)?;
             let expr = self.parse_expression()?;

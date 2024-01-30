@@ -22,7 +22,7 @@ fn main() {
                 let evaluation = eval(parsed_ast);
                 match evaluation {
                     Ok(value) => println!("{}", value),
-                    Err(err) => println!("{}", err.message),
+                    Err(err) => println!("{:?}: {}", err.kind, err.message),
                 }
             }
             Err(err) => {

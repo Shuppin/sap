@@ -25,12 +25,12 @@ impl Value {
         }
     }
 
-    pub fn eq(&self, other: &Self) -> Result<Value, Error> {
+    pub fn eq(&self, other: &Self) -> Result<Self, Error> {
         match (self, other) {
-            (Self::Integer(a), Self::Integer(b)) => Ok(Value::Boolean(*a == *b)),
-            (Self::Float(a), Self::Float(b)) => Ok(Value::Boolean(*a == *b)),
-            (Self::Boolean(a), Self::Boolean(b)) => Ok(Value::Boolean(*a == *b)),
-            (Self::Null, Self::Null) => Ok(Value::Boolean(true)),
+            (Self::Integer(a), Self::Integer(b)) => Ok(Self::Boolean(*a == *b)),
+            (Self::Float(a), Self::Float(b)) => Ok(Self::Boolean(*a == *b)),
+            (Self::Boolean(a), Self::Boolean(b)) => Ok(Self::Boolean(*a == *b)),
+            (Self::Null, Self::Null) => Ok(Self::Boolean(true)),
             _ => error!(
                 ErrorKind::TypeError,
                 "invalid operation '==' between {} and {}",
@@ -40,7 +40,7 @@ impl Value {
         }
     }
 
-    pub fn ne(&self, other: &Self) -> Result<Value, Error> {
+    pub fn ne(&self, other: &Self) -> Result<Self, Error> {
         match self.eq(other) {
             Ok(value) => !value,
             Err(mut old_err) => {
@@ -54,7 +54,7 @@ impl Value {
         }
     }
 
-    pub fn and(self, other: &Self) -> Result<Value, Error> {
+    pub fn and(self, other: &Self) -> Result<Self, Error> {
         match (&self, &other) {
             (Self::Boolean(a), Self::Boolean(b)) => Ok(Self::Boolean(*a && *b)),
             _ => error!(
@@ -66,7 +66,7 @@ impl Value {
         }
     }
 
-    pub fn or(self, other: &Self) -> Result<Value, Error> {
+    pub fn or(self, other: &Self) -> Result<Self, Error> {
         match (&self, &other) {
             (Self::Boolean(a), Self::Boolean(b)) => Ok(Self::Boolean(*a || *b)),
             _ => error!(
@@ -91,10 +91,10 @@ impl Value {
 macro_rules! impl_comparison_op {
     ($method_name:ident, $op:tt, $ordering:pat) => {
         impl Value {
-            pub fn $method_name(&self, other: &Self) -> Result<Value, Error> {
+            pub fn $method_name(&self, other: &Self) -> Result<Self, Error> {
                 match self.compare(other) {
-                    Some($ordering) => Ok(Value::Boolean(true)),
-                    Some(_) => Ok(Value::Boolean(false)),
+                    Some($ordering) => Ok(Self::Boolean(true)),
+                    Some(_) => Ok(Self::Boolean(false)),
                     None => error!(
                         ErrorKind::TypeError,
                         "invalid operation '{}' between {} and {}",

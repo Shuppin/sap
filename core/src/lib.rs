@@ -25,6 +25,20 @@ impl Value {
         }
     }
 
+    pub fn to_boolean(&self) -> Result<Self, Error> {
+        match self {
+            Self::Integer(i) => Ok(Self::Boolean(*i != 0)),
+            Self::Float(f) => Ok(Self::Boolean(*f != 0.0)),
+            Self::Boolean(b) => Ok(Self::Boolean(*b)),
+            Self::Null => error!(
+                ErrorKind::TypeError,
+                "cannot convert {} to {}",
+                self.variant_name(),
+                Self::Null.variant_name()
+            ),
+        }
+    }
+
     pub fn eq(&self, other: &Self) -> Result<Self, Error> {
         match (self, other) {
             (Self::Integer(a), Self::Integer(b)) => Ok(Self::Boolean(*a == *b)),

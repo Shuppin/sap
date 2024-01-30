@@ -1,7 +1,7 @@
 use core::error::Error;
 use core::Value;
 
-use ast::expression::{Binary, Expression, Unary};
+use ast::expression::{Binary, Expression, Selection, Unary};
 use ast::literal::Literal;
 use ast::statement::Statement;
 use ast::Program;
@@ -11,8 +11,12 @@ use lexer::token::TokenKind;
 mod test;
 
 pub fn eval(ast: Program) -> Result<Value, Error> {
+    eval_statements(&ast.statements)
+}
+
+fn eval_statements(statements: &Vec<Statement>) -> Result<Value, Error> {
     let mut value = Value::Null;
-    for statement in ast.statements {
+    for statement in statements {
         value = eval_statement(&statement)?;
     }
     return Ok(value);
@@ -30,7 +34,24 @@ fn eval_expression(expression: &Expression) -> Result<Value, Error> {
         Expression::Literal(literal) => eval_literal(literal),
         Expression::Unary(unary) => eval_unary_expression(unary),
         Expression::Binary(binary) => eval_binary_expression(binary),
+        Expression::Selection(selection) => eval_selection_expression(selection),
         _ => todo!(),
+    }
+}
+
+fn eval_selection_expression(selection: &Selection) -> Result<Value, Error> {
+    let condition = eval_expression(&selection.condition)?.to_boolean()?;
+    match condition {
+        Value::Boolean(b) => {
+            if b {
+                eval_statements(&selection.conditional.statements)
+            } else if let Some(else_conditional) = &selection.else_conditional {
+                eval_statements(&else_conditional.statements)
+            } else {
+                Ok(Value::Null)
+            }
+        }
+        _ => unreachable!(),
     }
 }
 

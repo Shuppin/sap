@@ -146,7 +146,7 @@ fn eval_infix_boolean_expressions() {
         ("true || false || false", true),
         ("false || true || false", true),
         ("false || false || true", true),
-        ("false || false || false", false)
+        ("false || false || false", false),
     ];
 
     for (input, expected_output) in tests {
@@ -154,5 +154,23 @@ fn eval_infix_boolean_expressions() {
             Value::Boolean(b) => assert_eq!(b, expected_output),
             _ => panic!("Unexpected value"),
         }
+    }
+}
+
+#[test]
+fn eval_if_else_expressions() {
+    let tests = [
+        ("if (true) { 10 }", Value::Integer(10)),
+        ("if (false) { 10 }", Value::Null),
+        ("if (1) { 10 }", Value::Integer(10)),
+        ("if (1 < 2) { 10 }", Value::Integer(10)),
+        ("if (1 > 2) { 10 }", Value::Null),
+        ("if (1 > 2) { 10 } else { 20 }", Value::Integer(20)),
+        ("if (1 < 2) { 10 } else { 20 }", Value::Integer(10)),
+    ];
+
+    for (input, expected_output) in tests {
+        let eval = eval(input);
+        assert_eq!(eval, expected_output)
     }
 }

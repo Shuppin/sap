@@ -1,7 +1,7 @@
 #[macro_export]
-macro_rules! error {
+macro_rules! err {
     ($kind:expr, $($arg:tt)*) => {{
-        Err($crate::Error::new(&format!($($arg)*), $kind))
+        Err($crate::error::Error::new(&format!($($arg)*), $kind))
     }}
 }
 

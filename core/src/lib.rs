@@ -31,11 +31,11 @@ impl Value {
             Self::Integer(i) => Ok(Self::Boolean(i != 0)),
             Self::Float(f) => Ok(Self::Boolean(f != 0.0)),
             Self::Boolean(_) => Ok(self),
-            Self::Null => error!(
+            _ => err!(
                 ErrorKind::TypeError,
                 "cannot convert {} to {}",
                 self.variant_name(),
-                Self::Null.variant_name()
+                Self::Boolean(true).variant_name() // i hate this i hate this i hate this
             ),
         }
     }
@@ -46,7 +46,7 @@ impl Value {
             (Self::Float(a), Self::Float(b)) => Ok(Self::Boolean(*a == *b)),
             (Self::Boolean(a), Self::Boolean(b)) => Ok(Self::Boolean(*a == *b)),
             (Self::Null, Self::Null) => Ok(Self::Boolean(true)),
-            _ => error!(
+            _ => err!(
                 ErrorKind::TypeError,
                 "invalid operation '==' between {} and {}",
                 self.variant_name(),
@@ -72,7 +72,7 @@ impl Value {
     pub fn and(self, other: &Self) -> Result<Self, Error> {
         match (&self, &other) {
             (Self::Boolean(a), Self::Boolean(b)) => Ok(Self::Boolean(*a && *b)),
-            _ => error!(
+            _ => err!(
                 ErrorKind::TypeError,
                 "invalid operation '&&' between {} and {}",
                 self.variant_name(),
@@ -84,7 +84,7 @@ impl Value {
     pub fn or(self, other: &Self) -> Result<Self, Error> {
         match (&self, &other) {
             (Self::Boolean(a), Self::Boolean(b)) => Ok(Self::Boolean(*a || *b)),
-            _ => error!(
+            _ => err!(
                 ErrorKind::TypeError,
                 "invalid operation '&&' between {} and {}",
                 self.variant_name(),
@@ -110,7 +110,7 @@ macro_rules! impl_comparison_op {
                 match self.compare(other) {
                     Some($ordering) => Ok(Self::Boolean(true)),
                     Some(_) => Ok(Self::Boolean(false)),
-                    None => error!(
+                    None => err!(
                         ErrorKind::TypeError,
                         "invalid operation '{}' between {} and {}",
                         stringify!($op),
@@ -144,7 +144,7 @@ macro_rules! impl_binary_arithmetic_op {
                         Ok(Self::Integer(a.$integer_op(*b).ok_or(overflow_error)?))
                     },
                     (Self::Float(a), Self::Float(b)) => Ok(Self::Float(a $float_op b)),
-                    _ => error!(
+                    _ => err!(
                         ErrorKind::TypeError,
                         "invalid operation '{}' between {} and {}",
                         stringify!($float_op),
@@ -168,7 +168,7 @@ impl std::ops::Div for Value {
         // Check for division by zero
         #[allow(illegal_floating_point_literal_pattern)]
         if matches!(&other, Self::Integer(0) | Self::Float(0.0)) {
-            return error!(ErrorKind::DivisionByZero, "cannot divide by zero");
+            return err!(ErrorKind::DivisionByZero, "cannot divide by zero");
         }
 
         let overflow_error = error::Error::new(
@@ -181,7 +181,7 @@ impl std::ops::Div for Value {
                 Ok(Self::Integer(a.checked_div(*b).ok_or(overflow_error)?))
             }
             (Self::Float(a), Self::Float(b)) => Ok(Self::Float(a / b)),
-            _ => error!(
+            _ => err!(
                 ErrorKind::TypeError,
                 "invalid operation '/' between {} and {}",
                 self.variant_name(),
@@ -198,7 +198,7 @@ impl std::ops::Neg for Value {
         match self {
             Self::Integer(n) => Ok(Self::Integer(-n)),
             Self::Float(n) => Ok(Self::Float(-n)),
-            _ => error!(
+            _ => err!(
                 ErrorKind::TypeError,
                 "invalid operation '-' for type {}",
                 self.variant_name(),
@@ -213,7 +213,7 @@ impl std::ops::Not for Value {
     fn not(self) -> Self::Output {
         match self {
             Self::Boolean(b) => Ok(Self::Boolean(!b)),
-            _ => error!(
+            _ => err!(
                 ErrorKind::TypeError,
                 "invalid operation '!' for type {}",
                 self.variant_name(),

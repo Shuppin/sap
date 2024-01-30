@@ -25,11 +25,12 @@ impl Value {
         }
     }
 
-    pub fn to_boolean(&self) -> Result<Self, Error> {
+    // We don't borrow self here because a conversion should consume the original instance
+    pub fn to_boolean(self) -> Result<Self, Error> {
         match self {
-            Self::Integer(i) => Ok(Self::Boolean(*i != 0)),
-            Self::Float(f) => Ok(Self::Boolean(*f != 0.0)),
-            Self::Boolean(b) => Ok(Self::Boolean(*b)),
+            Self::Integer(i) => Ok(Self::Boolean(i != 0)),
+            Self::Float(f) => Ok(Self::Boolean(f != 0.0)),
+            Self::Boolean(_) => Ok(self),
             Self::Null => error!(
                 ErrorKind::TypeError,
                 "cannot convert {} to {}",

@@ -54,7 +54,7 @@ The order of statements is representative of the hierarchy of the AST.
                     | <array_expr>
                     | <literal>
 
-        <selection_expr> -> `If` <expr> <block> `Else` <block>
+        <selection_expr> -> `If` <expr> <block> (`Else` <block>)?
 
         <fn_decl_expr> -> `Fn` `LParen` <fn_params> `RParen` <block>
 

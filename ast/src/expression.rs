@@ -63,7 +63,7 @@ pub struct Binary {
 pub struct Selection {
     pub condition: Box<Expression>,
     pub conditional: Block,
-    pub else_conditional: Block,
+    pub else_conditional: Option<Block>,
     pub span: Span,
 }
 

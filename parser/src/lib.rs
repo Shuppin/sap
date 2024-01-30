@@ -371,16 +371,22 @@ impl<'lexer> Parser<'lexer> {
     }
 
     fn parse_selection_expr(&mut self) -> Result<Expression, ParseError> {
-        // <selection_expr> -> `If` <expr> <block> `Else` <block>
+        // <selection_expr> -> `If` <expr> <block> (`Else` <block>)?
         let start = self.cur_token.span.start;
 
         self.eat(&TokenKind::If)?;
         let condition_expr = self.parse_expression()?;
         let conditional_block = self.parse_block()?;
 
-        self.eat(&TokenKind::Else)?;
-        let else_conditional_block = self.parse_block()?;
-        let span = Span::new(start, else_conditional_block.span.end);
+        let (else_conditional_block, span) = if self.cur_token_is(&TokenKind::Else) {
+            self.eat(&TokenKind::Else)?;
+            let else_conditional_block = self.parse_block()?;
+            let span = Span::new(start, else_conditional_block.span.end);
+            (Some(else_conditional_block), span)
+        } else {
+            let span = Span::new(start, conditional_block.span.end);
+            (None, span)
+        };
 
         return Ok(Expression::Selection(Selection {
             condition: Box::new(condition_expr),

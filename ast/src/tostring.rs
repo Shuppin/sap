@@ -72,20 +72,23 @@ impl Display for Expression {
                 else_conditional,
                 ..
             }) => {
-                let conditional_block = match conditional.statements.is_empty() {
+                let conditional_str = match conditional.statements.is_empty() {
                     true => "{}".to_string(),
                     false => format!("{{ {} }}", conditional),
                 };
 
-                let else_conditional_block = match else_conditional.statements.is_empty() {
-                    true => "{}".to_string(),
-                    false => format!("{{ {} }}", else_conditional),
+                let else_conditional_str = match else_conditional {
+                    Some(else_conditional) => match else_conditional.statements.is_empty() {
+                        true => " else {}".to_string(),
+                        false => format!(" else {{ {} }}", else_conditional),
+                    },
+                    None => "".to_string(),
                 };
 
                 write!(
                     f,
-                    "if {} {} else {}",
-                    condition, conditional_block, else_conditional_block
+                    "if {} {}{}",
+                    condition, conditional_str, else_conditional_str
                 )
             }
 

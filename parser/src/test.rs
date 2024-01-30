@@ -307,6 +307,12 @@ fn parse_if_else_expression() {
             "if (x == y) { if (y == z) { x } else { z } } else { if (x > z) { x } else { z } }",
         ),
         ("if x !=y{}else{}", "if (x != y) {} else {}"),
+        ("if x < y { x }", "if (x < y) { x }"),
+        ("if x > y { x }", "if (x > y) { x }"),
+        ("if x == y { x }", "if (x == y) { x }"),
+        ("if x != y { x }", "if (x != y) { x }"),
+        ("if true { x }", "if true { x }"),
+        ("if false { x }", "if false { x }"),
     ];
     validate_parse_to_string(&tests);
 }

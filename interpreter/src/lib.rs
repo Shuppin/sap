@@ -51,12 +51,10 @@ fn eval_statements(statements: &Vec<Statement>) -> EvalOutcome {
 
 fn eval_fn_block(statements: &Vec<Statement>) -> EvalOutcome {
     // A fn block will unwrap return values and just return the inner value
-    match eval_statements(statements) {
-        ControlFlow::Continue(value) => ControlFlow::Continue(value),
+    let eval = eval_statements(statements);
+    match eval {
         ControlFlow::Break(TraversalBreak::ReturnValue(value)) => ControlFlow::Continue(value),
-        ControlFlow::Break(TraversalBreak::Error(error)) => {
-            ControlFlow::Break(TraversalBreak::Error(error))
-        }
+        _ => eval,
     }
 }
 

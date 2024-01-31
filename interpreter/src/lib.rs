@@ -8,6 +8,8 @@ use ast::statement::{Return, Statement};
 use ast::Program;
 use lexer::token::TokenKind;
 
+mod runtime;
+
 #[cfg(test)]
 mod test;
 

@@ -4,7 +4,6 @@ use error::{Error, ErrorKind};
 
 pub mod error;
 
-#[cfg(test)]
 mod test;
 
 #[derive(Debug, PartialEq)]

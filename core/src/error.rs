@@ -5,7 +5,7 @@ macro_rules! err {
     }}
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Error {
     pub message: String,
     pub kind: ErrorKind,
@@ -20,7 +20,7 @@ impl Error {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ErrorKind {
     TypeError,
     DivisionByZero,

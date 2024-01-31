@@ -66,8 +66,8 @@ pub enum TokenKind {
 
     // Value holders
     Identifier { name: String },
-    Int(i64),
-    Float(f64),
+    Int(String),
+    Float(String),
     String(String),
 
     // Arithmetic operators

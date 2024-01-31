@@ -34,7 +34,7 @@ macro_rules! int {
                 start: $start,
                 end: $end,
             },
-            kind: TokenKind::Int($value),
+            kind: TokenKind::Int($value.to_string()),
         }
     };
 }
@@ -46,7 +46,7 @@ macro_rules! float {
                 start: $start,
                 end: $end,
             },
-            kind: TokenKind::Float($value),
+            kind: TokenKind::Float($value.to_string()),
         }
     };
 }

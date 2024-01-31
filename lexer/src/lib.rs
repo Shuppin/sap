@@ -282,7 +282,7 @@ impl<'lexer> Lexer<'lexer> {
                     start: self.position - number.len(),
                     end: self.position,
                 },
-                kind: TokenKind::Float(number.parse().unwrap()),
+                kind: TokenKind::Float(number),
             };
         }
         return Token {
@@ -290,7 +290,7 @@ impl<'lexer> Lexer<'lexer> {
                 start: self.position - number.len(),
                 end: self.position,
             },
-            kind: TokenKind::Int(number.parse().unwrap()),
+            kind: TokenKind::Int(number),
         };
     }
 

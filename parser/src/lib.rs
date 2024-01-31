@@ -1,3 +1,5 @@
+use std::num::IntErrorKind;
+
 use ast::expression::{
     Array, Binary, Expression, FunctionCall, FunctionDeclaration, Identifier, Index, Selection,
     Unary,
@@ -445,11 +447,28 @@ impl<'lexer> Parser<'lexer> {
         match &self.cur_token.kind.clone() {
             TokenKind::Int(n) => {
                 self.next_token();
-                Ok(Literal::Integer { value: *n, span })
+                match n.parse::<i64>() {
+                    Ok(n) => Ok(Literal::Integer { value: n, span }),
+                    Err(err) => {
+                        let message = match err.kind() {
+                            IntErrorKind::PosOverflow => format!(
+                                "literal to large for type Integer, whose maximum value is `{}`",
+                                i64::MAX
+                            ),
+                            _ => format!("failed to parse literal into Integer"),
+                        };
+                        return Err(message);
+                    }
+                }
             }
             TokenKind::Float(n) => {
                 self.next_token();
-                Ok(Literal::Float { value: *n, span })
+                match n.parse::<f64>() {
+                    Ok(n) => Ok(Literal::Float { value: n, span }),
+                    Err(_) => {
+                        return Err("failed to parse literal into Float".to_string());
+                    }
+                }
             }
             TokenKind::True => {
                 self.next_token();

@@ -1,3 +1,4 @@
+use core::error::{Error, ErrorKind};
 use core::Value;
 
 fn eval(input: &str) -> Value {
@@ -172,5 +173,17 @@ fn eval_if_else_expressions() {
     for (input, expected_output) in tests {
         let eval = eval(input);
         assert_eq!(eval, expected_output)
+    }
+}
+
+#[test]
+fn eval_err_return_outside_function() {
+    let err = crate::eval(parser::parse("return 10;").expect("parse() failed"));
+    match err {
+        Ok(_) => panic!("Return outside fn did not error"),
+        Err(err) => assert_eq!(
+            err,
+            Error::new("'return' used outside of function", ErrorKind::TypeError)
+        ),
     }
 }

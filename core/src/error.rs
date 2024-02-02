@@ -5,7 +5,7 @@ macro_rules! err {
     }}
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Error {
     pub message: String,
     pub kind: ErrorKind,
@@ -20,10 +20,23 @@ impl Error {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum ErrorKind {
     TypeError,
     DivisionByZero,
     OverflowError,
-    // TODO: Include parser errors
+    ParserError,
+}
+
+impl std::fmt::Display for ErrorKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            ErrorKind::TypeError => "TypeError",
+            ErrorKind::DivisionByZero => "DivisionByZero",
+            ErrorKind::OverflowError => "OverflowError",
+            ErrorKind::ParserError => "ParserError",
+        };
+
+        write!(f, "{}", s)
+    }
 }

@@ -23,6 +23,7 @@ impl Error {
 #[derive(Debug, PartialEq, Clone)]
 pub enum ErrorKind {
     TypeError,
+    NameError,
     DivisionByZero,
     OverflowError,
     ParserError,
@@ -32,6 +33,7 @@ impl std::fmt::Display for ErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
             ErrorKind::TypeError => "TypeError",
+            ErrorKind::NameError => "NameError",
             ErrorKind::DivisionByZero => "DivisionByZero",
             ErrorKind::OverflowError => "OverflowError",
             ErrorKind::ParserError => "ParserError",

@@ -1,11 +1,14 @@
 use std::io::Write;
 
-use interpreter::eval;
+use interpreter::Interpreter;
 use parser::parse;
 
 fn main() {
     println!("MR REPL");
     println!("Enter an expression to evaluate, or an empty line to exit.");
+
+    let mut interpreter = Interpreter::new();
+
     loop {
         let mut input = String::new();
         print!("> ");
@@ -19,7 +22,7 @@ fn main() {
 
         match parse(&input) {
             Ok(parsed_ast) => {
-                let evaluation = eval(parsed_ast);
+                let evaluation = interpreter.eval_program(parsed_ast);
                 match evaluation {
                     Ok(value) => println!("{}", value),
                     Err(err) => println!("{:?}: {}", err.kind, err.message),

@@ -1,8 +1,14 @@
 use core::error::{Error, ErrorKind};
 use core::Value;
+use std::rc::Rc;
 
-fn eval(input: &str) -> Value {
-    crate::eval(parser::parse(input).expect("parse() failed")).expect("eval() failed")
+use crate::Interpreter;
+
+fn eval(input: &str) -> Rc<Value> {
+    let mut interpreter = Interpreter::new();
+    interpreter
+        .eval_program(parser::parse(input).expect("parse() failed"))
+        .expect("eval() failed")
 }
 
 #[test]
@@ -14,7 +20,7 @@ fn eval_integer_literals() {
     ];
 
     for (input, expected_output) in tests {
-        match eval(input) {
+        match *eval(input) {
             Value::Integer(n) => assert_eq!(n, expected_output),
             _ => panic!("Unexpected value"),
         }
@@ -26,7 +32,7 @@ fn eval_boolean_literals() {
     let tests = [("true", true), ("false", false)];
 
     for (input, expected_output) in tests {
-        match eval(input) {
+        match *eval(input) {
             Value::Boolean(b) => assert_eq!(b, expected_output),
             _ => panic!("Unexpected value"),
         }
@@ -35,7 +41,7 @@ fn eval_boolean_literals() {
 
 #[test]
 fn eval_null() {
-    assert_eq!(eval(""), Value::Null);
+    assert_eq!(*eval(""), Value::Null);
 }
 
 #[test]
@@ -43,7 +49,7 @@ fn eval_not_operations() {
     let tests = [("!true", false), ("!false", true), ("!!true", true)];
 
     for (input, expected_output) in tests {
-        match eval(input) {
+        match *eval(input) {
             Value::Boolean(b) => assert_eq!(b, expected_output),
             _ => panic!("Unexpected value"),
         }
@@ -63,7 +69,7 @@ fn eval_negate_operations() {
 
     for (input, expected_output) in tests {
         let eval = eval(input);
-        assert_eq!(eval, expected_output)
+        assert_eq!(*eval, expected_output)
     }
 }
 
@@ -87,7 +93,7 @@ fn eval_infix_integer_expressions() {
     ];
 
     for (input, expected_output) in tests {
-        match eval(input) {
+        match *eval(input) {
             Value::Integer(n) => assert_eq!(n, expected_output),
             _ => panic!("Unexpected value"),
         }
@@ -111,7 +117,7 @@ fn eval_infix_comp_expressions() {
     ];
 
     for (input, expected_output) in tests {
-        match eval(input) {
+        match *eval(input) {
             Value::Boolean(b) => assert_eq!(b, expected_output),
             _ => panic!("Unexpected value"),
         }
@@ -151,7 +157,7 @@ fn eval_infix_boolean_expressions() {
     ];
 
     for (input, expected_output) in tests {
-        match eval(input) {
+        match *eval(input) {
             Value::Boolean(b) => assert_eq!(b, expected_output),
             _ => panic!("Unexpected value"),
         }
@@ -172,18 +178,36 @@ fn eval_if_else_expressions() {
 
     for (input, expected_output) in tests {
         let eval = eval(input);
-        assert_eq!(eval, expected_output)
+        assert_eq!(*eval, expected_output)
     }
 }
 
 #[test]
 fn eval_err_return_outside_function() {
-    let err = crate::eval(parser::parse("return 10;").expect("parse() failed"));
+    let mut interpreter = Interpreter::new();
+    let err = interpreter.eval_program(parser::parse("return 10;").expect("parse() failed"));
     match err {
         Ok(_) => panic!("Return outside fn did not error"),
         Err(err) => assert_eq!(
             err,
             Error::new("'return' used outside of function", ErrorKind::TypeError)
         ),
+    }
+}
+
+#[test]
+fn eval_let_statements() {
+    let tests = [
+        ("let a = 5; a;", 5),
+        ("let a = 5 * 5; a;", 25),
+        ("let a = 5; let b = a; b;", 5),
+        ("let a = 5; let b = a; let c = a + b + 5; c;", 15),
+    ];
+
+    for (input, expected_output) in tests {
+        match *eval(input) {
+            Value::Integer(n) => assert_eq!(n, expected_output),
+            _ => panic!("Unexpected value"),
+        }
     }
 }

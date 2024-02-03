@@ -14,6 +14,50 @@ pub enum Value {
     Null,
 }
 
+macro_rules! generate_comparison_op {
+    ($method_name:ident, $op:tt, $ordering:pat) => {
+        pub fn $method_name(&self, other: &Self) -> Result<Self, Error> {
+            match self.compare(other) {
+                Some($ordering) => Ok(Self::Boolean(true)),
+                Some(_) => Ok(Self::Boolean(false)),
+                None => err!(
+                    ErrorKind::TypeError,
+                    "invalid operation '{}' between {} and {}",
+                    stringify!($op),
+                    self.variant_name(),
+                    other.variant_name()
+                ),
+            }
+        }
+    };
+}
+
+macro_rules! generate_binary_arithmetic_op {
+    ($method:ident, $integer_op:tt, $float_op:tt) => {
+        pub fn $method(&self, other: &Self) -> Result<Self, Error> {
+
+            let overflow_error = error::Error::new(
+                "this arithmetic operation overflows",
+                ErrorKind::OverflowError
+            );
+
+            match (&self, &other) {
+                (Self::Integer(a), Self::Integer(b)) => {
+                    Ok(Self::Integer(a.$integer_op(*b).ok_or(overflow_error)?))
+                },
+                (Self::Float(a), Self::Float(b)) => Ok(Self::Float(a $float_op b)),
+                _ => err!(
+                    ErrorKind::TypeError,
+                    "invalid operation '{}' between {} and {}",
+                    stringify!($float_op),
+                    self.variant_name(),
+                    other.variant_name()
+                ),
+            }
+        }
+    };
+}
+
 impl Value {
     fn variant_name(&self) -> &'static str {
         match &self {
@@ -24,18 +68,32 @@ impl Value {
         }
     }
 
-    // We don't borrow self here because a conversion should consume the original instance
-    pub fn to_boolean(self) -> Result<Self, Error> {
+    // region: type coercion
+
+    pub fn to_boolean(&self) -> Result<Self, Error> {
         match self {
-            Self::Integer(i) => Ok(Self::Boolean(i != 0)),
-            Self::Float(f) => Ok(Self::Boolean(f != 0.0)),
-            Self::Boolean(_) => Ok(self),
+            Self::Integer(i) => Ok(Self::Boolean(*i != 0)),
+            Self::Float(f) => Ok(Self::Boolean(*f != 0.0)),
+            Self::Boolean(b) => Ok(Self::Boolean(*b)),
             _ => err!(
                 ErrorKind::TypeError,
                 "cannot convert {} to {}",
                 self.variant_name(),
                 Self::Boolean(true).variant_name() // i hate this i hate this i hate this
             ),
+        }
+    }
+
+    // endregion: type coercion
+
+    // region: comparitive operations
+
+    fn compare(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match (self, other) {
+            (Self::Integer(a), Self::Integer(b)) => a.partial_cmp(b),
+            (Self::Float(a), Self::Float(b)) => a.partial_cmp(b),
+            (Self::Boolean(a), Self::Boolean(b)) => a.partial_cmp(b),
+            _ => None,
         }
     }
 
@@ -56,7 +114,7 @@ impl Value {
 
     pub fn ne(&self, other: &Self) -> Result<Self, Error> {
         match self.eq(other) {
-            Ok(value) => !value,
+            Ok(value) => value.not(),
             Err(mut old_err) => {
                 old_err.message = format!(
                     "invalid operation '!=' between {} and {}",
@@ -68,7 +126,27 @@ impl Value {
         }
     }
 
-    pub fn and(self, other: &Self) -> Result<Self, Error> {
+    generate_comparison_op!(lt, >, std::cmp::Ordering::Less);
+    generate_comparison_op!(le, >=, std::cmp::Ordering::Less | std::cmp::Ordering::Equal);
+    generate_comparison_op!(gt, <, std::cmp::Ordering::Greater);
+    generate_comparison_op!(ge, <=, std::cmp::Ordering::Greater | std::cmp::Ordering::Equal);
+
+    // endregion: comparitive operations
+
+    // region: boolean operations
+
+    pub fn not(&self) -> Result<Self, Error> {
+        match self {
+            Self::Boolean(b) => Ok(Self::Boolean(!b)),
+            _ => err!(
+                ErrorKind::TypeError,
+                "invalid operation '!' for type {}",
+                self.variant_name(),
+            ),
+        }
+    }
+
+    pub fn and(&self, other: &Self) -> Result<Self, Error> {
         match (&self, &other) {
             (Self::Boolean(a), Self::Boolean(b)) => Ok(Self::Boolean(*a && *b)),
             _ => err!(
@@ -80,7 +158,7 @@ impl Value {
         }
     }
 
-    pub fn or(self, other: &Self) -> Result<Self, Error> {
+    pub fn or(&self, other: &Self) -> Result<Self, Error> {
         match (&self, &other) {
             (Self::Boolean(a), Self::Boolean(b)) => Ok(Self::Boolean(*a || *b)),
             _ => err!(
@@ -92,78 +170,16 @@ impl Value {
         }
     }
 
-    fn compare(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        match (self, other) {
-            (Self::Integer(a), Self::Integer(b)) => a.partial_cmp(b),
-            (Self::Float(a), Self::Float(b)) => a.partial_cmp(b),
-            (Self::Boolean(a), Self::Boolean(b)) => a.partial_cmp(b),
-            _ => None,
-        }
-    }
-}
+    // endregion: boolean operations
 
-macro_rules! impl_comparison_op {
-    ($method_name:ident, $op:tt, $ordering:pat) => {
-        impl Value {
-            pub fn $method_name(&self, other: &Self) -> Result<Self, Error> {
-                match self.compare(other) {
-                    Some($ordering) => Ok(Self::Boolean(true)),
-                    Some(_) => Ok(Self::Boolean(false)),
-                    None => err!(
-                        ErrorKind::TypeError,
-                        "invalid operation '{}' between {} and {}",
-                        stringify!($op),
-                        self.variant_name(),
-                        other.variant_name()
-                    ),
-                }
-            }
-        }
-    };
-}
-impl_comparison_op!(lt, >, std::cmp::Ordering::Less);
-impl_comparison_op!(le, >=, std::cmp::Ordering::Less | std::cmp::Ordering::Equal);
-impl_comparison_op!(gt, <, std::cmp::Ordering::Greater);
-impl_comparison_op!(ge, <=, std::cmp::Ordering::Greater | std::cmp::Ordering::Equal);
+    // region: arithmetic operations
 
-macro_rules! impl_binary_arithmetic_op {
-    ($trait:ident, $method:ident, $integer_op:tt, $float_op:tt) => {
-        impl std::ops::$trait for Value {
-            type Output = Result<Self, Error>;
+    generate_binary_arithmetic_op!(add, checked_add, +);
+    generate_binary_arithmetic_op!(sub, checked_sub, -);
+    generate_binary_arithmetic_op!(mul, checked_mul, *);
+    generate_binary_arithmetic_op!(rem, checked_rem, %);
 
-            fn $method(self, other: Self) -> Self::Output {
-
-                let overflow_error = error::Error::new(
-                    "this arithmetic operation overflows",
-                    ErrorKind::OverflowError
-                );
-
-                match (&self, &other) {
-                    (Self::Integer(a), Self::Integer(b)) => {
-                        Ok(Self::Integer(a.$integer_op(*b).ok_or(overflow_error)?))
-                    },
-                    (Self::Float(a), Self::Float(b)) => Ok(Self::Float(a $float_op b)),
-                    _ => err!(
-                        ErrorKind::TypeError,
-                        "invalid operation '{}' between {} and {}",
-                        stringify!($float_op),
-                        self.variant_name(),
-                        other.variant_name()
-                    ),
-                }
-            }
-        }
-    };
-}
-impl_binary_arithmetic_op!(Add, add, checked_add, +);
-impl_binary_arithmetic_op!(Sub, sub, checked_sub, -);
-impl_binary_arithmetic_op!(Mul, mul, checked_mul, *);
-impl_binary_arithmetic_op!(Rem, rem, checked_rem, %);
-
-impl std::ops::Div for Value {
-    type Output = Result<Self, Error>;
-
-    fn div(self, other: Self) -> Self::Output {
+    pub fn div(&self, other: &Self) -> Result<Self, Error> {
         // Check for division by zero
         #[allow(illegal_floating_point_literal_pattern)]
         if matches!(&other, Self::Integer(0) | Self::Float(0.0)) {
@@ -188,12 +204,8 @@ impl std::ops::Div for Value {
             ),
         }
     }
-}
 
-impl std::ops::Neg for Value {
-    type Output = Result<Self, Error>;
-
-    fn neg(self) -> Self::Output {
+    pub fn neg(&self) -> Result<Self, Error> {
         match self {
             Self::Integer(n) => Ok(Self::Integer(-n)),
             Self::Float(n) => Ok(Self::Float(-n)),
@@ -204,21 +216,8 @@ impl std::ops::Neg for Value {
             ),
         }
     }
-}
 
-impl std::ops::Not for Value {
-    type Output = Result<Self, Error>;
-
-    fn not(self) -> Self::Output {
-        match self {
-            Self::Boolean(b) => Ok(Self::Boolean(!b)),
-            _ => err!(
-                ErrorKind::TypeError,
-                "invalid operation '!' for type {}",
-                self.variant_name(),
-            ),
-        }
-    }
+    // endregion: arithmetic operations
 }
 
 impl fmt::Display for Value {

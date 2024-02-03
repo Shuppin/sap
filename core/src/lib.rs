@@ -59,7 +59,7 @@ macro_rules! generate_binary_arithmetic_op {
 }
 
 impl Value {
-    fn variant_name(&self) -> &'static str {
+    pub fn variant_name(&self) -> &'static str {
         match &self {
             Self::Integer(_) => "Integer",
             Self::Float(_) => "Float",

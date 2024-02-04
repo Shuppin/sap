@@ -1,5 +1,6 @@
 use std::fmt;
 
+use ast::statement::Statement;
 use error::{Error, ErrorKind};
 
 pub mod error;
@@ -7,10 +8,17 @@ pub mod error;
 mod test;
 
 #[derive(Debug, PartialEq)]
+pub struct Function {
+    pub parameters: Vec<String>,
+    pub body: Vec<Statement>,
+}
+
+#[derive(Debug, PartialEq)]
 pub enum Value {
     Integer(i64),
     Float(f64),
     Boolean(bool),
+    Function(Function),
     Null,
 }
 
@@ -64,6 +72,7 @@ impl Value {
             Self::Integer(_) => "Integer",
             Self::Float(_) => "Float",
             Self::Boolean(_) => "Boolean",
+            Self::Function(_) => "Function",
             Self::Null => "null",
         }
     }
@@ -226,6 +235,7 @@ impl fmt::Display for Value {
             Self::Integer(i) => write!(f, "{}", i),
             Self::Float(fl) => write!(f, "{}", fl),
             Self::Boolean(b) => write!(f, "{}", b),
+            Self::Function(_) => write!(f, "<function>"),
             Self::Null => write!(f, "null"),
         }
     }

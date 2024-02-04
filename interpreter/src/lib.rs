@@ -1,10 +1,12 @@
 use core::error::{Error, ErrorKind};
-use core::{err, Value};
+use core::{err, Function, Value};
 use std::ops::ControlFlow;
 use std::ops::ControlFlow::{Break, Continue};
 use std::rc::Rc;
 
-use ast::expression::{Binary, Expression, Identifier, Selection, Unary};
+use ast::expression::{
+    Binary, Expression, FunctionCall, FunctionDeclaration, Identifier, Selection, Unary,
+};
 use ast::literal::Literal;
 use ast::statement::{Let, Return, Statement};
 use ast::Program;
@@ -33,7 +35,7 @@ pub enum TraversalBreak {
 
 type EvalOutcome = ControlFlow<TraversalBreak, Rc<Value>>;
 
-impl<'a> Interpreter {
+impl Interpreter {
     pub fn new() -> Self {
         Self {
             callstack: CallStack::new(),
@@ -56,15 +58,6 @@ impl<'a> Interpreter {
             value = self.eval_statement(&statement)?;
         }
         return Continue(value);
-    }
-
-    fn eval_fn_block(&mut self, statements: &Vec<Statement>) -> EvalOutcome {
-        // A fn block will unwrap return values and just return the inner value
-        let eval = self.eval_statements(statements);
-        match eval {
-            Break(TraversalBreak::ReturnValue(value)) => Continue(value),
-            _ => eval,
-        }
     }
 
     fn eval_selection_block(&mut self, statements: &Vec<Statement>) -> EvalOutcome {
@@ -100,22 +93,93 @@ impl<'a> Interpreter {
             Expression::Binary(binary) => self.eval_binary_expression(binary),
             Expression::Selection(selection) => self.eval_selection_expression(selection),
             Expression::Identifier(ident) => self.eval_identifier_expression(ident),
+            Expression::FunctionDeclaration(func) => self.eval_func_decl_expression(func),
+            Expression::FunctionCall(func_call) => self.eval_func_call_expression(func_call),
             _ => todo!(),
         }
+    }
+
+    fn eval_func_call_expression(&mut self, func_call: &FunctionCall) -> EvalOutcome {
+        let callee_rc = self.eval_expression(&func_call.callee)?;
+        let callee = callee_rc.as_ref();
+
+        match callee {
+            Value::Function(func) => {
+                // Compare arguments to parameters
+                if func_call.arguments.len() != func.parameters.len() {
+                    return Break(TraversalBreak::Error(Error::new(
+                        format!(
+                            "Expected {} argument(s), got {}",
+                            func.parameters.len(),
+                            func_call.arguments.len()
+                        )
+                        .as_str(),
+                        ErrorKind::TypeError,
+                    )));
+                }
+
+                // Evaluate arguments
+                let mut arguments: Vec<(&str, Rc<Value>)> = Vec::new();
+
+                // Zip the argument and parameter vectors together
+                for (expression, name) in func_call.arguments.iter().zip(func.parameters.iter()) {
+                    let value = self.eval_expression(expression)?;
+                    arguments.push((name, value));
+                }
+
+                // Enter new scope
+                self.callstack.push_new_record();
+                for (name, value) in arguments {
+                    self.callstack.current_record.set(name, value)
+                }
+                // Execute the body of the function and handle the result
+                let return_value = match self.eval_statements(&func.body) {
+                    // If a return value is encountered, use it as the result
+                    Break(TraversalBreak::ReturnValue(value)) => value,
+
+                    // Propagate errors upwards by immediately returning them
+                    Break(TraversalBreak::Error(err)) => return Break(TraversalBreak::Error(err)),
+
+                    // If execution concludes without a ReturnValue, default to Null
+                    _ => Rc::new(Value::Null),
+                };
+                // Discard scope
+                self.callstack.discard_current_record();
+
+                // Send return value back to caller
+                match *return_value {
+                    Value::Function(_) => Break(TraversalBreak::Error(Error::new(
+                        "Function returns type 'Function', which is not yet supported",
+                        ErrorKind::TypeError,
+                    ))),
+                    _ => Continue(return_value),
+                }
+            }
+            _ => Break(TraversalBreak::Error(Error::new(
+                format!("'{}' is not callable", callee.variant_name()).as_str(),
+                ErrorKind::TypeError,
+            ))),
+        }
+    }
+
+    fn eval_func_decl_expression(&self, func: &FunctionDeclaration) -> EvalOutcome {
+        let parameters = func
+            .parameters
+            .iter()
+            .map(|ident| ident.name.clone())
+            .collect();
+
+        Continue(Rc::new(Value::Function(Function {
+            parameters,
+            body: func.body.statements.clone(),
+        })))
     }
 
     fn eval_identifier_expression(
         &self,
         ident: &Identifier,
     ) -> ControlFlow<TraversalBreak, Rc<Value>> {
-        if let Some(value) = self.callstack.lookup(&ident.name) {
-            Continue(value)
-        } else {
-            Break(TraversalBreak::Error(Error::new(
-                format!("variable '{}' does not exist", &ident.name).as_str(),
-                ErrorKind::NameError,
-            )))
-        }
+        self.lookup_variable_name(&ident.name)
     }
 
     fn eval_selection_expression(&mut self, selection: &Selection) -> EvalOutcome {
@@ -191,6 +255,17 @@ impl<'a> Interpreter {
         match result {
             Ok(value) => Continue(Rc::new(value)),
             Err(e) => Break(TraversalBreak::Error(e)),
+        }
+    }
+
+    fn lookup_variable_name(&self, name: &str) -> EvalOutcome {
+        if let Some(value) = self.callstack.lookup(name) {
+            Continue(value)
+        } else {
+            Break(TraversalBreak::Error(Error::new(
+                format!("variable '{}' does not exist", name).as_str(),
+                ErrorKind::NameError,
+            )))
         }
     }
 }

@@ -3,7 +3,7 @@ use serde::Serialize;
 
 use crate::GetSpan;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub enum Literal {
     Integer { value: i64, span: Span },

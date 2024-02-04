@@ -4,7 +4,7 @@ use serde::Serialize;
 use crate::expression::{Expression, Identifier};
 use crate::GetSpan;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(untagged)]
 pub enum Statement {
     Let(Let),
@@ -22,7 +22,7 @@ impl GetSpan for Statement {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub struct Let {
     pub ident: Identifier,
@@ -30,7 +30,7 @@ pub struct Let {
     pub span: Span,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub struct Return {
     pub value: Expression,

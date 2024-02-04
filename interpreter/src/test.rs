@@ -211,3 +211,67 @@ fn eval_let_statements() {
         }
     }
 }
+
+#[test]
+fn eval_function_declaration() {
+    let input = "fn(x) {return x + 2;}";
+    let expected_body = "return (x + 2)";
+
+    let value_rc = eval(input);
+    let value = value_rc.as_ref();
+
+    match value {
+        Value::Function(func) => {
+            if func.parameters.len() != 1 {
+                panic!(
+                    "Function has incorrect number of parameters, got {}",
+                    func.parameters.len()
+                )
+            }
+
+            if func.parameters.first().unwrap() != "x" {
+                panic!(
+                    "Function parameter is not the expected 'x', got {}",
+                    func.parameters.first().unwrap().to_string()
+                )
+            }
+
+            if func.body.len() != 1 {
+                panic!(
+                    "Function body has incorrect number of statements, got {}",
+                    func.body.len()
+                )
+            }
+
+            if func.body.first().unwrap().to_string() != expected_body {
+                panic!(
+                    "Expected body: {}, got {:?}",
+                    expected_body,
+                    func.body.first().unwrap().to_string()
+                )
+            }
+        }
+        _ => panic!("Unexpected value"),
+    }
+}
+
+// Ok so like this is meant to be "eval_function_call" but I wrote it like this ok so cry
+// about it.
+#[test]
+fn eval_function_cool() {
+    let tests = [
+        ("let identity = fn(x) { return x; }; identity(5);", 5),
+        ("let identity = fn(x) { return x; }; identity(5);", 5),
+        ("let double = fn(x) { return x * 2; }; double(5);", 10),
+        ("let add = fn(x, y) { return x + y; }; add(5, 5);", 10),
+        ("let add = fn(x, y) { return x + y; }; add(5 + 5, add(5, 5));", 20),
+        ("fn(x) { return x; }(5)", 5),
+    ];
+
+    for (input, expected_output) in tests {
+        match *eval(input) {
+            Value::Integer(n) => assert_eq!(n, expected_output),
+            _ => panic!("Unexpected value"),
+        }
+    }
+}

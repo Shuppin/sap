@@ -4,7 +4,7 @@ use serde::Serialize;
 use crate::literal::Literal;
 use crate::{Block, GetSpan};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(untagged)]
 pub enum Expression {
     Identifier(Identifier),
@@ -34,14 +34,14 @@ impl GetSpan for Expression {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub struct Identifier {
     pub name: String,
     pub span: Span,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub struct Unary {
     pub operator: TokenKind,
@@ -49,7 +49,7 @@ pub struct Unary {
     pub span: Span,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub struct Binary {
     pub operator: TokenKind,
@@ -58,7 +58,7 @@ pub struct Binary {
     pub span: Span,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub struct Selection {
     pub condition: Box<Expression>,
@@ -67,7 +67,7 @@ pub struct Selection {
     pub span: Span,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub struct FunctionDeclaration {
     pub parameters: Vec<Identifier>,
@@ -75,7 +75,7 @@ pub struct FunctionDeclaration {
     pub span: Span,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub struct FunctionCall {
     pub callee: Box<Expression>,
@@ -83,14 +83,14 @@ pub struct FunctionCall {
     pub span: Span,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub struct Array {
     pub elements: Vec<Expression>,
     pub span: Span,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub struct Index {
     pub object: Box<Expression>,

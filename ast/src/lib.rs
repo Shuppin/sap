@@ -51,7 +51,7 @@ impl Program {
 }
 
 /// Represents a group of statements encapsulated by a set of curly braces `{}`.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 pub struct Block {
     pub statements: Vec<Statement>,
     pub span: Span,

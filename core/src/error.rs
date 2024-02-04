@@ -1,8 +1,8 @@
 #[macro_export]
 macro_rules! err {
-    ($kind:expr, $($arg:tt)*) => {{
+    ($kind:expr, $($arg:tt)*) => {
         Err($crate::error::Error::new(&format!($($arg)*), $kind))
-    }}
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]

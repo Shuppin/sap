@@ -12,12 +12,14 @@ fn main() -> Result<(), String> {
     let matches = cli().get_matches();
 
     let mut start: Option<Instant> = None;
-    if matches.contains_id("timer") && matches.contains_id("FILE") {
-        start = Some(Instant::now());
-    }
 
     // Access the FILE argument
     if let Some(file_path) = matches.get_one::<String>("FILE") {
+        // Some cursed logic to check if the "-t" argument was passed
+        if *matches.get_one::<bool>("timer").unwrap_or(&false) {
+            start = Some(Instant::now());
+        }
+
         let mut file = File::open(file_path).map_err(|e| e.to_string())?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)

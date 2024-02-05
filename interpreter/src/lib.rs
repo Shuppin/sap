@@ -51,13 +51,13 @@ pub fn create_env() -> EnvRef {
     return Rc::new(RefCell::new(Environment::new()));
 }
 
-pub fn eval_program(env: &EnvRef, ast: Program) -> Result<Rc<Value>, Error> {
+pub fn eval_program(env: &EnvRef, ast: Program) -> Result<(EnvRef, Rc<Value>), Error> {
     match eval_statements(env, &ast.statements) {
-        Continue(value) => Ok(value),
         Break(TraversalBreak::ReturnValue(_)) => {
             err!(ErrorKind::TypeError, "'return' used outside of function")
         }
         Break(TraversalBreak::Error(error)) => Err(error),
+        Continue(value) => Ok((env.clone(), value)),
     }
 }
 

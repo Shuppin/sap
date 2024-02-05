@@ -25,9 +25,9 @@ fn main() {
 
         match parse(&input) {
             Ok(parsed_ast) => {
-                let evaluation = eval_program(&env, parsed_ast);
-                match evaluation {
-                    Ok(value) => println!("{}", value),
+                let result = eval_program(&env, parsed_ast);
+                match result {
+                    Ok(evaluation) => println!("{}", evaluation.1),
                     Err(err) => println!("{:?}: {}", err.kind, err.message),
                 }
             }

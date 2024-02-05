@@ -8,7 +8,9 @@ use crate::{eval_program, Value};
 
 fn eval(input: &str) -> Rc<Value> {
     let env = Rc::new(RefCell::new(Environment::new()));
-    eval_program(&env, parser::parse(input).expect("parse() failed")).expect("eval() failed")
+    eval_program(&env, parser::parse(input).expect("parse() failed"))
+        .expect("eval() failed")
+        .1
 }
 
 #[test]

@@ -32,7 +32,7 @@ fn cli() -> Command {
                 .short('t')
                 .long("timer")
                 .num_args(0)
-                .help("Enables fhbsdjkhfb"),
+                .help("Enables the timing of execution duration"),
         )
 }
 

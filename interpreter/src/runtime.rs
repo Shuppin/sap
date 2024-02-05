@@ -46,16 +46,21 @@ impl Environment {
 
 impl std::fmt::Display for Environment {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let formatted_members_string = self
+        let mut formatted_members = self
             .members
             .iter()
             .map(|(key, value)| format!("    <{}> {} = {:?}", (**value).variant_name(), key, value))
-            .collect::<Vec<String>>()
-            .join("\n");
-        write!(
-            f,
-            "Environment:\n===========================\n\n{}\n\n===========================",
-            formatted_members_string
-        )
+            .collect::<Vec<String>>();
+        formatted_members.sort();
+
+        write!(f, "== Env ====================\n")?;
+
+        if formatted_members.len() > 0 {
+            write!(f, "\n{}\n", formatted_members.join("\n"))?
+        } else {
+            write!(f, "\n    <no members>\n")?
+        }
+
+        write!(f, "\n===========================")
     }
 }

@@ -1,4 +1,4 @@
-use std::fmt;
+use std::fmt::{self, Debug};
 
 use ast::statement::Statement;
 use shared::err;
@@ -6,11 +6,22 @@ use shared::error::{Error, ErrorKind};
 
 use crate::runtime::EnvRef;
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 pub struct Function {
     pub parameters: Vec<String>,
     pub body: Vec<Statement>,
     pub env: EnvRef,
+}
+
+impl Debug for Function {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "params: ({}), body: [{}]",
+            self.parameters.join(", "),
+            self.body.len()
+        )
+    }
 }
 
 #[derive(Debug, PartialEq)]

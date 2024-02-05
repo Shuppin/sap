@@ -8,6 +8,34 @@ use lexer::Lexer;
 // Attempt to obtain the current version of the CLI package
 pub const VERSION: Option<&str> = std::option_env!("CARGO_PKG_VERSION");
 
+fn cli() -> Command {
+    let title = "SAP Launcher";
+    let cli_version = crate::VERSION.unwrap_or("<unknown>");
+
+    let description = construct_info_message(title, cli_version);
+
+    Command::new("sap")
+        .name("SAP Launcher")
+        .about(description)
+        .arg(
+            Arg::new("FILE").help("Sets the input file to use").index(1), // Positional
+        )
+        .arg(
+            Arg::new("output")
+                .short('o') // Allows -o
+                .long("output") // Allows --output
+                .value_parser(["eval", "ast", "env", "parse", "tokens", "lex"])
+                .help("Sets the output type"),
+        )
+        .arg(
+            Arg::new("timer")
+                .short('t')
+                .long("timer")
+                .num_args(0)
+                .help("Enables fhbsdjkhfb"),
+        )
+}
+
 fn main() -> Result<(), String> {
     let matches = cli().get_matches();
 
@@ -26,29 +54,10 @@ fn main() -> Result<(), String> {
             .map_err(|e| e.to_string())?;
 
         match matches.get_one::<String>("output").map(|s| s.as_str()) {
-            Some("ast") | Some("parse") => {
-                let result = parser::parse(&contents);
-                print_parse_result(result);
-            }
-            Some("tokens") | Some("lex") => {
-                let mut lexer = lexer::Lexer::new(&contents);
-                generate_and_print_tokens(&mut lexer);
-            }
-            Some("eval") | None => {
-                let env = interpreter::create_env();
-                match parser::parse(&contents) {
-                    Ok(parsed_ast) => {
-                        if let Err(err) = interpreter::eval_program(&env, parsed_ast) {
-                            println!("{:?}: {}", err.kind, err.message)
-                        }
-                    }
-                    Err(errors) => {
-                        for err in errors {
-                            println!("{:?}: {}", err.kind, err.message)
-                        }
-                    }
-                };
-            }
+            Some("ast") | Some("parse") => parse_and_print(&contents),
+            Some("tokens") | Some("lex") => lex_and_print(&contents),
+            Some("env") => evaluate_and_print(&contents, None, true),
+            Some("eval") | None => evaluate_and_print(&contents, None, false),
             Some(_) => return Err("Invalid output option provided".to_string()),
         };
 
@@ -70,7 +79,8 @@ fn main() -> Result<(), String> {
         match matches.get_one::<String>("output").map(|s| s.as_str()) {
             Some("ast") | Some("parse") => parser_repl(),
             Some("tokens") | Some("lex") => lexer_repl(),
-            Some("eval") | None => interpreter_repl(),
+            Some("eval") | None => interpreter_repl(false),
+            Some("env") => interpreter_repl(true),
             _ => Err("Invalid output option provided".to_string()),
         }
     }
@@ -90,35 +100,7 @@ fn construct_info_message(title: &str, version: &str) -> String {
     );
 }
 
-fn cli() -> Command {
-    let title = "SAP Launcher";
-    let cli_version = crate::VERSION.unwrap_or("<unknown>");
-
-    let description = construct_info_message(title, cli_version);
-
-    Command::new("sap")
-        .name("SAP Launcher")
-        .about(description)
-        .arg(
-            Arg::new("FILE").help("Sets the input file to use").index(1), // Positional
-        )
-        .arg(
-            Arg::new("output")
-                .short('o') // Allows -o
-                .long("output") // Allows --output
-                .value_parser(["eval", "ast", "parse", "tokens", "lex"])
-                .help("Sets the output type"),
-        )
-        .arg(
-            Arg::new("timer")
-                .short('t')
-                .long("timer")
-                .num_args(0)
-                .help("Enables fhbsdjkhfb"),
-        )
-}
-
-fn interpreter_repl() -> Result<(), String> {
+fn interpreter_repl(display_env: bool) -> Result<(), String> {
     let title = "SAP Interpreter";
     let version = interpreter::VERSION.unwrap_or("<unknown>");
     println!("{}", construct_info_message(title, version));
@@ -134,20 +116,7 @@ fn interpreter_repl() -> Result<(), String> {
             continue;
         }
 
-        match parser::parse(&line) {
-            Ok(parsed_ast) => {
-                let result = interpreter::eval_program(&env, parsed_ast);
-                match result {
-                    Ok(evaluation) => println!("{}", evaluation.1),
-                    Err(err) => println!("{:?}: {}", err.kind, err.message),
-                }
-            }
-            Err(errors) => {
-                for err in errors {
-                    println!("{:?}: {}", err.kind, err.message)
-                }
-            }
-        }
+        evaluate_and_print(line, Some(env.clone()), display_env)
     }
 }
 
@@ -163,9 +132,7 @@ fn parser_repl() -> Result<(), String> {
         if line.is_empty() {
             continue;
         }
-
-        let result = parser::parse(&line);
-        print_parse_result(result);
+        parse_and_print(line);
     }
 }
 
@@ -181,9 +148,7 @@ fn lexer_repl() -> Result<(), String> {
         if line.is_empty() {
             continue;
         }
-
-        let mut lexer = lexer::Lexer::new(&line);
-        generate_and_print_tokens(&mut lexer);
+        lex_and_print(&line);
     }
 }
 
@@ -197,7 +162,33 @@ fn readline() -> Result<String, String> {
     Ok(buffer)
 }
 
-fn print_parse_result(result: Result<ast::Program, Vec<shared::error::Error>>) {
+fn evaluate_and_print(input: &str, env: Option<interpreter::runtime::EnvRef>, display_env: bool) {
+    let env = env.unwrap_or(interpreter::create_env());
+    match parser::parse(&input) {
+        Ok(parsed_ast) => {
+            let result = interpreter::eval_program(&env, parsed_ast);
+            match result {
+                Ok(evaluation) => {
+                    if display_env {
+                        println!("\n{}", evaluation.0.borrow());
+                        println!("\nEvaluated as: {}", evaluation.1)
+                    } else {
+                        println!("{}", evaluation.1)
+                    }
+                }
+                Err(err) => println!("{:?}: {}", err.kind, err.message),
+            }
+        }
+        Err(errors) => {
+            for err in errors {
+                println!("{:?}: {}", err.kind, err.message)
+            }
+        }
+    }
+}
+
+fn parse_and_print(input: &str) {
+    let result = parser::parse(input);
     match result {
         Ok(parsed_ast) => {
             print!("\n=== Serialised AST start ===\n");
@@ -216,7 +207,8 @@ fn print_parse_result(result: Result<ast::Program, Vec<shared::error::Error>>) {
     }
 }
 
-fn generate_and_print_tokens(lexer: &mut Lexer) {
+fn lex_and_print(input: &str) {
+    let mut lexer = lexer::Lexer::new(input);
     loop {
         let token = lexer.next_token();
         println!("{}", token);

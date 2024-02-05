@@ -1,8 +1,9 @@
-use lexer::token::{Span, TokenKind};
+use lexer::token::TokenKind;
 use serde::Serialize;
+use shared::span::{GetSpan, Span};
 
 use crate::literal::Literal;
-use crate::{Block, GetSpan};
+use crate::Block;
 
 #[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(untagged)]

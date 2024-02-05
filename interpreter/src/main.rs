@@ -1,9 +1,9 @@
-use core::runtime::Environment;
 use std::cell::RefCell;
 use std::io::Write;
 use std::rc::Rc;
 
 use interpreter::eval_program;
+use interpreter::runtime::Environment;
 use parser::parse;
 
 fn main() {

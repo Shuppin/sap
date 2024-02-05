@@ -1,8 +1,7 @@
-use lexer::token::Span;
 use serde::Serialize;
+use shared::span::{GetSpan, Span};
 
 use crate::expression::{Expression, Identifier};
-use crate::GetSpan;
 
 #[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(untagged)]

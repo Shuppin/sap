@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 lexer = { path = "../lexer" }
-ast = {path = "../ast"}
+ast = { path = "../ast" }
+shared = { path = "../shared" }
 log = "0.4.20"
 simple-logging = "2.0.2"
-core = { version = "0.1.0", path = "../core" }

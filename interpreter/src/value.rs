@@ -1,13 +1,10 @@
 use std::fmt;
 
 use ast::statement::Statement;
-use error::{Error, ErrorKind};
-use runtime::EnvRef;
+use shared::err;
+use shared::error::{Error, ErrorKind};
 
-pub mod error;
-pub mod runtime;
-
-mod test;
+use crate::runtime::EnvRef;
 
 #[derive(Debug, PartialEq)]
 pub struct Function {
@@ -47,7 +44,7 @@ macro_rules! generate_binary_arithmetic_op {
     ($method:ident, $integer_op:tt, $float_op:tt) => {
         pub fn $method(&self, other: &Self) -> Result<Self, Error> {
 
-            let overflow_error = error::Error::new(
+            let overflow_error = Error::new(
                 "this arithmetic operation overflows",
                 ErrorKind::OverflowError
             );
@@ -198,7 +195,7 @@ impl Value {
             return err!(ErrorKind::DivisionByZero, "cannot divide by zero");
         }
 
-        let overflow_error = error::Error::new(
+        let overflow_error = Error::new(
             "this arithmetic operation overflows",
             ErrorKind::OverflowError,
         );

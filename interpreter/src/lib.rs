@@ -1,6 +1,3 @@
-use core::error::{Error, ErrorKind};
-use core::runtime::{EnvRef, Environment};
-use core::{err, Function, Value};
 use std::cell::RefCell;
 use std::ops::ControlFlow;
 use std::ops::ControlFlow::{Break, Continue};
@@ -13,9 +10,20 @@ use ast::literal::Literal;
 use ast::statement::{Let, Return, Statement};
 use ast::Program;
 use lexer::token::TokenKind;
+use shared::err;
+use shared::error::{Error, ErrorKind};
+
+use crate::runtime::{EnvRef, Environment};
+use crate::value::{Function, Value};
+
+// Attempt to obtain the current version of the CLI package
+pub const VERSION: Option<&str> = std::option_env!("CARGO_PKG_VERSION");
 
 #[cfg(test)]
 mod test;
+
+pub mod runtime;
+pub mod value;
 
 /// Represents a break in traversal of the AST.
 ///
@@ -28,6 +36,8 @@ pub enum TraversalBreak {
     Error(Error),
 }
 
+type EvalOutcome = ControlFlow<TraversalBreak, Rc<Value>>;
+
 macro_rules! traversal_error {
     ($kind:expr, $($arg:tt)*) => {
         Break(TraversalBreak::Error(Error::new(&format!($($arg)*), $kind)))
@@ -37,7 +47,9 @@ macro_rules! traversal_error {
     }
 }
 
-type EvalOutcome = ControlFlow<TraversalBreak, Rc<Value>>;
+pub fn create_env() -> EnvRef {
+    return Rc::new(RefCell::new(Environment::new()));
+}
 
 pub fn eval_program(env: &EnvRef, ast: Program) -> Result<Rc<Value>, Error> {
     match eval_statements(env, &ast.statements) {

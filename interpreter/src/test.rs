@@ -1,10 +1,10 @@
-use core::error::{Error, ErrorKind};
-use core::runtime::Environment;
-use core::Value;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::eval_program;
+use shared::error::{Error, ErrorKind};
+
+use crate::runtime::Environment;
+use crate::{eval_program, Value};
 
 fn eval(input: &str) -> Rc<Value> {
     let env = Rc::new(RefCell::new(Environment::new()));
@@ -276,5 +276,27 @@ fn eval_function_cool() {
             Value::Integer(n) => assert_eq!(n, expected_output),
             _ => panic!("Unexpected value"),
         }
+    }
+}
+
+#[test]
+fn value_to_boolean() {
+    assert_eq!(Value::Integer(1).to_boolean(), Ok(Value::Boolean(true)));
+    assert_eq!(
+        Value::Integer(-434324).to_boolean(),
+        Ok(Value::Boolean(true))
+    );
+    assert_eq!(Value::Integer(0).to_boolean(), Ok(Value::Boolean(false)));
+    assert_eq!(Value::Float(0.0).to_boolean(), Ok(Value::Boolean(false)));
+    assert_eq!(Value::Float(-0.1).to_boolean(), Ok(Value::Boolean(true)));
+    assert_eq!(Value::Float(3.14).to_boolean(), Ok(Value::Boolean(true)));
+    assert_eq!(Value::Boolean(true).to_boolean(), Ok(Value::Boolean(true)));
+    assert_eq!(
+        Value::Boolean(false).to_boolean(),
+        Ok(Value::Boolean(false))
+    );
+    match Value::Null.to_boolean() {
+        Ok(_) => panic!("Null.to_boolean() returned Ok"),
+        Err(err) => assert_eq!(err.kind, ErrorKind::TypeError),
     }
 }

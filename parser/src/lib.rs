@@ -1,4 +1,3 @@
-use core::error::{Error, ErrorKind};
 use std::num::IntErrorKind;
 
 use ast::expression::{
@@ -7,10 +6,15 @@ use ast::expression::{
 };
 use ast::literal::Literal;
 use ast::statement::{Let, Return, Statement};
-use ast::{Block, GetSpan, Program};
-use lexer::token::{Span, Token, TokenKind};
+use ast::{Block, Program};
+use lexer::token::{Token, TokenKind};
 use lexer::Lexer;
 use log::info;
+use shared::error::{Error, ErrorKind};
+use shared::span::{GetSpan, Span};
+
+// Attempt to obtain the current version of the CLI package
+pub const VERSION: Option<&str> = std::option_env!("CARGO_PKG_VERSION");
 
 #[cfg(test)]
 mod test;
@@ -23,7 +27,7 @@ pub struct Parser<'lexer> {
 
 macro_rules! parse_err {
     ($($arg:tt)*) => {{
-        Err(core::error::Error::new(&format!($($arg)*), ErrorKind::ParserError))
+        Err(shared::error::Error::new(&format!($($arg)*), ErrorKind::ParserError))
     }}
 }
 

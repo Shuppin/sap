@@ -1,6 +1,10 @@
 use std::str::Chars;
 
-use token::{Span, Token, TokenKind};
+use shared::span::Span;
+use token::{Token, TokenKind};
+
+// Attempt to obtain the current version of the CLI package
+pub const VERSION: Option<&str> = std::option_env!("CARGO_PKG_VERSION");
 
 #[cfg(test)]
 mod test;

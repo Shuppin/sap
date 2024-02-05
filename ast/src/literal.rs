@@ -1,7 +1,6 @@
-use lexer::token::Span;
 use serde::Serialize;
+use shared::span::{GetSpan, Span};
 
-use crate::GetSpan;
 
 #[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]

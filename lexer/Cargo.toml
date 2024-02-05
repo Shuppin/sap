@@ -4,4 +4,5 @@ version = "1.0.0"
 edition = "2021"
 
 [dependencies]
+shared = { path = "../shared" }
 serde = { version = "1.0.195", features = ["derive"] }

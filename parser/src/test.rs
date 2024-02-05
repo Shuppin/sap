@@ -2,7 +2,8 @@ use ast::expression::Expression;
 use ast::literal::Literal;
 use ast::statement::Statement;
 use ast::Program;
-use lexer::token::{Span, TokenKind};
+use lexer::token::TokenKind;
+use shared::span::Span;
 
 use crate::parse;
 

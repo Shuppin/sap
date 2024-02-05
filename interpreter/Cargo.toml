@@ -7,7 +7,7 @@ default-run = "interpreter"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ast = { version = "0.1.0", path = "../ast" }
-core = { version = "0.1.0", path = "../core" }
-lexer = { version = "1.0.0", path = "../lexer" }
-parser = { version = "0.1.0", path = "../parser" }
+ast = { path = "../ast" }
+lexer = { path = "../lexer" }
+parser = { path = "../parser" }
+shared = { path = "../shared" }

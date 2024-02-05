@@ -3,8 +3,8 @@ pub mod literal;
 pub mod statement;
 pub mod tostring;
 
-use lexer::token::Span;
 use serde::Serialize;
+use shared::span::Span;
 use statement::Statement;
 
 /// Converts an AST node to a JSON string representation.
@@ -22,11 +22,6 @@ where
     T: ?Sized + Serialize,
 {
     serde_json::to_string_pretty(&node)
-}
-
-/// A trait for enums whose variants all contain a `Span`.
-pub trait GetSpan {
-    fn span(&self) -> &Span;
 }
 
 /// Represents a whole program source file in the SAP language. It is the root node for

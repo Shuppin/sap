@@ -1,14 +1,14 @@
 use core::error::{Error, ErrorKind};
+use core::runtime::Environment;
 use core::Value;
+use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::Interpreter;
+use crate::eval_program;
 
 fn eval(input: &str) -> Rc<Value> {
-    let mut interpreter = Interpreter::new();
-    interpreter
-        .eval_program(parser::parse(input).expect("parse() failed"))
-        .expect("eval() failed")
+    let env = Rc::new(RefCell::new(Environment::new()));
+    eval_program(&env, parser::parse(input).expect("parse() failed")).expect("eval() failed")
 }
 
 #[test]
@@ -184,8 +184,8 @@ fn eval_if_else_expressions() {
 
 #[test]
 fn eval_err_return_outside_function() {
-    let mut interpreter = Interpreter::new();
-    let err = interpreter.eval_program(parser::parse("return 10;").expect("parse() failed"));
+    let env = Rc::new(RefCell::new(Environment::new()));
+    let err = eval_program(&env, parser::parse("return 10;").expect("parse() failed"));
     match err {
         Ok(_) => panic!("Return outside fn did not error"),
         Err(err) => assert_eq!(
@@ -264,7 +264,10 @@ fn eval_function_cool() {
         ("let identity = fn(x) { return x; }; identity(5);", 5),
         ("let double = fn(x) { return x * 2; }; double(5);", 10),
         ("let add = fn(x, y) { return x + y; }; add(5, 5);", 10),
-        ("let add = fn(x, y) { return x + y; }; add(5 + 5, add(5, 5));", 20),
+        (
+            "let add = fn(x, y) { return x + y; }; add(5 + 5, add(5, 5));",
+            20,
+        ),
         ("fn(x) { return x; }(5)", 5),
     ];
 

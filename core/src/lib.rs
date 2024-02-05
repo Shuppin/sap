@@ -2,8 +2,10 @@ use std::fmt;
 
 use ast::statement::Statement;
 use error::{Error, ErrorKind};
+use runtime::EnvRef;
 
 pub mod error;
+pub mod runtime;
 
 mod test;
 
@@ -11,6 +13,7 @@ mod test;
 pub struct Function {
     pub parameters: Vec<String>,
     pub body: Vec<Statement>,
+    pub env: EnvRef,
 }
 
 #[derive(Debug, PartialEq)]

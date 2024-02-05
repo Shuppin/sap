@@ -1,3 +1,4 @@
 /target
 **/runtime.log
 **/Cargo.lock
+*.exe

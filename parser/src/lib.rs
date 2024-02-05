@@ -9,7 +9,6 @@ use ast::statement::{Let, Return, Statement};
 use ast::{Block, Program};
 use lexer::token::{Token, TokenKind};
 use lexer::Lexer;
-use log::info;
 use shared::error::{Error, ErrorKind};
 use shared::span::{GetSpan, Span};
 
@@ -100,14 +99,11 @@ impl<'lexer> Parser<'lexer> {
         self.errors = Vec::new();
 
         while !self.cur_token_is(&TokenKind::Eof) {
-            info!("Parsing statement begining with {}", self.cur_token);
             match self.parse_statement() {
                 Ok(stmt) => {
-                    info!("Parsed statement: \"{}\"", stmt);
                     program.statements.push(stmt);
                 }
                 Err(err) => {
-                    info!("{}: {}", err.kind, err.message);
                     self.errors.push(err);
                     self.skip_to_next_statement();
                 }
@@ -137,14 +133,11 @@ impl<'lexer> Parser<'lexer> {
         self.eat(&TokenKind::LCurly)?;
 
         while !self.cur_token_is(&TokenKind::RCurly) {
-            info!("(Block) Parsing statement begining with {}", self.cur_token);
             match self.parse_statement() {
                 Ok(stmt) => {
-                    info!("(Block) Parsed statement: \"{}\"", stmt);
                     block.statements.push(stmt);
                 }
                 Err(err) => {
-                    info!("(Block) {}: {}", err.kind, err.message);
                     self.errors.push(err);
                     self.skip_to_next_statement();
                 }
@@ -169,7 +162,6 @@ impl<'lexer> Parser<'lexer> {
     /// Advances the current token upto the next semicolon or EOF, without consuming it
     fn skip_to_next_statement(&mut self) {
         while !matches!(self.cur_token.kind, TokenKind::Eof | TokenKind::Semicolon) {
-            info!("skip_to_next_statement(): {}", self.cur_token);
             self.next_token();
         }
     }

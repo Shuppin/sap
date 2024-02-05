@@ -9,5 +9,3 @@ edition = "2021"
 lexer = { path = "../lexer" }
 ast = { path = "../ast" }
 shared = { path = "../shared" }
-log = "0.4.20"
-simple-logging = "2.0.2"

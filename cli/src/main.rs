@@ -3,7 +3,6 @@ use std::io::{Read, Write};
 use std::time::Instant;
 
 use clap::{Arg, Command};
-use lexer::Lexer;
 
 // Attempt to obtain the current version of the CLI package
 pub const VERSION: Option<&str> = std::option_env!("CARGO_PKG_VERSION");

@@ -29,6 +29,7 @@ pub enum Value {
     Integer(i64),
     Float(f64),
     Boolean(bool),
+    String(String),
     Function(Function),
     Null,
 }
@@ -52,7 +53,7 @@ macro_rules! generate_comparison_op {
 }
 
 macro_rules! generate_binary_arithmetic_op {
-    ($method:ident, $integer_op:tt, $float_op:tt) => {
+    ($method:ident, $checked_op:tt, $symbol_op:tt) => {
         pub fn $method(&self, other: &Self) -> Result<Self, Error> {
 
             let overflow_error = Error::new(
@@ -62,9 +63,9 @@ macro_rules! generate_binary_arithmetic_op {
 
             match (&self, &other) {
                 (Self::Integer(a), Self::Integer(b)) => {
-                    Ok(Self::Integer(a.$integer_op(*b).ok_or(overflow_error)?))
+                    Ok(Self::Integer(a.$checked_op(*b).ok_or(overflow_error)?))
                 },
-                (Self::Float(a), Self::Float(b)) => Ok(Self::Float(a $float_op b)),
+                (Self::Float(a), Self::Float(b)) => Ok(Self::Float(a $symbol_op b)),
                 _ => err!(
                     ErrorKind::TypeError,
                     "invalid operation '{}' between {} and {}",
@@ -83,6 +84,7 @@ impl Value {
             Self::Integer(_) => "Integer",
             Self::Float(_) => "Float",
             Self::Boolean(_) => "Boolean",
+            Self::String(_) => "String",
             Self::Function(_) => "Function",
             Self::Null => "null",
         }
@@ -194,10 +196,30 @@ impl Value {
 
     // region: arithmetic operations
 
-    generate_binary_arithmetic_op!(add, checked_add, +);
     generate_binary_arithmetic_op!(sub, checked_sub, -);
     generate_binary_arithmetic_op!(mul, checked_mul, *);
     generate_binary_arithmetic_op!(rem, checked_rem, %);
+
+    pub fn add(&self, other: &Self) -> Result<Self, Error> {
+        let overflow_error = Error::new(
+            "this arithmetic operation overflows",
+            ErrorKind::OverflowError,
+        );
+
+        match (&self, &other) {
+            (Self::Integer(a), Self::Integer(b)) => {
+                Ok(Self::Integer(a.checked_add(*b).ok_or(overflow_error)?))
+            }
+            (Self::Float(a), Self::Float(b)) => Ok(Self::Float(a + b)),
+            (Self::String(a), Self::String(b)) => Ok(Self::String(format!("{}{}", a, b))),
+            _ => err!(
+                ErrorKind::TypeError,
+                "invalid operation '+' between {} and {}",
+                self.variant_name(),
+                other.variant_name()
+            ),
+        }
+    }
 
     pub fn div(&self, other: &Self) -> Result<Self, Error> {
         // Check for division by zero
@@ -246,6 +268,7 @@ impl fmt::Display for Value {
             Self::Integer(i) => write!(f, "{}", i),
             Self::Float(fl) => write!(f, "{}", fl),
             Self::Boolean(b) => write!(f, "{}", b),
+            Self::String(s) => write!(f, "\"{}\"", s),
             Self::Function(_) => write!(f, "<function>"),
             Self::Null => write!(f, "null"),
         }

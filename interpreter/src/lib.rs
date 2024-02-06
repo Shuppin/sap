@@ -107,7 +107,7 @@ fn eval_literal(literal: &Literal) -> EvalOutcome {
         Literal::Integer { value, .. } => Ok(Value::Integer(*value)),
         Literal::Float { value, .. } => Ok(Value::Float(*value)),
         Literal::Boolean { value, .. } => Ok(Value::Boolean(*value)),
-        _ => todo!(),
+        Literal::String { value, .. } => Ok(Value::String(value.to_owned())),
     };
     match result {
         Ok(value) => Continue(Rc::new(value)),

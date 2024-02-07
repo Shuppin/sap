@@ -141,9 +141,9 @@ fn lexer_numbers() {
 #[test]
 fn lexer_let() {
     lexer_common(
-        "let x=5;",
+        "set x=5;",
         vec![
-            token!(Let, 0, 3),
+            token!(Set, 0, 3),
             ident!("x".to_string(), 4, 5),
             token!(Assign, 5, 6),
             int!(5, 6, 7),
@@ -187,9 +187,9 @@ fn lexer_array() {
 #[test]
 fn lexer_bool() {
     lexer_common(
-        "let y=true",
+        "set y=true",
         vec![
-            token!(Let, 0, 3),
+            token!(Set, 0, 3),
             ident!("y".to_string(), 4, 5),
             token!(Assign, 5, 6),
             token!(True, 6, 10),
@@ -201,9 +201,9 @@ fn lexer_bool() {
 #[test]
 fn lexer_function() {
     lexer_common(
-        "let add = fn(a,b) { a+b };",
+        "set add = fn(a,b) { a+b };",
         vec![
-            token!(Let, 0, 3),
+            token!(Set, 0, 3),
             ident!("add".to_string(), 4, 7),
             token!(Assign, 8, 9),
             token!(Fn, 10, 12),
@@ -225,30 +225,30 @@ fn lexer_function() {
 
 #[test]
 fn lexer_multiline() {
-    let input = "let five = 5;
-let ten = 10;
-let add = fn(x, y) {
+    let input = "set five = 5;
+set ten = 10;
+set add = fn(x, y) {
   x + y;
 };
 
-let result = add(five, ten);";
+set result = add(five, ten);";
 
     lexer_common(
         input,
         vec![
-            token!(Let, 0, 3),
+            token!(Set, 0, 3),
             ident!("five".to_string(), 4, 8),
             token!(Assign, 9, 10),
             int!(5, 11, 12),
             token!(Semicolon, 12, 13),
             token!(NewLine, 13, 14),
-            token!(Let, 14, 17),
+            token!(Set, 14, 17),
             ident!("ten".to_string(), 18, 21),
             token!(Assign, 22, 23),
             int!(10, 24, 26),
             token!(Semicolon, 26, 27),
             token!(NewLine, 27, 28),
-            token!(Let, 28, 31),
+            token!(Set, 28, 31),
             ident!("add".to_string(), 32, 35),
             token!(Assign, 36, 37),
             token!(Fn, 38, 40),
@@ -267,7 +267,7 @@ let result = add(five, ten);";
             token!(RCurly, 58, 59),
             token!(Semicolon, 59, 60),
             token!(NewLine, 61, 62),
-            token!(Let, 62, 65),
+            token!(Set, 62, 65),
             ident!("result".to_string(), 66, 72),
             token!(Assign, 73, 74),
             ident!("add".to_string(), 75, 78),
@@ -284,8 +284,8 @@ let result = add(five, ten);";
 
 #[test]
 fn lexer_conditional() {
-    let input = "let five = 5;
-let ten = 10;
+    let input = "set five = 5;
+set ten = 10;
 
 if (5 < 10) {
     return true;
@@ -295,13 +295,13 @@ if (5 < 10) {
     lexer_common(
         input,
         vec![
-            token!(Let, 0, 3),
+            token!(Set, 0, 3),
             ident!("five".to_string(), 4, 8),
             token!(Assign, 9, 10),
             int!(5, 11, 12),
             token!(Semicolon, 12, 13),
             token!(NewLine, 13, 14),
-            token!(Let, 14, 17),
+            token!(Set, 14, 17),
             ident!("ten".to_string(), 18, 21),
             token!(Assign, 22, 23),
             int!(10, 24, 26),

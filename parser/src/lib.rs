@@ -73,7 +73,6 @@ impl<'lexer> Parser<'lexer> {
     }
 
     fn next_token(&mut self) {
-        println!("Next {}", self.cur_token.kind);
         self.cur_token = self.lexer.next_token();
     }
 
@@ -83,11 +82,6 @@ impl<'lexer> Parser<'lexer> {
     }
 
     fn eat(&mut self, expected_kind: &TokenKind) -> Result<(), Error> {
-        println!("Eating {}", expected_kind);
-        // if self.cur_token_is(&TokenKind::NewLine) && expected_kind != &TokenKind::NewLine {
-        //     self.next_token();
-        // }
-
         if self.cur_token_is(expected_kind) {
             self.next_token();
             Ok(())
@@ -138,7 +132,7 @@ impl<'lexer> Parser<'lexer> {
                 TokenKind::Semicolon | TokenKind::NewLine
             ) {
                 self.next_token()
-            };
+            }
 
             if self.cur_token_is(&TokenKind::Eof) {
                 return parse_err!("unexpected end of file while parsing block");
@@ -155,7 +149,7 @@ impl<'lexer> Parser<'lexer> {
     fn parse_statement(&mut self) -> Result<Statement, Error> {
         // <statement> -> <let_stmt> | <return_stmt> | <expression>
         match self.cur_token.kind {
-            TokenKind::Let => self.parse_let_stmt(),
+            TokenKind::Set => self.parse_let_stmt(),
             TokenKind::Return => self.parse_return_stmt(),
             _ => self.parse_expr_stmt(),
         }
@@ -164,7 +158,7 @@ impl<'lexer> Parser<'lexer> {
     fn parse_let_stmt(&mut self) -> Result<Statement, Error> {
         // <let_stmt> -> `Let` `Ident` `Assign` <expression>
         let start = self.cur_token.span.start;
-        self.eat(&TokenKind::Let)?;
+        self.eat(&TokenKind::Set)?;
         let ident = self.parse_identifier()?;
         self.eat(&TokenKind::Assign)?;
         let expr = self.parse_expression()?;
@@ -404,7 +398,7 @@ impl<'lexer> Parser<'lexer> {
                 match self.parse_identifier() {
                     Ok(ident) => identifiers.push(ident),
                     Err(_) => {
-                        return parse_err!("expected function parameter, got {}", prev_token_kind)
+                        return parse_err!("expected function parameter, got '{}'", prev_token_kind)
                     }
                 }
                 while self.cur_token_is(&TokenKind::Comma) {
@@ -414,7 +408,7 @@ impl<'lexer> Parser<'lexer> {
                         Ok(ident) => identifiers.push(ident),
                         Err(_) => {
                             return parse_err!(
-                                "expected function parameter, got {}",
+                                "expected function parameter, got '{}'",
                                 prev_token_kind
                             )
                         }
@@ -448,16 +442,16 @@ impl<'lexer> Parser<'lexer> {
                 self.next_token();
                 match n.parse::<i64>() {
                     Ok(n) => Ok(Literal::Integer { value: n, span }),
-                    Err(err) => {
-                        let message = match err.kind() {
-                            IntErrorKind::PosOverflow => format!(
+                    Err(err) => match err.kind() {
+                        IntErrorKind::PosOverflow => Err(Error::new(
+                            &format!(
                                 "literal to large for type Integer, whose maximum value is `{}`",
                                 i64::MAX
                             ),
-                            _ => format!("failed to parse literal into Integer"),
-                        };
-                        return parse_err!("{}", message);
-                    }
+                            ErrorKind::OverflowError,
+                        )),
+                        _ => parse_err!("failed to parse literal into Integer"),
+                    },
                 }
             }
             TokenKind::Float(n) => {

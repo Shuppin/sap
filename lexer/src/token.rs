@@ -86,7 +86,7 @@ pub enum TokenKind {
 
     // Keywords
     Fn,
-    Let,
+    Set,
     True,
     False,
     If,
@@ -111,7 +111,7 @@ impl TokenKind {
     pub fn lookup_ident(ident: &str) -> TokenKind {
         match ident {
             "fn" => TokenKind::Fn,
-            "let" => TokenKind::Let,
+            "set" => TokenKind::Set,
             "if" => TokenKind::If,
             "else" => TokenKind::Else,
             "true" => TokenKind::True,
@@ -160,7 +160,7 @@ impl Display for TokenKind {
             Self::LBracket => "[",
             Self::RBracket => "]",
             Self::Fn => "fn",
-            Self::Let => "let",
+            Self::Set => "set",
             Self::If => "if",
             Self::Else => "else",
             Self::True => "true",

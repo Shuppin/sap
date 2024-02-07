@@ -7,7 +7,7 @@ use ast::expression::{
     Binary, Expression, FunctionCall, FunctionDeclaration, Identifier, Selection, Unary,
 };
 use ast::literal::Literal;
-use ast::statement::{Let, Return, Statement};
+use ast::statement::{Return, Set, Statement};
 use ast::Program;
 use lexer::token::TokenKind;
 use shared::err;
@@ -73,11 +73,11 @@ fn eval_statement(env: &EnvRef, statement: &Statement) -> EvalOutcome {
     match statement {
         Statement::Expression(expression) => eval_expression(env, expression),
         Statement::Return(ret) => eval_return_statement(env, ret),
-        Statement::Let(let_stmt) => eval_let_statement(env, let_stmt),
+        Statement::Set(set_stmt) => eval_let_statement(env, set_stmt),
     }
 }
 
-fn eval_let_statement(env: &EnvRef, let_stmt: &Let) -> EvalOutcome {
+fn eval_let_statement(env: &EnvRef, let_stmt: &Set) -> EvalOutcome {
     let value = eval_expression(env, &let_stmt.expr)?;
     let name = let_stmt.ident.name.clone();
     env.borrow_mut().store(name, value);

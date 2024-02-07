@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter, Result};
 
 use crate::expression::*;
 use crate::literal::Literal;
-use crate::statement::{Let, Return, Statement};
+use crate::statement::{Return, Set, Statement};
 use crate::{Block, Program};
 
 fn format_items<T: ToString>(items: &Vec<T>) -> String {
@@ -28,8 +28,8 @@ impl Display for Block {
 impl Display for Statement {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
-            Statement::Let(Let { ident, expr, .. }) => {
-                return write!(f, "let {} = {}", ident.name, expr);
+            Statement::Set(Set { ident, expr, .. }) => {
+                return write!(f, "set {} = {}", ident.name, expr);
             }
             Statement::Return(Return { value, .. }) => {
                 write!(f, "return {}", value)

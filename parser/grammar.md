@@ -11,9 +11,9 @@ The order of statements is representative of the hierarchy of the AST.
 
 ## Statements
 
-    <statement> -> <let_stmt> | <return_stmt> | <expression>
+    <statement> -> <set_stmt> | <return_stmt> | <expression>
 
-    <let_stmt> -> `Let` `Ident` `Assign` <expression>
+    <set_stmt> -> `Set` `Ident` `Assign` <expression>
 
     <return_stmt> -> `Return` <expression>
 

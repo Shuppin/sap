@@ -5,7 +5,7 @@ use ast::expression::{
     Unary,
 };
 use ast::literal::Literal;
-use ast::statement::{Let, Return, Statement};
+use ast::statement::{Set, Return, Statement};
 use ast::{Block, Program};
 use lexer::token::{Token, TokenKind};
 use lexer::Lexer;
@@ -147,16 +147,16 @@ impl<'lexer> Parser<'lexer> {
     }
 
     fn parse_statement(&mut self) -> Result<Statement, Error> {
-        // <statement> -> <let_stmt> | <return_stmt> | <expression>
+        // <statement> -> <set_stmt> | <return_stmt> | <expression>
         match self.cur_token.kind {
-            TokenKind::Set => self.parse_let_stmt(),
+            TokenKind::Set => self.parse_set_stmt(),
             TokenKind::Return => self.parse_return_stmt(),
             _ => self.parse_expr_stmt(),
         }
     }
 
-    fn parse_let_stmt(&mut self) -> Result<Statement, Error> {
-        // <let_stmt> -> `Let` `Ident` `Assign` <expression>
+    fn parse_set_stmt(&mut self) -> Result<Statement, Error> {
+        // <Set_stmt> -> `Set` `Ident` `Assign` <expression>
         let start = self.cur_token.span.start;
         self.eat(&TokenKind::Set)?;
         let ident = self.parse_identifier()?;
@@ -164,7 +164,7 @@ impl<'lexer> Parser<'lexer> {
         let expr = self.parse_expression()?;
         let span = Span::new(start, self.cur_token.span.end);
 
-        return Ok(Statement::Let(Let { ident, expr, span }));
+        return Ok(Statement::Set(Set { ident, expr, span }));
     }
 
     fn parse_return_stmt(&mut self) -> Result<Statement, Error> {

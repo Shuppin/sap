@@ -26,11 +26,11 @@ fn validate_parse_to_string(tests: &[(&str, &str)]) {
 }
 
 #[test]
-fn parse_let_statements() {
+fn parse_set_statements() {
     // Initialise conditions
-    let input = "let x = 5;
-let y = 10;
-let foo_bar = 838383;";
+    let input = "set x = 5;
+set y = 10;
+set foo_bar = 838383;";
 
     let expected_identifiers = vec!["x", "y", "foo_bar"];
 
@@ -41,21 +41,21 @@ let foo_bar = 838383;";
 
     for (i, ident) in expected_identifiers.iter().enumerate() {
         let stmt = &program.statements[i];
-        test_let_statement(stmt, ident);
+        test_set_statement(stmt, ident);
     }
 }
 
-fn test_let_statement(stmt: &Statement, expected_identifier: &str) {
+fn test_set_statement(stmt: &Statement, expected_identifier: &str) {
     match stmt {
-        Statement::Let(let_stmt) => {
+        Statement::Set(set_stmt) => {
             let err_msg = format!(
-                "expected Statement::Let with name '{}', got '{}'",
-                expected_identifier, let_stmt.ident.name
+                "expected Statement::Set with name '{}', got '{}'",
+                expected_identifier, set_stmt.ident.name
             );
 
-            assert_eq!(expected_identifier, let_stmt.ident.name, "{}", err_msg)
+            assert_eq!(expected_identifier, set_stmt.ident.name, "{}", err_msg)
         }
-        _ => panic!("expected Statement::Let, got '{:?}'", stmt),
+        _ => panic!("expected Statement::Set, got '{:?}'", stmt),
     }
 }
 
@@ -352,7 +352,7 @@ fn parse_complex_expression() {
 fn parse_complex_program() {
     let tests = [
         (
-            r#"let fizzbuzz = fn(n) {
+            r#"set fizzbuzz = fn(n) {
             if n % 3 == 0 && n % 5 != 0 {
                 print("Fizz")
             } else {
@@ -367,17 +367,17 @@ fn parse_complex_program() {
                 };
             };
         };"#,
-            r#"let fizzbuzz = fn (n) { if (((n % 3) == 0) && ((n % 5) != 0)) { print("Fizz") } else { if (((n % 5) == 0) && ((n % 3) != 0)) { print("Buzz") } else { if (((n % 5) == 0) && ((n % 3) == 0)) { print("FizzBuzz") } else { print(n) } } } }"#,
+            r#"set fizzbuzz = fn (n) { if (((n % 3) == 0) && ((n % 5) != 0)) { print("Fizz") } else { if (((n % 5) == 0) && ((n % 3) != 0)) { print("Buzz") } else { if (((n % 5) == 0) && ((n % 3) == 0)) { print("FizzBuzz") } else { print(n) } } } }"#,
         ),
         (
-            r#"let hello_world = "Hello, world";
-let x = (true||false) && 1==5;
-let y = 2.5;
+            r#"set hello_world = "Hello, world";
+set x = (true||false) && 1==5;
+set y = 2.5;
 1 + 2;
-let ADD = fn (a, b) {
+set ADD = fn (a, b) {
     return a + b;
 };"#,
-            r#"let hello_world = "Hello, world"; let x = ((true || false) && (1 == 5)); let y = 2.5; (1 + 2); let ADD = fn (a, b) { return (a + b) }"#,
+            r#"set hello_world = "Hello, world"; set x = ((true || false) && (1 == 5)); set y = 2.5; (1 + 2); set ADD = fn (a, b) { return (a + b) }"#,
         ),
     ];
 

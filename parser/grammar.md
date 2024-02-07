@@ -69,7 +69,7 @@ The order of statements is representative of the hierarchy of the AST.
 
 ## Aliases
 
-    <statements> -> <statement> (`Semi` <statement>)* `Semi`?
+    <statements> -> <statement> ((`Semi`|`NewLine`) <statement>)* (`Semi`|`NewLine`)?
 
     <array_index> -> `LBracket` <expression> `RBracket`
 

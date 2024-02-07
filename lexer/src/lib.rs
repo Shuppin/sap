@@ -95,8 +95,24 @@ impl<'lexer> Lexer<'lexer> {
     /// The next token in the sequence, and will continue to return an Eof token once the
     /// end is reached.
     pub fn next_token(&mut self) -> Token {
-        self.skip_whitespace();
-        self.skip_comment();
+        let start_position = self.position;
+
+        match self.skip_garbage() {
+            Ok(encountered_newline) => {
+                if encountered_newline {
+                    return Token {
+                        span: Span::new(self.position - 1, self.position),
+                        kind: TokenKind::NewLine,
+                    };
+                }
+            }
+            Err(_) => {
+                return Token {
+                    span: Span::new(start_position, self.position),
+                    kind: TokenKind::UnterminatedComment,
+                };
+            }
+        }
 
         let start_position = self.position;
 
@@ -121,6 +137,7 @@ impl<'lexer> Lexer<'lexer> {
             ']' => TokenKind::RBracket,
 
             '\0' => TokenKind::Eof,
+            '\n' => TokenKind::NewLine,
 
             // Potentially double character symbols
             '=' => {
@@ -298,13 +315,6 @@ impl<'lexer> Lexer<'lexer> {
         };
     }
 
-    /// Skips over any whitespace characters in the current input.
-    fn skip_whitespace(&mut self) {
-        while matches!(self.chr, ' ' | '\t' | '\n' | '\r') {
-            self.read_char();
-        }
-    }
-
     /// Skips over a single-line comment (`//`) in the current input.
     ///
     /// It reads characters until it reaches the end of the line or the end of the input.
@@ -325,6 +335,61 @@ impl<'lexer> Lexer<'lexer> {
                 }
             }
         }
+    }
+
+    fn skip_multi_comment(&mut self) -> Result<(), String> {
+        // Consume the opening '/*'
+        if self.chr == '/' && self.peek_char() == '*' {
+            self.read_char();
+            self.read_char();
+        } else {
+            return Ok(());
+        }
+        // Consume the comment
+        while !(self.chr == '*' && self.peek_char() == '/') {
+            self.read_char();
+            if self.chr == '\0' {
+                return Err("Unexpected end of file while parsing multiline comment".to_string());
+            };
+        }
+        // Consume the closing '*/'
+        self.read_char();
+        self.read_char();
+
+        Ok(())
+    }
+
+    /// Skips over any whitespace characters in the current input.
+    fn skip_whitespace(&mut self) {
+        while matches!(self.chr, ' ' | '\t' | '\n' | '\r') {
+            self.read_char();
+        }
+    }
+
+    fn skip_garbage(&mut self) -> Result<bool, String> {
+        // We store whether we encountered a newline because the lexer does
+        // count newlines, however it only needs to know if it encountered one,
+        // not how many it encountered.
+        let mut encountered_newline = false;
+        while matches!(self.chr, ' ' | '\n' | '\r' | '/') {
+            match self.chr {
+                // Skip whitespace
+                ' ' => self.skip_whitespace(),
+                // Skip newlines
+                '\n' | '\r' => {
+                    encountered_newline = true;
+                    self.read_char();
+                }
+                // Skip comments
+                '/' => match self.peek_char() {
+                    '/' => self.skip_comment(),
+                    '*' => self.skip_multi_comment()?,
+                    _ => break,
+                },
+                _ => unreachable!(),
+            }
+        }
+        return Ok(encountered_newline);
     }
 }
 

@@ -178,10 +178,8 @@ fn evaluate_and_print(input: &str, env: Option<interpreter::runtime::EnvRef>, di
                 Err(err) => println!("{:?}: {}", err.kind, err.message),
             }
         }
-        Err(errors) => {
-            for err in errors {
-                println!("{:?}: {}", err.kind, err.message)
-            }
+        Err(err) => {
+            println!("{:?}: {}", err.kind, err.message)
         }
     }
 }
@@ -198,10 +196,8 @@ fn parse_and_print(input: &str) {
             print!("\n=== Serialised AST end ===\n");
             println!("\nParsed as:\n{}", parsed_ast);
         }
-        Err(errors) => {
-            for err in errors {
-                println!("{:?}: {}", err.kind, err.message)
-            }
+        Err(err) => {
+            println!("{:?}: {}", err.kind, err.message)
         }
     }
 }

@@ -21,12 +21,11 @@ mod test;
 pub struct Parser<'lexer> {
     lexer: Lexer<'lexer>,
     cur_token: Token,
-    errors: Vec<Error>,
 }
 
 macro_rules! parse_err {
     ($($arg:tt)*) => {{
-        Err(shared::error::Error::new(&format!($($arg)*), ErrorKind::ParserError))
+        Err(shared::error::Error::new(&format!($($arg)*), ErrorKind::SyntaxError))
     }}
 }
 
@@ -70,11 +69,11 @@ impl<'lexer> Parser<'lexer> {
         Parser {
             lexer,
             cur_token: cur,
-            errors: Vec::new(),
         }
     }
 
     fn next_token(&mut self) {
+        println!("Next {}", self.cur_token.kind);
         self.cur_token = self.lexer.next_token();
     }
 
@@ -84,6 +83,11 @@ impl<'lexer> Parser<'lexer> {
     }
 
     fn eat(&mut self, expected_kind: &TokenKind) -> Result<(), Error> {
+        println!("Eating {}", expected_kind);
+        // if self.cur_token_is(&TokenKind::NewLine) && expected_kind != &TokenKind::NewLine {
+        //     self.next_token();
+        // }
+
         if self.cur_token_is(expected_kind) {
             self.next_token();
             Ok(())
@@ -92,58 +96,47 @@ impl<'lexer> Parser<'lexer> {
         }
     }
 
-    pub fn parse_program(&mut self) -> Result<Program, Vec<Error>> {
+    pub fn parse_program(&mut self) -> Result<Program, Error> {
         // <program> -> <statements>? `Eof`
-        // <statements> -> <statement> (`Semi` <statement>)* `Semi`?
+        // <statements> -> <statement> ((`Semi`|`NewLine`) <statement>)* (`Semi`|`NewLine`)?
         let mut program = Program::new();
-        self.errors = Vec::new();
 
         while !self.cur_token_is(&TokenKind::Eof) {
-            match self.parse_statement() {
-                Ok(stmt) => {
-                    program.statements.push(stmt);
-                }
-                Err(err) => {
-                    self.errors.push(err);
-                    self.skip_to_next_statement();
-                }
-            }
+            program.statements.push(self.parse_statement()?);
 
-            if self.cur_token_is(&TokenKind::Semicolon) {
+            while matches!(
+                self.cur_token.kind,
+                TokenKind::NewLine | TokenKind::Semicolon
+            ) {
                 self.next_token()
-            };
+            }
         }
 
         program.span.end = self.cur_token.span.end;
 
-        if self.errors.is_empty() {
-            Ok(program)
-        } else {
-            Err(self.errors.clone())
-        }
+        return Ok(program);
     }
 
     fn parse_block(&mut self) -> Result<Block, Error> {
-        // <block> -> `LCurly` <statements>? `RCurly`
-        // <statements> -> <statement> (`Semi` <statement>)* `Semi`?
+        // <block> -> `LCurly` `NewLine`? <statements>? `NewLine`? `RCurly`
+        // <statements> -> <statement> ((`Semi`|`NewLine`) <statement>)* (`Semi`|`NewLine`)?
         let mut block = Block::new();
 
         block.span.start = self.cur_token.span.start;
 
         self.eat(&TokenKind::LCurly)?;
 
-        while !self.cur_token_is(&TokenKind::RCurly) {
-            match self.parse_statement() {
-                Ok(stmt) => {
-                    block.statements.push(stmt);
-                }
-                Err(err) => {
-                    self.errors.push(err);
-                    self.skip_to_next_statement();
-                }
-            }
+        if self.cur_token_is(&TokenKind::NewLine) {
+            self.next_token()
+        }
 
-            if self.cur_token_is(&TokenKind::Semicolon) {
+        while !self.cur_token_is(&TokenKind::RCurly) {
+            block.statements.push(self.parse_statement()?);
+
+            while matches!(
+                self.cur_token.kind,
+                TokenKind::Semicolon | TokenKind::NewLine
+            ) {
                 self.next_token()
             };
 
@@ -157,13 +150,6 @@ impl<'lexer> Parser<'lexer> {
         self.eat(&TokenKind::RCurly)?;
 
         return Ok(block);
-    }
-
-    /// Advances the current token upto the next semicolon or EOF, without consuming it
-    fn skip_to_next_statement(&mut self) {
-        while !matches!(self.cur_token.kind, TokenKind::Eof | TokenKind::Semicolon) {
-            self.next_token();
-        }
     }
 
     fn parse_statement(&mut self) -> Result<Statement, Error> {
@@ -526,9 +512,9 @@ impl<'lexer> Parser<'lexer> {
     }
 }
 
-pub fn parse(input: &str) -> Result<Program, Vec<Error>> {
+pub fn parse(input: &str) -> Result<Program, Error> {
     let lexer = Lexer::new(input);
     let mut parser = Parser::new(lexer);
 
-    parser.parse_program()
+    return parser.parse_program();
 }

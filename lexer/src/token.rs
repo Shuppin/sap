@@ -39,7 +39,9 @@ impl Display for Token {
 #[derive(PartialEq, Debug, Clone, Serialize)]
 pub enum TokenKind {
     // Special
+    NewLine,
     Illegal(String),
+    UnterminatedComment,
     Eof,
 
     // Value holders
@@ -165,6 +167,8 @@ impl Display for TokenKind {
             Self::False => "false",
             Self::Return => "return",
             Self::Eof => "<EOF>",
+            Self::UnterminatedComment => "<UnterminatedComment>",
+            Self::NewLine => "\\n",
         }
         .to_string();
 

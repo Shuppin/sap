@@ -3,7 +3,7 @@ use serde::Serialize;
 use shared::span::{GetSpan, Span};
 
 use crate::literal::Literal;
-use crate::Block;
+use crate::StatementList;
 
 #[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(untagged)]
@@ -63,8 +63,8 @@ pub struct Binary {
 #[serde(tag = "type")]
 pub struct Selection {
     pub condition: Box<Expression>,
-    pub conditional: Block,
-    pub else_conditional: Option<Block>,
+    pub conditional: StatementList,
+    pub else_conditional: Option<StatementList>,
     pub span: Span,
 }
 
@@ -72,7 +72,7 @@ pub struct Selection {
 #[serde(tag = "type")]
 pub struct FunctionDeclaration {
     pub parameters: Vec<Identifier>,
-    pub body: Block,
+    pub body: StatementList,
     pub span: Span,
 }
 

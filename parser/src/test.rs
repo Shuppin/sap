@@ -298,22 +298,22 @@ fn parse_array_expression() {
 #[test]
 fn parse_if_else_expression() {
     let tests = [
-        ("if x < y { x } else { y }", "if (x < y) { x } else { y }"),
+        ("if x < y then x otherwise y end", "if (x < y) then x otherwise y end"),
         (
-            "if x > y { x } else { if x < z { z } else { y } }",
-            "if (x > y) { x } else { if (x < z) { z } else { y } }",
+            "if x > y then x otherwise if x < z then z otherwise y end end",
+            "if (x > y) then x otherwise if (x < z) then z otherwise y end end",
         ),
         (
-            "if x == y { if y == z { x } else { z } } else { if x > z { x } else { z } }",
-            "if (x == y) { if (y == z) { x } else { z } } else { if (x > z) { x } else { z } }",
+            "if x == y then if y == z then x otherwise z end otherwise if x > z then x otherwise z end end",
+            "if (x == y) then if (y == z) then x otherwise z end otherwise if (x > z) then x otherwise z end end",
         ),
-        ("if x !=y{}else{}", "if (x != y) {} else {}"),
-        ("if x < y { x }", "if (x < y) { x }"),
-        ("if x > y { x }", "if (x > y) { x }"),
-        ("if x == y { x }", "if (x == y) { x }"),
-        ("if x != y { x }", "if (x != y) { x }"),
-        ("if true { x }", "if true { x }"),
-        ("if false { x }", "if false { x }"),
+        ("if (x !=y)then otherwise   end", "if (x != y) then otherwise end"),
+        ("if x < y then(x)end", "if (x < y) then x end"),
+        ("if x > y then x end", "if (x > y) then x end"),
+        ("if x == y then x end", "if (x == y) then x end"),
+        ("if x != y then x end", "if (x != y) then x end"),
+        ("if true then x end", "if true then x end"),
+        ("if false then x end", "if false then x end"),
     ];
     validate_parse_to_string(&tests);
 }
@@ -353,21 +353,21 @@ fn parse_complex_program() {
     let tests = [
         (
             r#"set fizzbuzz = fn(n) {
-            if n % 3 == 0 && n % 5 != 0 {
-                print("Fizz")
-            } else {
-                if n % 5 == 0 && n % 3 != 0 {
-                    print("Buzz");
-                } else {
-                    if n % 5 == 0 && n % 3 == 0 {
-                        print("FizzBuzz");
-                    } else {
-                        print(n);
-                    };
-                };
-            };
-        };"#,
-            r#"set fizzbuzz = fn (n) { if (((n % 3) == 0) && ((n % 5) != 0)) { print("Fizz") } else { if (((n % 5) == 0) && ((n % 3) != 0)) { print("Buzz") } else { if (((n % 5) == 0) && ((n % 3) == 0)) { print("FizzBuzz") } else { print(n) } } } }"#,
+if n % 3 == 0 && n % 5 != 0 then
+    print("Fizz")
+otherwise
+    if n % 5 == 0 && n % 3 != 0 then
+        print("Buzz");
+    otherwise
+        if n % 5 == 0 && n % 3 == 0 then
+            print("FizzBuzz");
+        otherwise
+            print(n);
+        end
+    end
+end
+};"#,
+            r#"set fizzbuzz = fn (n) { if (((n % 3) == 0) && ((n % 5) != 0)) then print("Fizz") otherwise if (((n % 5) == 0) && ((n % 3) != 0)) then print("Buzz") otherwise if (((n % 5) == 0) && ((n % 3) == 0)) then print("FizzBuzz") otherwise print(n) end end end }"#,
         ),
         (
             r#"set hello_world = "Hello, world";

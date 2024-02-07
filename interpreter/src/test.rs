@@ -169,13 +169,13 @@ fn eval_infix_boolean_expressions() {
 #[test]
 fn eval_if_else_expressions() {
     let tests = [
-        ("if (true) { 10 }", Value::Integer(10)),
-        ("if (false) { 10 }", Value::Null),
-        ("if (1) { 10 }", Value::Integer(10)),
-        ("if (1 < 2) { 10 }", Value::Integer(10)),
-        ("if (1 > 2) { 10 }", Value::Null),
-        ("if (1 > 2) { 10 } else { 20 }", Value::Integer(20)),
-        ("if (1 < 2) { 10 } else { 20 }", Value::Integer(10)),
+        ("if (true) then 10 end", Value::Integer(10)),
+        ("if (false) then 10 end", Value::Null),
+        ("if (1) then 10 end", Value::Integer(10)),
+        ("if (1 < 2) then 10 end", Value::Integer(10)),
+        ("if (1 > 2) then 10 end", Value::Null),
+        ("if (1 > 2) then 10 otherwise 20 end", Value::Integer(20)),
+        ("if (1 < 2) then 10 otherwise 20 end", Value::Integer(10)),
     ];
 
     for (input, expected_output) in tests {

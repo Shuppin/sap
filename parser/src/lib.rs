@@ -5,8 +5,8 @@ use ast::expression::{
     Unary,
 };
 use ast::literal::Literal;
-use ast::statement::{Set, Return, Statement};
-use ast::{Block, Program};
+use ast::statement::{Return, Set, Statement};
+use ast::{Program, StatementList};
 use lexer::token::{Token, TokenKind};
 use lexer::Lexer;
 use shared::error::{Error, ErrorKind};
@@ -73,6 +73,7 @@ impl<'lexer> Parser<'lexer> {
     }
 
     fn next_token(&mut self) {
+        println!("next_token: {:?}", self.cur_token.kind);
         self.cur_token = self.lexer.next_token();
     }
 
@@ -111,10 +112,38 @@ impl<'lexer> Parser<'lexer> {
         return Ok(program);
     }
 
-    fn parse_block(&mut self) -> Result<Block, Error> {
+    fn parse_statement_list(&mut self) -> Result<StatementList, Error> {
+        // <statements> -> `NewLine`? <statement> ((`Semi`|`NewLine`) <statement>)*
+        // (`Semi`|`NewLine`)?
+
+        let mut list = StatementList::new();
+
+        if self.cur_token_is(&TokenKind::NewLine) {
+            self.next_token()
+        }
+
+        while !matches!(self.cur_token.kind, TokenKind::End | TokenKind::Otherwise) {
+            list.statements.push(self.parse_statement()?);
+
+            while matches!(
+                self.cur_token.kind,
+                TokenKind::Semicolon | TokenKind::NewLine
+            ) {
+                self.next_token()
+            }
+
+            if self.cur_token_is(&TokenKind::Eof) {
+                return parse_err!("unexpected end of file while parsing block");
+            }
+        }
+
+        Ok(list)
+    }
+
+    fn parse_block(&mut self) -> Result<StatementList, Error> {
         // <block> -> `LCurly` `NewLine`? <statements>? `NewLine`? `RCurly`
         // <statements> -> <statement> ((`Semi`|`NewLine`) <statement>)* (`Semi`|`NewLine`)?
-        let mut block = Block::new();
+        let mut block = StatementList::new();
 
         block.span.start = self.cur_token.span.start;
 
@@ -357,26 +386,29 @@ impl<'lexer> Parser<'lexer> {
     }
 
     fn parse_selection_expr(&mut self) -> Result<Expression, Error> {
-        // <selection_expr> -> `If` <expr> <block> (`Else` <block>)?
+        // <selection_expr> -> `If` <expr> `Then` <statements>? (`Otherwise` <statements>?)? `End`
         let start = self.cur_token.span.start;
 
         self.eat(&TokenKind::If)?;
         let condition_expr = self.parse_expression()?;
-        let conditional_block = self.parse_block()?;
+        self.eat(&TokenKind::Then)?;
+        let conditional_statements = self.parse_statement_list()?;
 
-        let (else_conditional_block, span) = if self.cur_token_is(&TokenKind::Else) {
-            self.eat(&TokenKind::Else)?;
-            let else_conditional_block = self.parse_block()?;
-            let span = Span::new(start, else_conditional_block.span.end);
-            (Some(else_conditional_block), span)
+        let (else_conditional_block, span) = if self.cur_token_is(&TokenKind::Otherwise) {
+            self.eat(&TokenKind::Otherwise)?;
+            let else_conditional_statements = self.parse_statement_list()?;
+            let span = Span::new(start, else_conditional_statements.span.end);
+            (Some(else_conditional_statements), span)
         } else {
-            let span = Span::new(start, conditional_block.span.end);
+            let span = Span::new(start, conditional_statements.span.end);
             (None, span)
         };
 
+        self.eat(&TokenKind::End)?;
+
         return Ok(Expression::Selection(Selection {
             condition: Box::new(condition_expr),
-            conditional: conditional_block,
+            conditional: conditional_statements,
             else_conditional: else_conditional_block,
             span,
         }));

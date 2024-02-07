@@ -287,11 +287,11 @@ fn lexer_conditional() {
     let input = "set five = 5;
 set ten = 10;
 
-if (5 < 10) {
+if (5 < 10) then
     return true;
-} else {
+otherwise
     return false;
-}";
+end";
     lexer_common(
         input,
         vec![
@@ -313,22 +313,20 @@ if (5 < 10) {
             token!(Lt, 35, 36),
             int!(10, 37, 39),
             token!(RParen, 39, 40),
-            token!(LCurly, 41, 42),
-            token!(NewLine, 46, 47),
-            token!(Return, 47, 53),
-            token!(True, 54, 58),
-            token!(Semicolon, 58, 59),
-            token!(NewLine, 59, 60),
-            token!(RCurly, 60, 61),
-            token!(Else, 62, 66),
-            token!(LCurly, 67, 68),
-            token!(NewLine, 72, 73),
-            token!(Return, 73, 79),
-            token!(False, 80, 85),
-            token!(Semicolon, 85, 86),
-            token!(NewLine, 86, 87),
-            token!(RCurly, 87, 88),
-            token!(Eof, 88, 88),
+            token!(Then, 41, 45),
+            token!(NewLine, 49, 50),
+            token!(Return, 50, 56),
+            token!(True, 57, 61),
+            token!(Semicolon, 61, 62),
+            token!(NewLine, 62, 63),
+            token!(Otherwise, 63, 72),
+            token!(NewLine, 76, 77),
+            token!(Return, 77, 83),
+            token!(False, 84, 89),
+            token!(Semicolon, 89, 90),
+            token!(NewLine, 90, 91),
+            token!(End, 91, 94),
+            token!(Eof, 94, 94),
         ],
     );
 }

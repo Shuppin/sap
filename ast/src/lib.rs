@@ -47,12 +47,12 @@ impl Program {
 
 /// Represents a group of statements encapsulated by a set of curly braces `{}`.
 #[derive(Debug, Serialize, PartialEq, Clone)]
-pub struct Block {
+pub struct StatementList {
     pub statements: Vec<Statement>,
     pub span: Span,
 }
 
-impl Block {
+impl StatementList {
     /// Creates a new instance of the Block struct.
     ///
     /// Note: `span.end` is set to 0

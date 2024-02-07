@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter, Result};
 use crate::expression::*;
 use crate::literal::Literal;
 use crate::statement::{Return, Set, Statement};
-use crate::{Block, Program};
+use crate::{Program, StatementList};
 
 fn format_items<T: ToString>(items: &Vec<T>) -> String {
     return items
@@ -19,7 +19,7 @@ impl Display for Program {
     }
 }
 
-impl Display for Block {
+impl Display for StatementList {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{}", format_items(&self.statements))
     }
@@ -73,21 +73,21 @@ impl Display for Expression {
                 ..
             }) => {
                 let conditional_str = match conditional.statements.is_empty() {
-                    true => "{}".to_string(),
-                    false => format!("{{ {} }}", conditional),
+                    true => "".to_string(),
+                    false => format!(" {}", conditional),
                 };
 
                 let else_conditional_str = match else_conditional {
                     Some(else_conditional) => match else_conditional.statements.is_empty() {
-                        true => " else {}".to_string(),
-                        false => format!(" else {{ {} }}", else_conditional),
+                        true => " otherwise".to_string(),
+                        false => format!(" otherwise {}", else_conditional),
                     },
                     None => "".to_string(),
                 };
 
                 write!(
                     f,
-                    "if {} {}{}",
+                    "if {} then{}{} end",
                     condition, conditional_str, else_conditional_str
                 )
             }

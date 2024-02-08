@@ -239,7 +239,7 @@ fn eval_binary_expression(env: &EnvRef, binary: &Binary) -> EvalOutcome {
         TokenKind::GtEq => left.ge(right),
         TokenKind::And => left.and(right),
         TokenKind::Or => left.or(right),
-        // TODO: mod
+        TokenKind::Mod => left.rem(right),
         _ => todo!(),
     };
     match result {

@@ -322,3 +322,28 @@ end";
         ],
     );
 }
+
+#[test]
+fn lexer_keywords() {
+    let input =
+        "defineFunction set if otherwise true false return then end repeat times until forever";
+    lexer_common(
+        input,
+        vec![
+            token!(DefineFunction, 0, 14),
+            token!(Set, 15, 18),
+            token!(If, 19, 21),
+            token!(Otherwise, 22, 31),
+            token!(True, 32, 36),
+            token!(False, 37, 42),
+            token!(Return, 43, 49),
+            token!(Then, 50, 54),
+            token!(End, 55, 58),
+            token!(Repeat, 59, 65),
+            token!(Times, 66, 71),
+            token!(Until, 72, 77),
+            token!(Forever, 78, 85),
+            token!(Eof, 85, 85),
+        ]
+    )
+}

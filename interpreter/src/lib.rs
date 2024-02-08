@@ -5,7 +5,9 @@ use std::rc::Rc;
 
 use ast::expression::{Binary, Expression, FunctionCall, Identifier, Selection, Unary};
 use ast::literal::Literal;
-use ast::statement::{FunctionDeclaration, Return, Set, Statement};
+use ast::statement::{
+    FunctionDeclaration, RepeatForever, RepeatNTimes, RepeatUntil, Return, Set, Statement,
+};
 use ast::Program;
 use lexer::token::TokenKind;
 use shared::err;
@@ -73,6 +75,9 @@ fn eval_statement(env: &EnvRef, statement: &Statement) -> EvalOutcome {
         Statement::Return(ret) => eval_return_statement(env, ret),
         Statement::Set(set_stmt) => eval_set_statement(env, set_stmt),
         Statement::FunctionDeclaration(func) => eval_func_decl_statement(env, func),
+        Statement::RepeatNTimes(repeat) => eval_repeat_n_times_statement(env, repeat),
+        Statement::RepeatUntil(repeat) => eval_repeat_until_statement(env, repeat),
+        Statement::RepeatForever(repeat) => eval_repeat_forever_statement(env, repeat),
     }
 }
 
@@ -103,6 +108,61 @@ fn eval_func_decl_statement(env: &EnvRef, func: &FunctionDeclaration) -> EvalOut
     }));
 
     env.borrow_mut().store(name, value);
+    return Continue(Rc::new(Value::Null));
+}
+
+fn eval_repeat_forever_statement(env: &EnvRef, repeat: &RepeatForever) -> EvalOutcome {
+    loop {
+        eval_statements(env, &repeat.body.statements)?;
+    }
+}
+
+fn eval_repeat_n_times_statement(env: &EnvRef, repeat: &RepeatNTimes) -> EvalOutcome {
+    let n_rc = eval_expression(env, &repeat.n)?;
+    let n = match n_rc.as_ref() {
+        Value::Integer(n) => {
+            if *n < 0 {
+                return traversal_error!(
+                    ErrorKind::TypeError,
+                    "repeat _ times expected non-negative integer, got '{}'",
+                    n
+                );
+            }
+            *n as usize
+        }
+        _ => {
+            return traversal_error!(
+                ErrorKind::TypeError,
+                "repeat _ times expected non-negative integer, got type {}",
+                n_rc.variant_name()
+            )
+        }
+    };
+
+    for _ in 0..n {
+        eval_statements(env, &repeat.body.statements)?;
+    }
+
+    return Continue(Rc::new(Value::Null));
+}
+
+fn eval_repeat_until_statement(env: &EnvRef, repeat: &RepeatUntil) -> EvalOutcome {
+    loop {
+        let condition = eval_expression(env, &repeat.condition)?.to_boolean();
+        let condition_value = match condition {
+            Ok(value) => value,
+            Err(e) => return Break(TraversalBreak::Error(e)),
+        };
+        match condition_value {
+            Value::Boolean(b) => {
+                if b {
+                    break;
+                }
+            }
+            _ => unreachable!(),
+        }
+        eval_statements(env, &repeat.body.statements)?;
+    }
     return Continue(Rc::new(Value::Null));
 }
 

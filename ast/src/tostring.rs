@@ -2,7 +2,9 @@ use std::fmt::{Display, Formatter, Result};
 
 use crate::expression::*;
 use crate::literal::Literal;
-use crate::statement::{FunctionDeclaration, Return, Set, Statement};
+use crate::statement::{
+    FunctionDeclaration, RepeatForever, RepeatNTimes, RepeatUntil, Return, Set, Statement,
+};
 use crate::{Program, StatementList};
 
 fn format_items<T: ToString>(items: &Vec<T>) -> String {
@@ -57,6 +59,32 @@ impl Display for Statement {
                         .join(", "),
                     body_block
                 )
+            }
+            Statement::RepeatNTimes(RepeatNTimes { n, body, .. }) => {
+                let body_block = match body.statements.is_empty() {
+                    true => " ".to_string(),
+                    false => format!(" {} ", body),
+                };
+
+                write!(f, "repeat {} times{}end", n, body_block)
+            }
+            Statement::RepeatUntil(RepeatUntil {
+                condition, body, ..
+            }) => {
+                let body_block = match body.statements.is_empty() {
+                    true => " ".to_string(),
+                    false => format!(" {} ", body),
+                };
+
+                write!(f, "repeat until {}{}end", condition, body_block)
+            }
+            Statement::RepeatForever(RepeatForever { body, .. }) => {
+                let body_block = match body.statements.is_empty() {
+                    true => " ".to_string(),
+                    false => format!(" {} ", body),
+                };
+
+                write!(f, "repeat forever{}end", body_block)
             }
         }
     }

@@ -385,3 +385,39 @@ end"#,
 
     validate_parse_to_string(&tests);
 }
+
+
+#[test]
+fn parse_repeat_forever_statements() {
+    let tests = [
+        ("repeat forever end", "repeat forever end"),
+        ("repeat forever(1+1)end", "repeat forever (1 + 1) end"),
+        ("repeat forever set x = 5; end", "repeat forever set x = 5 end"),
+        ("repeat forever defineFunction foo() end end", "repeat forever defineFunction foo() end end"),
+    ];
+
+    validate_parse_to_string(&tests);
+}
+
+#[test]
+fn parse_repeat_n_times_statements() {
+    let tests = [
+        ("repeat 5 times end", "repeat 5 times end"),
+        ("repeat 5+5 times set x = 5; end", "repeat (5 + 5) times set x = 5 end"),
+        ("repeat n times defineFunction foo() end end", "repeat n times defineFunction foo() end end"),
+    ];
+
+    validate_parse_to_string(&tests);
+}
+
+#[test]
+fn parse_repeat_until_statements() {
+    let tests = [
+        ("repeat until 5 > 10 end", "repeat until (5 > 10) end"),
+        ("repeat until 5+5 > 10 end", "repeat until ((5 + 5) > 10) end"),
+        ("repeat until 5+5 > 10 set x = 5; end", "repeat until ((5 + 5) > 10) set x = 5 end"),
+        ("repeat until 5+5 > 10 defineFunction foo() end end", "repeat until ((5 + 5) > 10) defineFunction foo() end end"),
+    ];
+
+    validate_parse_to_string(&tests);
+}

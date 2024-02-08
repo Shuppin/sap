@@ -4,7 +4,7 @@ use ast::expression::{
     Array, Binary, Expression, FunctionCall, Identifier, Index, Selection, Unary,
 };
 use ast::literal::Literal;
-use ast::statement::{FunctionDeclaration, Return, Set, Statement};
+use ast::statement::{FunctionDeclaration, RepeatForever, RepeatUntil, Return, Set, Statement};
 use ast::{Program, StatementList};
 use lexer::token::{Token, TokenKind};
 use lexer::Lexer;
@@ -152,48 +152,13 @@ impl<'lexer> Parser<'lexer> {
         Ok(list)
     }
 
-    // fn parse_statement_list(&mut self) -> Result<StatementList, Error> {
-    //     // <statements> -> `NewLine`? <statement> ((`Semi`|`NewLine`) <statement>)*
-    //     // (`Semi`|`NewLine`)?
-
-    //     let mut list = StatementList::new();
-
-    //     list.span.start = self.cur_token.span.start;
-
-    //     if self.cur_token_is(&TokenKind::NewLine) {
-    //         self.next_token()
-    //     }
-
-    //     while !matches!(self.cur_token.kind, TokenKind::End | TokenKind::Otherwise) {
-    //         list.statements.push(self.parse_statement()?);
-
-    //         while matches!(
-    //             self.cur_token.kind,
-    //             TokenKind::Semicolon | TokenKind::NewLine
-    //         ) {
-    //             self.next_token()
-    //         }
-
-    //         if self.cur_token_is(&TokenKind::Eof) {
-    //             return parse_err!("unexpected end of file while parsing block");
-    //         }
-    //     }
-
-    //     if let Some(statement) = list.statements.last() {
-    //         list.span.end = statement.span().end;
-    //     } else {
-    //         list.span.end = list.span.start;
-    //     }
-
-    //     Ok(list)
-    // }
-
     fn parse_statement(&mut self) -> Result<Statement, Error> {
         // <statement> -> <set_stmt> | <return_stmt> | <expression> | <fn_decl_stmt>
         match self.cur_token.kind {
             TokenKind::Set => self.parse_set_stmt(),
             TokenKind::Return => self.parse_return_stmt(),
             TokenKind::DefineFunction => self.parse_fn_decl_stmt(),
+            TokenKind::Repeat => self.parse_repeat_stmt(),
             _ => self.parse_expr_stmt(),
         }
     }
@@ -282,6 +247,96 @@ impl<'lexer> Parser<'lexer> {
             name,
             parameters,
             body,
+            span,
+        }));
+    }
+
+    fn parse_repeat_stmt(&mut self) -> Result<Statement, Error> {
+        // <repeat_stmt> -> `Repeat` (<repeat_n_times> | <repeat_until> | <repeat_forever>)
+        let start = self.cur_token.span.start;
+
+        self.eat(&TokenKind::Repeat)?;
+
+        let statement = match &self.cur_token.kind {
+            TokenKind::Until => self.parse_repeat_until(start)?,
+            TokenKind::Forever => self.parse_repeat_forever(start)?,
+            _ => self.parse_repeat_n_times(start)?,
+        };
+
+        return Ok(statement);
+    }
+
+    fn parse_repeat_until(&mut self, start: usize) -> Result<Statement, Error> {
+        // <repeat_until> -> `Until` <expression> <statements>? `End`
+
+        self.eat(&TokenKind::Until)?;
+
+        let expression = self.parse_expression()?;
+
+        let statements = match self.cur_token.kind {
+            TokenKind::End => StatementList {
+                statements: vec![],
+                span: Span::new(self.cur_token.span.start, self.cur_token.span.start),
+            },
+            _ => self.parse_statement_list()?,
+        };
+
+        let span = Span::new(start, self.cur_token.span.end);
+
+        self.eat(&TokenKind::End)?;
+
+        return Ok(Statement::RepeatUntil(RepeatUntil {
+            condition: expression,
+            body: statements,
+            span,
+        }));
+    }
+
+    fn parse_repeat_forever(&mut self, start: usize) -> Result<Statement, Error> {
+        // <repeat_forever> -> `Forever` <statements>? `End`
+
+        self.eat(&TokenKind::Forever)?;
+
+        let statements = match self.cur_token.kind {
+            TokenKind::End => StatementList {
+                statements: vec![],
+                span: Span::new(self.cur_token.span.start, self.cur_token.span.start),
+            },
+            _ => self.parse_statement_list()?,
+        };
+
+        let span = Span::new(start, self.cur_token.span.end);
+
+        self.eat(&TokenKind::End)?;
+
+        return Ok(Statement::RepeatForever(RepeatForever {
+            body: statements,
+            span,
+        }));
+    }
+
+    fn parse_repeat_n_times(&mut self, start: usize) -> Result<Statement, Error> {
+        // <repeat_n_times> -> <expression> `Times` <statements>? `End`
+
+        let n = self.parse_expression()?;
+
+        self.eat(&TokenKind::Times)?;
+
+        let statements = match self.cur_token.kind {
+            TokenKind::End => StatementList {
+                statements: vec![],
+                span: Span::new(self.cur_token.span.start, self.cur_token.span.start),
+            },
+            _ => self.parse_statement_list()?,
+        };
+
+        let span = Span::new(start, self.cur_token.span.end);
+
+        self.eat(&TokenKind::End)?;
+
+        return Ok(Statement::RepeatNTimes(ast::statement::RepeatNTimes {
+            n,
+            body: statements,
             span,
         }));
     }

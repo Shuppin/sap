@@ -94,6 +94,10 @@ pub enum TokenKind {
     Return,
     Then,
     End,
+    Repeat,
+    Times,
+    Until,
+    Forever,
 }
 
 impl TokenKind {
@@ -110,18 +114,22 @@ impl TokenKind {
     /// # Returns
     ///
     /// The corresponding token kind for the identifier.
-    pub fn lookup_ident(ident: &str) -> TokenKind {
+    pub fn lookup_ident(ident: &str) -> Self {
         match ident {
-            "defineFunction" => TokenKind::DefineFunction,
-            "set" => TokenKind::Set,
-            "if" => TokenKind::If,
-            "otherwise" => TokenKind::Otherwise,
-            "true" => TokenKind::True,
-            "false" => TokenKind::False,
-            "return" => TokenKind::Return,
-            "then" => TokenKind::Then,
-            "end" => TokenKind::End,
-            _ => TokenKind::Identifier {
+            "defineFunction" => Self::DefineFunction,
+            "set" => Self::Set,
+            "if" => Self::If,
+            "otherwise" => Self::Otherwise,
+            "true" => Self::True,
+            "false" => Self::False,
+            "return" => Self::Return,
+            "then" => Self::Then,
+            "end" => Self::End,
+            "repeat" => Self::Repeat,
+            "times" => Self::Times,
+            "until" => Self::Until,
+            "forever" => Self::Forever,
+            _ => Self::Identifier {
                 name: ident.to_string(),
             },
         }
@@ -172,6 +180,10 @@ impl Display for TokenKind {
             Self::Return => "return",
             Self::Then => "then",
             Self::End => "end",
+            Self::Repeat => "repeat",
+            Self::Times => "times",
+            Self::Until => "until",
+            Self::Forever => "forever",
             Self::Eof => "<EOF>",
             Self::UnterminatedComment => "<UnterminatedComment>",
             Self::NewLine => "\\n",

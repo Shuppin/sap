@@ -11,13 +11,21 @@ The order of statements is representative of the hierarchy of the AST.
 
 ## Statements
 
-    <statement> -> <set_stmt> | <return_stmt> | <expression> | <fn_decl_stmt>
+    <statement> -> <set_stmt> | <return_stmt> | <expression> | <fn_decl_stmt> | <repeat_stmt>
 
     <set_stmt> -> `Set` `Ident` `Assign` <expression>
 
     <return_stmt> -> `Return` <expression>
 
     <fn_decl_stmt> -> `defineFunction` `LParen` <fn_params> `RParen` <statements>? `End`
+
+    <repeat_stmt> -> `Repeat` (<repeat_n_times> | <repeat_until> | <repeat_forever>)
+
+    <repeat_n_times> -> <expression> `Times` <statements>? `End`
+
+    <repeat_until> -> `Until` <expression> <statements>? `End`
+
+    <repeat_forever> -> `Forever` <statements>? `End`
 
 ## Expressions
 

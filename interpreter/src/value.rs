@@ -9,6 +9,7 @@ use crate::runtime::EnvRef;
 #[derive(PartialEq)]
 pub struct Function {
     pub parameters: Vec<String>,
+    // TODO: Use StatementList instead of Vec<Statement>
     pub body: Vec<Statement>,
     pub env: EnvRef,
 }

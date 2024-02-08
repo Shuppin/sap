@@ -253,7 +253,7 @@ fn eval_function_declaration() {
                 )
             }
         }
-        _ => panic!("Unexpected value {}", value),
+        _ => panic!("Unexpected value"),
     }
 }
 
@@ -278,6 +278,54 @@ fn eval_function_cool() {
             _ => panic!("Unexpected value"),
         }
     }
+}
+
+#[test]
+fn eval_repeat_n_times() {
+    let tests = [
+        ("set x = 0; repeat 10 times set x = x+1; end; x", 10),
+        ("set y = 10; repeat 10 times set y = y-1; end; y", 0),
+        ("set z = 5; repeat 5 times set z = z * 2; end; z", 160),
+        ("set a = 1; repeat 0 times set a = a * 10; end; a", 1),
+        ("set b = 100; repeat 1 times set b = b / 2; end; b", 50),
+    ];
+
+    for (input, expected_output) in tests {
+        match *eval(input) {
+            Value::Integer(n) => assert_eq!(n, expected_output),
+            _ => panic!("Unexpected value"),
+        }
+    }
+}
+
+#[test]
+fn eval_repeat_until() {
+    let tests = [
+        ("set x = 0; repeat until x == 10 set x = x+1; end; x", 10),
+        ("set y = 10; repeat until y == 0 set y = y-1; end; y", 0),
+        (
+            "set z = 5; repeat until z == 160 set z = z * 2; end; z",
+            160,
+        ),
+        ("set a = 1; repeat until a == 1 set a = a * 10; end; a", 1),
+        (
+            "set b = 100; repeat until b == 50 set b = b / 2; end; b",
+            50,
+        ),
+    ];
+
+    for (input, expected_output) in tests {
+        match *eval(input) {
+            Value::Integer(n) => assert_eq!(n, expected_output),
+            _ => panic!("Unexpected value"),
+        }
+    }
+}
+
+#[test]
+fn eval_repeat_forever() {
+    // TODO: Might add a 'break' keyword, or could add some examples of use inside
+    // functions with return statements.
 }
 
 #[test]

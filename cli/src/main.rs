@@ -170,9 +170,16 @@ fn evaluate_and_print(input: &str, env: Option<interpreter::runtime::EnvRef>, di
                 Ok(evaluation) => {
                     if display_env {
                         println!("\n{}", evaluation.0.borrow());
+                        match *evaluation.1 {
+                            interpreter::value::Value::Null => {}
+                            _ => println!("\nEvaluated as: {}", evaluation.1),
+                        }
                         println!("\nEvaluated as: {}", evaluation.1)
                     } else {
-                        println!("{}", evaluation.1)
+                        match *evaluation.1 {
+                            interpreter::value::Value::Null => {}
+                            _ => println!("{}", evaluation.1),
+                        }
                     }
                 }
                 Err(err) => println!("{:?}: {}", err.kind, err.message),

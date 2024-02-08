@@ -7,7 +7,7 @@ use crate::statement::{
 };
 use crate::{Program, StatementList};
 
-fn format_items<T: ToString>(items: &Vec<T>) -> String {
+fn semi_seperated<T: ToString>(items: &Vec<T>) -> String {
     return items
         .iter()
         .map(|item| item.to_string())
@@ -15,15 +15,23 @@ fn format_items<T: ToString>(items: &Vec<T>) -> String {
         .join("; ");
 }
 
+fn comma_seperated<T: ToString>(items: &Vec<T>) -> String {
+    return items
+        .iter()
+        .map(|item| item.to_string())
+        .collect::<Vec<String>>()
+        .join(", ");
+}
+
 impl Display for Program {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}", format_items(&self.statements))
+        write!(f, "{}", semi_seperated(&self.statements))
     }
 }
 
 impl Display for StatementList {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}", format_items(&self.statements))
+        write!(f, "{}", semi_seperated(&self.statements))
     }
 }
 
@@ -52,11 +60,7 @@ impl Display for Statement {
                     f,
                     "defineFunction {}({}){}end",
                     name,
-                    parameters
-                        .iter()
-                        .map(|expr| expr.to_string())
-                        .collect::<Vec<String>>()
-                        .join(", "),
+                    comma_seperated(&parameters),
                     body_block
                 )
             }
@@ -86,6 +90,9 @@ impl Display for Statement {
 
                 write!(f, "repeat forever{}end", body_block)
             }
+            Statement::Display(display) => {
+                write!(f, "display {}", comma_seperated(&display.expressions))
+            }
         }
     }
 }
@@ -106,16 +113,7 @@ impl Display for Expression {
             }) => write!(f, "({} {} {})", left, operator, right),
             Expression::FunctionCall(FunctionCall {
                 callee, arguments, ..
-            }) => write!(
-                f,
-                "{}({})",
-                callee,
-                arguments
-                    .iter()
-                    .map(|expr| expr.to_string())
-                    .collect::<Vec<String>>()
-                    .join(", ")
-            ),
+            }) => write!(f, "{}({})", callee, comma_seperated(arguments)),
             Expression::Index(Index { object, index, .. }) => write!(f, "{}[{}]", object, index),
             Expression::Selection(Selection {
                 condition,
@@ -142,15 +140,9 @@ impl Display for Expression {
                     condition, conditional_str, else_conditional_str
                 )
             }
-            Expression::Array(Array { elements, .. }) => write!(
-                f,
-                "[{}]",
-                elements
-                    .iter()
-                    .map(|expr| expr.to_string())
-                    .collect::<Vec<String>>()
-                    .join(", ")
-            ),
+            Expression::Array(Array { elements, .. }) => {
+                write!(f, "[{}]", comma_seperated(&elements))
+            }
         }
     }
 }

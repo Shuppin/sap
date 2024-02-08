@@ -98,6 +98,7 @@ pub enum TokenKind {
     Times,
     Until,
     Forever,
+    Display,
 }
 
 impl TokenKind {
@@ -129,6 +130,7 @@ impl TokenKind {
             "times" => Self::Times,
             "until" => Self::Until,
             "forever" => Self::Forever,
+            "display" => Self::Display,
             _ => Self::Identifier {
                 name: ident.to_string(),
             },
@@ -184,6 +186,7 @@ impl Display for TokenKind {
             Self::Times => "times",
             Self::Until => "until",
             Self::Forever => "forever",
+            Self::Display => "display",
             Self::Eof => "<EOF>",
             Self::UnterminatedComment => "<UnterminatedComment>",
             Self::NewLine => "\\n",

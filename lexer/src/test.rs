@@ -326,7 +326,7 @@ end";
 #[test]
 fn lexer_keywords() {
     let input =
-        "defineFunction set if otherwise true false return then end repeat times until forever";
+        "defineFunction set if otherwise true false return then end repeat times until forever display";
     lexer_common(
         input,
         vec![
@@ -343,7 +343,8 @@ fn lexer_keywords() {
             token!(Times, 66, 71),
             token!(Until, 72, 77),
             token!(Forever, 78, 85),
-            token!(Eof, 85, 85),
+            token!(Display, 86, 93),
+            token!(Eof, 93, 93),
         ]
     )
 }

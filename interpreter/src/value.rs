@@ -93,7 +93,7 @@ impl Value {
 
     // region: type coercion
 
-    pub fn to_boolean(&self) -> Result<Self, Error> {
+    pub fn cast_to_boolean(&self) -> Result<Self, Error> {
         match self {
             Self::Integer(i) => Ok(Self::Boolean(*i != 0)),
             Self::Float(f) => Ok(Self::Boolean(*f != 0.0)),
@@ -104,6 +104,18 @@ impl Value {
                 self.variant_name(),
                 Self::Boolean(true).variant_name() // i hate this i hate this i hate this
             ),
+        }
+    }
+
+    pub fn cast_to_string(&self) -> Self {
+        match self {
+            Self::Integer(i) => Self::String(i.to_string()),
+            Self::Float(f) => Self::String(f.to_string()),
+            Self::Boolean(b) => Self::String(b.to_string()),
+            // I suppose type coercion *should* provide ownership of the new value, so this is okay.
+            Self::String(s) => Self::String(s.clone()),
+            Self::Null => Self::String("null".to_string()),
+            Self::Function(_) => Self::String("<function reference>".to_string()),
         }
     }
 
@@ -270,7 +282,7 @@ impl fmt::Display for Value {
             Self::Float(fl) => write!(f, "{}", fl),
             Self::Boolean(b) => write!(f, "{}", b),
             Self::String(s) => write!(f, "\"{}\"", s),
-            Self::Function(_) => write!(f, "<function>"),
+            Self::Function(_) => write!(f, "<function reference>"),
             Self::Null => write!(f, "null"),
         }
     }

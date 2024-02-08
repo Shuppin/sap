@@ -4,7 +4,9 @@ use ast::expression::{
     Array, Binary, Expression, FunctionCall, Identifier, Index, Selection, Unary,
 };
 use ast::literal::Literal;
-use ast::statement::{FunctionDeclaration, RepeatForever, RepeatUntil, Return, Set, Statement};
+use ast::statement::{
+    Display, FunctionDeclaration, RepeatForever, RepeatUntil, Return, Set, Statement,
+};
 use ast::{Program, StatementList};
 use lexer::token::{Token, TokenKind};
 use lexer::Lexer;
@@ -159,6 +161,8 @@ impl<'lexer> Parser<'lexer> {
             TokenKind::Return => self.parse_return_stmt(),
             TokenKind::DefineFunction => self.parse_fn_decl_stmt(),
             TokenKind::Repeat => self.parse_repeat_stmt(),
+            TokenKind::Display => self.parse_display_stmt(),
+            // TODO: replace "&&" with "and"
             _ => self.parse_expr_stmt(),
         }
     }
@@ -249,6 +253,20 @@ impl<'lexer> Parser<'lexer> {
             body,
             span,
         }));
+    }
+
+    fn parse_display_stmt(&mut self) -> Result<Statement, Error> {
+        // <display_stmt> -> `Display` <expr_list>
+        let start = self.cur_token.span.start;
+        self.eat(&TokenKind::Display)?;
+        let expressions = match self.cur_token.kind {
+            TokenKind::NewLine | TokenKind::Semicolon => {
+                return parse_err!("empty display statement");
+            }
+            _ => self.parse_expr_list()?,
+        };
+        let span = Span::new(start, self.cur_token.span.end);
+        return Ok(Statement::Display(Display { expressions, span }));
     }
 
     fn parse_repeat_stmt(&mut self) -> Result<Statement, Error> {

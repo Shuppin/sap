@@ -27,6 +27,8 @@ The order of statements is representative of the hierarchy of the AST.
 
     <repeat_forever> -> `Forever` <statements>? `End`
 
+    <display> -> `Display` <expr_list>?
+
 ## Expressions
 
     <expression> -> <or_expr>

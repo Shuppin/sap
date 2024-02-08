@@ -421,3 +421,15 @@ fn parse_repeat_until_statements() {
 
     validate_parse_to_string(&tests);
 }
+
+#[test]
+fn parse_display_statements() {
+    let tests = [
+        ("display 5;", "display 5"),
+        ("display this,is, a,really,long,     message", "display this, is, a, really, long, message"),
+        ("display 5+5;", "display (5 + 5)"),
+        ("display 5+5, 5+5;", "display (5 + 5), (5 + 5)")
+    ];
+
+    validate_parse_to_string(&tests);
+}

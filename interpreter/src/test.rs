@@ -330,21 +330,39 @@ fn eval_repeat_forever() {
 
 #[test]
 fn value_to_boolean() {
-    assert_eq!(Value::Integer(1).to_boolean(), Ok(Value::Boolean(true)));
     assert_eq!(
-        Value::Integer(-434324).to_boolean(),
+        Value::Integer(1).cast_to_boolean(),
         Ok(Value::Boolean(true))
     );
-    assert_eq!(Value::Integer(0).to_boolean(), Ok(Value::Boolean(false)));
-    assert_eq!(Value::Float(0.0).to_boolean(), Ok(Value::Boolean(false)));
-    assert_eq!(Value::Float(-0.1).to_boolean(), Ok(Value::Boolean(true)));
-    assert_eq!(Value::Float(3.14).to_boolean(), Ok(Value::Boolean(true)));
-    assert_eq!(Value::Boolean(true).to_boolean(), Ok(Value::Boolean(true)));
     assert_eq!(
-        Value::Boolean(false).to_boolean(),
+        Value::Integer(-434324).cast_to_boolean(),
+        Ok(Value::Boolean(true))
+    );
+    assert_eq!(
+        Value::Integer(0).cast_to_boolean(),
         Ok(Value::Boolean(false))
     );
-    match Value::Null.to_boolean() {
+    assert_eq!(
+        Value::Float(0.0).cast_to_boolean(),
+        Ok(Value::Boolean(false))
+    );
+    assert_eq!(
+        Value::Float(-0.1).cast_to_boolean(),
+        Ok(Value::Boolean(true))
+    );
+    assert_eq!(
+        Value::Float(3.14).cast_to_boolean(),
+        Ok(Value::Boolean(true))
+    );
+    assert_eq!(
+        Value::Boolean(true).cast_to_boolean(),
+        Ok(Value::Boolean(true))
+    );
+    assert_eq!(
+        Value::Boolean(false).cast_to_boolean(),
+        Ok(Value::Boolean(false))
+    );
+    match Value::Null.cast_to_boolean() {
         Ok(_) => panic!("Null.to_boolean() returned Ok"),
         Err(err) => assert_eq!(err.kind, ErrorKind::TypeError),
     }

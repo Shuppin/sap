@@ -14,6 +14,7 @@ pub enum Statement {
     RepeatNTimes(RepeatNTimes),
     RepeatUntil(RepeatUntil),
     RepeatForever(RepeatForever),
+    Display(Display),
 }
 
 impl GetSpan for Statement {
@@ -26,6 +27,7 @@ impl GetSpan for Statement {
             Statement::RepeatNTimes(repeat_n_times) => &repeat_n_times.span,
             Statement::RepeatUntil(repeat_until) => &repeat_until.span,
             Statement::RepeatForever(repeat_forever) => &repeat_forever.span,
+            Statement::Display(display) => &display.span,
         }
     }
 }
@@ -74,5 +76,12 @@ pub struct RepeatUntil {
 #[serde(tag = "type")]
 pub struct RepeatForever {
     pub body: StatementList,
+    pub span: Span,
+}
+
+#[derive(Debug, Serialize, PartialEq, Clone)]
+#[serde(tag = "type")]
+pub struct Display {
+    pub expressions: Vec<Expression>,
     pub span: Span,
 }

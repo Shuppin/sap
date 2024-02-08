@@ -6,7 +6,7 @@ use std::rc::Rc;
 use ast::expression::{Binary, Expression, FunctionCall, Identifier, Selection, Unary};
 use ast::literal::Literal;
 use ast::statement::{
-    FunctionDeclaration, RepeatForever, RepeatNTimes, RepeatUntil, Return, Set, Statement,
+    Display, FunctionDeclaration, RepeatForever, RepeatNTimes, RepeatUntil, Return, Set, Statement,
 };
 use ast::Program;
 use lexer::token::TokenKind;
@@ -78,6 +78,7 @@ fn eval_statement(env: &EnvRef, statement: &Statement) -> EvalOutcome {
         Statement::RepeatNTimes(repeat) => eval_repeat_n_times_statement(env, repeat),
         Statement::RepeatUntil(repeat) => eval_repeat_until_statement(env, repeat),
         Statement::RepeatForever(repeat) => eval_repeat_forever_statement(env, repeat),
+        Statement::Display(display) => eval_display_statement(env, display),
     }
 }
 
@@ -108,6 +109,18 @@ fn eval_func_decl_statement(env: &EnvRef, func: &FunctionDeclaration) -> EvalOut
     }));
 
     env.borrow_mut().store(name, value);
+    return Continue(Rc::new(Value::Null));
+}
+
+fn eval_display_statement(env: &EnvRef, display: &Display) -> EvalOutcome {
+    let mut values = Vec::new();
+    for expression in &display.expressions {
+        match eval_expression(env, expression)?.cast_to_string() {
+            Value::String(s) => values.push(s),
+            _ => unreachable!(),
+        };
+    }
+    println!("{}", values.join(" "));
     return Continue(Rc::new(Value::Null));
 }
 
@@ -148,7 +161,7 @@ fn eval_repeat_n_times_statement(env: &EnvRef, repeat: &RepeatNTimes) -> EvalOut
 
 fn eval_repeat_until_statement(env: &EnvRef, repeat: &RepeatUntil) -> EvalOutcome {
     loop {
-        let condition = eval_expression(env, &repeat.condition)?.to_boolean();
+        let condition = eval_expression(env, &repeat.condition)?.cast_to_boolean();
         let condition_value = match condition {
             Ok(value) => value,
             Err(e) => return Break(TraversalBreak::Error(e)),
@@ -236,7 +249,7 @@ fn eval_binary_expression(env: &EnvRef, binary: &Binary) -> EvalOutcome {
 }
 
 fn eval_selection_expression(env: &EnvRef, selection: &Selection) -> EvalOutcome {
-    let result = eval_expression(env, &selection.condition)?.to_boolean();
+    let result = eval_expression(env, &selection.condition)?.cast_to_boolean();
     let condition_value = match result {
         Ok(value) => value,
         Err(e) => return Break(TraversalBreak::Error(e)),

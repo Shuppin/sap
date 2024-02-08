@@ -1,3 +1,9 @@
+//! The `lexer` module provides a lexer for tokenising input strings.
+//!
+//! The `Lexer` provides methods for tokenising input strings into individual tokens.
+//! It supports various token types such as identifiers, numbers, strings, and operators.
+//! The `Lexer` uses a cursor-based approach to iterate over the input string and extract
+//! tokens.
 use std::str::Chars;
 
 use shared::span::Span;
@@ -97,8 +103,10 @@ impl<'lexer> Lexer<'lexer> {
     pub fn next_token(&mut self) -> Token {
         let start_position = self.position;
 
+        // Skip over any whitespace, comments, and newlines.
         match self.skip_garbage() {
             Ok(encountered_newline) => {
+                // If we encountered a newline character (`\n`), we return a NewLine token.
                 if encountered_newline {
                     return Token {
                         span: Span::new(self.position - 1, self.position),
@@ -106,6 +114,9 @@ impl<'lexer> Lexer<'lexer> {
                     };
                 }
             }
+            // The only type of error that can be returned is an unterminated multi-line
+            // comment, so we can safely unwrap the error and return the corresponding
+            // token.
             Err(_) => {
                 return Token {
                     span: Span::new(start_position, self.position),
@@ -254,18 +265,6 @@ impl<'lexer> Lexer<'lexer> {
         ident
     }
 
-    /// Reads and appends digits to a given string from the current position in the input.
-    ///
-    /// # Arguments
-    ///
-    /// * `number` - A mutable reference to a `String` where the digits are appended.
-    fn _read_int(&mut self, number: &mut String) {
-        while is_digit(self.chr) {
-            number.push(self.chr);
-            self.read_char();
-        }
-    }
-
     /// Reads a number from the current position in the input and constructs a `Token`.
     ///
     /// This function reads a sequence of digits as an integer. If a decimal point is
@@ -279,6 +278,8 @@ impl<'lexer> Lexer<'lexer> {
     fn read_number(&mut self) -> Token {
         let mut number = String::new();
         self._read_int(&mut number);
+
+        // If we encounter a decimal point, we continue to read the fractional part.
         if self.chr == '.' {
             number.push(self.chr);
             self.read_char();
@@ -290,14 +291,27 @@ impl<'lexer> Lexer<'lexer> {
                 },
                 kind: TokenKind::Float(number),
             };
+        } else {
+            return Token {
+                span: Span {
+                    start: self.position - number.len(),
+                    end: self.position,
+                },
+                kind: TokenKind::Int(number),
+            };
         }
-        return Token {
-            span: Span {
-                start: self.position - number.len(),
-                end: self.position,
-            },
-            kind: TokenKind::Int(number),
-        };
+    }
+
+    /// Reads and appends digits to a given string from the current position in the input.
+    ///
+    /// # Arguments
+    ///
+    /// * `number` - A mutable reference to a `String` where the digits are appended.
+    fn _read_int(&mut self, number: &mut String) {
+        while is_digit(self.chr) {
+            number.push(self.chr);
+            self.read_char();
+        }
     }
 
     /// Skips over a single-line comment (`//`) in the current input.
@@ -307,8 +321,11 @@ impl<'lexer> Lexer<'lexer> {
     /// Assumes that the current character (`self.chr`) is the first slash.
     fn skip_comment(&mut self) {
         if self.chr == '/' && self.peek_char() == '/' {
+            // Read the '//'
             self.read_char();
             self.read_char();
+
+            // Read the comment till the end of the line, or the end of the input.
             loop {
                 self.read_char();
                 if self.chr == '\n' {
@@ -322,6 +339,14 @@ impl<'lexer> Lexer<'lexer> {
         }
     }
 
+    /// Skips over a multi-line comment (`/* ... */`) in the current input.
+    ///
+    /// Assumes that the current character (`self.chr`) is the first slash.
+    ///
+    /// # Returns
+    ///
+    /// An `Ok(())` if the multi-line comment was successfully skipped, or an
+    /// `Err(String)` containing an error message if the comment was not terminated.
     fn skip_multi_comment(&mut self) -> Result<(), String> {
         // Consume the opening '/*'
         if self.chr == '/' && self.peek_char() == '*' {
@@ -344,17 +369,19 @@ impl<'lexer> Lexer<'lexer> {
         Ok(())
     }
 
-    /// Skips over any whitespace characters in the current input.
-    fn skip_whitespace(&mut self) {
-        while matches!(self.chr, ' ' | '\t' | '\n' | '\r') {
-            self.read_char();
-        }
-    }
-
+    /// Skips over any whitespace characters, comments, and newlines in the current input.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a `bool` indicating whether a newline character was
+    /// encountered. If an error occurs, it returns an `Err(String)` containing an error
+    /// message.
     fn skip_garbage(&mut self) -> Result<bool, String> {
         // We store whether we encountered a newline because the lexer does
         // count newlines, however it only needs to know if it encountered one,
         // not how many it encountered.
+        //
+        // Note: The parser does depend on this functionality, so don't remove it. :)
         let mut encountered_newline = false;
         while matches!(self.chr, ' ' | '\n' | '\r' | '/') {
             match self.chr {
@@ -371,10 +398,19 @@ impl<'lexer> Lexer<'lexer> {
                     '*' => self.skip_multi_comment()?,
                     _ => break,
                 },
+                // The while statement above ensures that there can be no other pattern, but we need
+                // to handle it in this match statement to satisfy the compiler.
                 _ => unreachable!(),
             }
         }
         return Ok(encountered_newline);
+    }
+
+    /// Skips over any whitespace characters in the current input.
+    fn skip_whitespace(&mut self) {
+        while matches!(self.chr, ' ' | '\t' | '\n' | '\r') {
+            self.read_char();
+        }
     }
 }
 

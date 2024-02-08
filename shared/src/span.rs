@@ -1,8 +1,12 @@
+//! Contains the `Span` struct, which represents a span of characters in the source code.
 use serde::ser::SerializeStruct;
 use serde::{Serialize, Serializer};
 
-/// Constant to control serialization
-const EXPANDED_SPAN_SERIALISATION: bool = false; // Change to false to skip serialization
+/// Constant to control whether to use shorthand serialisation for spans.
+///
+/// If `true`, spans will be serialised into: `"span": "157..160"`, instead of
+/// `"span": {"start": 157, "end": 160}`.
+const SHORTHAND_SPAN_SERIALISATION: bool = false;
 
 /// Represents a span of characters in the source code.
 ///
@@ -27,18 +31,21 @@ impl Span {
     }
 }
 
+/// Implements the `Serialize` trait for the `Span` struct.
+///
+/// This allows the `Span` struct to be serialized into a JSON object.
 impl Serialize for Span {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        if EXPANDED_SPAN_SERIALISATION {
+        if SHORTHAND_SPAN_SERIALISATION {
+            serializer.serialize_str(&format!("{}..{}", self.start, self.end))
+        } else {
             let mut state = serializer.serialize_struct("Span", 2)?;
             state.serialize_field("start", &self.start)?;
             state.serialize_field("end", &self.end)?;
             state.end()
-        } else {
-            serializer.serialize_str(&format!("{}..{}", self.start, self.end))
         }
     }
 }

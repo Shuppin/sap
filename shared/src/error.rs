@@ -27,6 +27,7 @@ pub enum ErrorKind {
     DivisionByZero,
     OverflowError,
     SyntaxError,
+    NotImplemented,
 }
 
 impl std::fmt::Display for ErrorKind {
@@ -37,6 +38,7 @@ impl std::fmt::Display for ErrorKind {
             ErrorKind::DivisionByZero => "DivisionByZero",
             ErrorKind::OverflowError => "OverflowError",
             ErrorKind::SyntaxError => "SyntaxError",
+            ErrorKind::NotImplemented => "NotImplemented",
         };
 
         write!(f, "{}", s)

@@ -175,7 +175,7 @@ impl Value {
             Self::Boolean(b) => Ok(Self::Boolean(!b)),
             _ => err!(
                 ErrorKind::TypeError,
-                "invalid operation '!' for type {}",
+                "invalid operation 'not' for type {}",
                 self.variant_name(),
             ),
         }
@@ -186,7 +186,7 @@ impl Value {
             (Self::Boolean(a), Self::Boolean(b)) => Ok(Self::Boolean(*a && *b)),
             _ => err!(
                 ErrorKind::TypeError,
-                "invalid operation '&&' between {} and {}",
+                "invalid operation 'and' between {} and {}",
                 self.variant_name(),
                 other.variant_name(),
             ),
@@ -198,7 +198,7 @@ impl Value {
             (Self::Boolean(a), Self::Boolean(b)) => Ok(Self::Boolean(*a || *b)),
             _ => err!(
                 ErrorKind::TypeError,
-                "invalid operation '&&' between {} and {}",
+                "invalid operation 'or' between {} and {}",
                 self.variant_name(),
                 other.variant_name(),
             ),

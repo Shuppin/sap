@@ -162,7 +162,6 @@ impl<'lexer> Parser<'lexer> {
             TokenKind::DefineFunction => self.parse_fn_decl_stmt(),
             TokenKind::Repeat => self.parse_repeat_stmt(),
             TokenKind::Display => self.parse_display_stmt(),
-            // TODO: replace "&&" with "and"
             _ => self.parse_expr_stmt(),
         }
     }

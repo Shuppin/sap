@@ -187,7 +187,11 @@ fn eval_expression(env: &EnvRef, expression: &Expression) -> EvalOutcome {
         Expression::Selection(selection) => eval_selection_expression(env, selection),
         Expression::Identifier(ident) => eval_identifier_expression(env, ident),
         Expression::FunctionCall(func_call) => eval_func_call_expression(env, func_call),
-        _ => todo!(),
+        _ => traversal_error!(
+            ErrorKind::NotImplemented,
+            "expression type '{}' has not been implemented by the interpreter",
+            expression
+        ),
     }
 }
 
@@ -210,7 +214,14 @@ fn eval_unary_expression(env: &EnvRef, unary: &Unary) -> EvalOutcome {
     let result = match unary.operator {
         TokenKind::Not => left.not(),
         TokenKind::Minus => left.neg(),
-        _ => todo!(),
+        _ => {
+            return traversal_error!(
+                ErrorKind::TypeError,
+                "invalid operation '{}' for type {}",
+                unary.operator,
+                left.variant_name(),
+            )
+        }
     };
     match result {
         Ok(value) => Continue(Rc::new(value)),
@@ -240,7 +251,15 @@ fn eval_binary_expression(env: &EnvRef, binary: &Binary) -> EvalOutcome {
         TokenKind::And => left.and(right),
         TokenKind::Or => left.or(right),
         TokenKind::Mod => left.rem(right),
-        _ => todo!(),
+        _ => {
+            return traversal_error!(
+                ErrorKind::TypeError,
+                "invalid operation '{}' between {} and {}",
+                binary.operator,
+                left.variant_name(),
+                right.variant_name(),
+            )
+        }
     };
     match result {
         Ok(value) => Continue(Rc::new(value)),

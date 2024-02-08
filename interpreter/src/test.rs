@@ -48,7 +48,7 @@ fn eval_null() {
 
 #[test]
 fn eval_not_operations() {
-    let tests = [("!true", false), ("!false", true), ("!!true", true)];
+    let tests = [("not true", false), ("not false", true), ("not not true", true)];
 
     for (input, expected_output) in tests {
         match *eval(input) {
@@ -129,33 +129,33 @@ fn eval_infix_comp_expressions() {
 #[test]
 fn eval_infix_boolean_expressions() {
     let tests = [
-        ("true && true", true),
-        ("true && false", false),
-        ("false && true", false),
-        ("false && false", false),
-        ("true || true", true),
-        ("true || false", true),
-        ("false || true", true),
-        ("false || false", false),
-        ("true && true || false", true),
-        ("true && (true || false)", true),
-        ("(true && true) || false", true),
-        ("(true && false) || true", true),
-        ("(false && true) || true", true),
-        ("(false && false) || true", true),
-        ("(false && false) || false", false),
-        ("true && true && true", true),
-        ("true && true && false", false),
-        ("true && false && true", false),
-        ("false && true && true", false),
-        ("true || true || true", true),
-        ("true || true || false", true),
-        ("true || false || true", true),
-        ("false || true || true", true),
-        ("true || false || false", true),
-        ("false || true || false", true),
-        ("false || false || true", true),
-        ("false || false || false", false),
+        ("true and true", true),
+        ("true and false", false),
+        ("false and true", false),
+        ("false and false", false),
+        ("true or true", true),
+        ("true or false", true),
+        ("false or true", true),
+        ("false or false", false),
+        ("true and true or false", true),
+        ("true and (true or false)", true),
+        ("(true and true) or false", true),
+        ("(true and false) or true", true),
+        ("(false and true) or true", true),
+        ("(false and false) or true", true),
+        ("(false and false) or false", false),
+        ("true and true and true", true),
+        ("true and true and false", false),
+        ("true and false and true", false),
+        ("false and true and true", false),
+        ("true or true or true", true),
+        ("true or true or false", true),
+        ("true or false or true", true),
+        ("false or true or true", true),
+        ("true or false or false", true),
+        ("false or true or false", true),
+        ("false or false or true", true),
+        ("false or false or false", false),
     ];
 
     for (input, expected_output) in tests {

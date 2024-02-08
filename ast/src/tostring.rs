@@ -1,5 +1,7 @@
 use std::fmt::{Display, Formatter, Result};
 
+use lexer::token::TokenKind;
+
 use crate::expression::*;
 use crate::literal::Literal;
 use crate::statement::{
@@ -104,7 +106,10 @@ impl Display for Expression {
             Expression::Literal(l) => write!(f, "{}", l),
             Expression::Unary(Unary {
                 operator, operand, ..
-            }) => write!(f, "({}{})", operator, operand),
+            }) => match operator {
+                TokenKind::Not => write!(f, "({} {})", operator, operand),
+                _ => write!(f, "({}{})", operator, operand),
+            },
             Expression::Binary(Binary {
                 operator,
                 left,

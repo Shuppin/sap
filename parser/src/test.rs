@@ -144,7 +144,7 @@ fn parse_integer_literal_expression() {
 #[test]
 fn parse_prefix_expression() {
     let tests = [
-        ("!5;", TokenKind::Not, 5),
+        ("not 5;", TokenKind::Not, 5),
         ("-15;", TokenKind::Minus, 15),
         ("-0", TokenKind::Minus, 0),
     ];
@@ -220,7 +220,7 @@ fn parse_infix_expression() {
 fn parse_binary_expression() {
     let tests = [
         ("-a * b", "((-a) * b)"),
-        ("!-a", "(!(-a))"),
+        ("not -a", "(not (-a))"),
         ("a + b + c", "((a + b) + c)"),
         ("a + b - c", "((a + b) - c)"),
         ("a * b * c", "((a * b) * c)"),
@@ -238,15 +238,15 @@ fn parse_binary_expression() {
         ("false", "false"),
         ("3 > 5 == false", "((3 > 5) == false)"),
         ("3 < 5 == true", "((3 < 5) == true)"),
-        ("a || b && c", "(a || (b && c))"),
-        ("a && b || c", "((a && b) || c)"),
-        ("a && b == c", "(a && (b == c))"),
-        ("a == b && c", "((a == b) && c)"),
-        ("a && b + c", "(a && (b + c))"),
-        ("a + b && c", "((a + b) && c)"),
+        ("a or b and c", "(a or (b and c))"),
+        ("a and b or c", "((a and b) or c)"),
+        ("a and b == c", "(a and (b == c))"),
+        ("a == b and c", "((a == b) and c)"),
+        ("a and b + c", "(a and (b + c))"),
+        ("a + b and c", "((a + b) and c)"),
         (
-            "6 || 5 || 7 && 6 || 9 && 3",
-            "(((6 || 5) || (7 && 6)) || (9 && 3))",
+            "6 or 5 or 7 and 6 or 9 and 3",
+            "(((6 or 5) or (7 and 6)) or (9 and 3))",
         ),
     ];
 
@@ -261,7 +261,7 @@ fn parse_brace_expression() {
         ("2 / (5 + 5)", "(2 / (5 + 5))"),
         ("(5 + 5) * 2 * (5 + 5)", "(((5 + 5) * 2) * (5 + 5))"),
         ("-(5 + 5)", "(-(5 + 5))"),
-        ("!(true == true)", "(!(true == true))"),
+        ("not(true == true)", "(not (true == true))"),
     ];
 
     validate_parse_to_string(&tests);
@@ -332,16 +332,16 @@ fn parse_fn_decl_expression() {
 fn parse_complex_expression() {
     let tests = [
         (
-            "a + b * c == d - e / f && g || h[1] + i(2, 3) * j[4]",
-            "((((a + (b * c)) == (d - (e / f))) && g) || (h[1] + (i(2, 3) * j[4])))",
+            "a + b * c == d - e / f and g or h[1] + i(2, 3) * j[4]",
+            "((((a + (b * c)) == (d - (e / f))) and g) or (h[1] + (i(2, 3) * j[4])))",
         ),
         (
-            "a + b * c == d - e / f && g || h[1] + i(2, 3) * j[4] && k || l + m * n == o - p / q && r || s[5] + t(6, 7) * u[8]",
-            "((((((a + (b * c)) == (d - (e / f))) && g) || ((h[1] + (i(2, 3) * j[4])) && k)) || (((l + (m * n)) == (o - (p / q))) && r)) || (s[5] + (t(6, 7) * u[8])))",
+            "a + b * c == d - e / f and g or h[1] + i(2, 3) * j[4] and k or l + m * n == o - p / q and r or s[5] + t(6, 7) * u[8]",
+            "((((((a + (b * c)) == (d - (e / f))) and g) or ((h[1] + (i(2, 3) * j[4])) and k)) or (((l + (m * n)) == (o - (p / q))) and r)) or (s[5] + (t(6, 7) * u[8])))",
         ),
         (
-            "a + b * c == d - e / f && g || h[1] + i(2, 3) * j[4] && k || l + m * n == o - p / q && r || s[5] + t(6, 7) * u[8] && v || w + x * y == z - aa / bb && cc || dd[9] + ee(10, 11) * ff[12] && gg || hh[13] + ii(14, 15) * jj[16]",
-            "(((((((((a + (b * c)) == (d - (e / f))) && g) || ((h[1] + (i(2, 3) * j[4])) && k)) || (((l + (m * n)) == (o - (p / q))) && r)) || ((s[5] + (t(6, 7) * u[8])) && v)) || (((w + (x * y)) == (z - (aa / bb))) && cc)) || ((dd[9] + (ee(10, 11) * ff[12])) && gg)) || (hh[13] + (ii(14, 15) * jj[16])))",
+            "a + b * c == d - e / f and g or h[1] + i(2, 3) * j[4] and k or l + m * n == o - p / q and r or s[5] + t(6, 7) * u[8] and v or w + x * y == z - aa / bb and cc or dd[9] + ee(10, 11) * ff[12] and gg or hh[13] + ii(14, 15) * jj[16]",
+            "(((((((((a + (b * c)) == (d - (e / f))) and g) or ((h[1] + (i(2, 3) * j[4])) and k)) or (((l + (m * n)) == (o - (p / q))) and r)) or ((s[5] + (t(6, 7) * u[8])) and v)) or (((w + (x * y)) == (z - (aa / bb))) and cc)) or ((dd[9] + (ee(10, 11) * ff[12])) and gg)) or (hh[13] + (ii(14, 15) * jj[16])))",
         ),
     ];
 
@@ -353,13 +353,13 @@ fn parse_complex_program() {
     let tests = [
         (
             r#"defineFunction fizzbuzz(n)
-    if n % 3 == 0 && n % 5 != 0 then
+    if n % 3 == 0 and n % 5 != 0 then
         print("Fizz")
     otherwise
-        if n % 5 == 0 && n % 3 != 0 then
+        if n % 5 == 0 and n % 3 != 0 then
             print("Buzz");
         otherwise
-            if n % 5 == 0 && n % 3 == 0 then
+            if n % 5 == 0 and n % 3 == 0 then
                 print("FizzBuzz");
             otherwise
                 print(n);
@@ -367,19 +367,19 @@ fn parse_complex_program() {
         end
     end
 end"#,
-            r#"defineFunction fizzbuzz(n) if (((n % 3) == 0) && ((n % 5) != 0)) then print("Fizz") otherwise if (((n % 5) == 0) && ((n % 3) != 0)) then print("Buzz") otherwise if (((n % 5) == 0) && ((n % 3) == 0)) then print("FizzBuzz") otherwise print(n) end end end end"#,
+            r#"defineFunction fizzbuzz(n) if (((n % 3) == 0) and ((n % 5) != 0)) then print("Fizz") otherwise if (((n % 5) == 0) and ((n % 3) != 0)) then print("Buzz") otherwise if (((n % 5) == 0) and ((n % 3) == 0)) then print("FizzBuzz") otherwise print(n) end end end end"#,
         ),
 
         
         (
             r#"set hello_world = "Hello, world";
-set x = (true||false) && 1==5;
+set x = (true or false) and 1==5;
 set y = 2.5;
 1 + 2;
 defineFunction ADD(a, b)
     return a + b;
 end"#,
-            r#"set hello_world = "Hello, world"; set x = ((true || false) && (1 == 5)); set y = 2.5; (1 + 2); defineFunction ADD(a, b) return (a + b) end"#,
+            r#"set hello_world = "Hello, world"; set x = ((true or false) and (1 == 5)); set y = 2.5; (1 + 2); defineFunction ADD(a, b) return (a + b) end"#,
         ),
     ];
 

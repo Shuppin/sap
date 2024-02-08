@@ -102,7 +102,7 @@ fn lexer_simple() {
 #[test]
 fn lexer_operators() {
     lexer_common(
-        "= + - * / % < <= > >= == != ! && ||",
+        "= + - * / % < <= > >= == != not and or",
         vec![
             token!(Assign, 0, 1),
             token!(Plus, 2, 3),
@@ -116,10 +116,10 @@ fn lexer_operators() {
             token!(GtEq, 19, 21),
             token!(Eq, 22, 24),
             token!(NotEq, 25, 27),
-            token!(Not, 28, 29),
-            token!(And, 30, 32),
-            token!(Or, 33, 35),
-            token!(Eof, 35, 35),
+            token!(Not, 28, 31),
+            token!(And, 32, 35),
+            token!(Or, 36, 38),
+            token!(Eof, 38, 38),
         ],
     );
 }

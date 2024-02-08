@@ -66,11 +66,6 @@ pub enum TokenKind {
     Eq,    // ==
     NotEq, // !=
 
-    // Boolean operators
-    Not, // !
-    And, // &&
-    Or,  // ||
-
     // Delimiters
     Comma,     // ,
     Semicolon, // ;
@@ -99,6 +94,11 @@ pub enum TokenKind {
     Until,
     Forever,
     Display,
+
+    // Boolean operator keywords
+    Not, // not
+    And, // and
+    Or,  // or
 }
 
 impl TokenKind {
@@ -131,6 +131,9 @@ impl TokenKind {
             "until" => Self::Until,
             "forever" => Self::Forever,
             "display" => Self::Display,
+            "not" => Self::Not,
+            "and" => Self::And,
+            "or" => Self::Or,
             _ => Self::Identifier {
                 name: ident.to_string(),
             },
@@ -161,9 +164,6 @@ impl Display for TokenKind {
             Self::GtEq => ">=",
             Self::Eq => "==",
             Self::NotEq => "!=",
-            Self::Not => "!",
-            Self::And => "&&",
-            Self::Or => "||",
             Self::Comma => ",",
             Self::Semicolon => ";",
             Self::Colon => ":",
@@ -187,6 +187,9 @@ impl Display for TokenKind {
             Self::Until => "until",
             Self::Forever => "forever",
             Self::Display => "display",
+            Self::Not => "not",
+            Self::And => "and",
+            Self::Or => "or",
             Self::Eof => "<EOF>",
             Self::UnterminatedComment => "<UnterminatedComment>",
             Self::NewLine => "\\n",

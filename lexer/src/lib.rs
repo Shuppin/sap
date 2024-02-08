@@ -153,7 +153,7 @@ impl<'lexer> Lexer<'lexer> {
                     self.read_char();
                     TokenKind::NotEq
                 } else {
-                    TokenKind::Not
+                    TokenKind::Illegal(self.chr.to_string())
                 }
             }
             '<' => {
@@ -172,22 +172,6 @@ impl<'lexer> Lexer<'lexer> {
                     TokenKind::Gt
                 }
             }
-            '&' => {
-                if self.peek_char() == '&' {
-                    self.read_char();
-                    TokenKind::And
-                } else {
-                    TokenKind::Illegal(self.chr.to_string())
-                }
-            }
-            '|' => {
-                if self.peek_char() == '|' {
-                    self.read_char();
-                    TokenKind::Or
-                } else {
-                    TokenKind::Illegal(self.chr.to_string())
-                }
-            }
 
             // String literals
             '"' => {
@@ -203,7 +187,7 @@ impl<'lexer> Lexer<'lexer> {
 
             // Else, we a dealing with a keyword, identifier, number of an illegal character.
             _ => {
-                if is_letter(self.chr) {
+                if is_valid_ident_start(self.chr) {
                     let ident = self.read_identifier();
                     return Token {
                         span: Span {
@@ -262,7 +246,8 @@ impl<'lexer> Lexer<'lexer> {
     /// A `String` representing the identifier extracted from the input.
     fn read_identifier(&mut self) -> String {
         let mut ident = String::new();
-        while is_letter(self.chr) {
+
+        while is_valid_ident_continue(self.chr) {
             ident.push(self.chr);
             self.read_char();
         }
@@ -393,9 +378,15 @@ impl<'lexer> Lexer<'lexer> {
     }
 }
 
-/// Serves as a source of truth for the definition of a 'letter'.
-fn is_letter(chr: char) -> bool {
+/// Serves as a source of truth for the definition of what an identifier can start with.
+fn is_valid_ident_start(chr: char) -> bool {
     chr.is_ascii_alphabetic() || chr == '_'
+}
+
+/// Serves as a source of truth for the definition of what an identifier can continue
+/// with.
+fn is_valid_ident_continue(chr: char) -> bool {
+    chr.is_ascii_alphanumeric() || chr == '_' || is_digit(chr)
 }
 
 /// Serves as a source of truth for the definition of a 'digit'.

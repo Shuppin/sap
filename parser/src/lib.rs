@@ -1,11 +1,10 @@
 use std::num::IntErrorKind;
 
 use ast::expression::{
-    Array, Binary, Expression, FunctionCall, FunctionDeclaration, Identifier, Index, Selection,
-    Unary,
+    Array, Binary, Expression, FunctionCall, Identifier, Index, Selection, Unary,
 };
 use ast::literal::Literal;
-use ast::statement::{Return, Set, Statement};
+use ast::statement::{FunctionDeclaration, Return, Set, Statement};
 use ast::{Program, StatementList};
 use lexer::token::{Token, TokenKind};
 use lexer::Lexer;
@@ -73,7 +72,6 @@ impl<'lexer> Parser<'lexer> {
     }
 
     fn next_token(&mut self) {
-        println!("next_token: {:?}", self.cur_token.kind);
         self.cur_token = self.lexer.next_token();
     }
 
@@ -92,94 +90,110 @@ impl<'lexer> Parser<'lexer> {
     }
 
     pub fn parse_program(&mut self) -> Result<Program, Error> {
-        // <program> -> <statements>? `Eof`
-        // <statements> -> <statement> ((`Semi`|`NewLine`) <statement>)* (`Semi`|`NewLine`)?
         let mut program = Program::new();
 
-        while !self.cur_token_is(&TokenKind::Eof) {
-            program.statements.push(self.parse_statement()?);
-
-            while matches!(
-                self.cur_token.kind,
-                TokenKind::NewLine | TokenKind::Semicolon
-            ) {
-                self.next_token()
-            }
+        if self.cur_token_is(&TokenKind::Eof) {
+            return Ok(program);
+        } else {
+            program.statements = self.parse_statement_list()?.statements;
+            program.span.end = self.cur_token.span.end;
+            self.eat(&TokenKind::Eof)?;
+            return Ok(program);
         }
-
-        program.span.end = self.cur_token.span.end;
-
-        return Ok(program);
     }
 
+    /// Parses a list of statements without consuming the termination token
+    /// (`End` | `Eof` | `Otherwise`)
+    ///
+    /// Note: Does not handle empty statements lists.
     fn parse_statement_list(&mut self) -> Result<StatementList, Error> {
-        // <statements> -> `NewLine`? <statement> ((`Semi`|`NewLine`) <statement>)*
-        // (`Semi`|`NewLine`)?
-
         let mut list = StatementList::new();
 
-        if self.cur_token_is(&TokenKind::NewLine) {
-            self.next_token()
+        // Optionally consume leading NewLines
+        while matches!(self.cur_token.kind, TokenKind::NewLine) {
+            self.next_token();
         }
 
-        while !matches!(self.cur_token.kind, TokenKind::End | TokenKind::Otherwise) {
+        loop {
             list.statements.push(self.parse_statement()?);
 
+            // Check if the next token is the end of the block or file
+            if matches!(
+                self.cur_token.kind,
+                TokenKind::End | TokenKind::Eof | TokenKind::Otherwise
+            ) {
+                break; // No separator needed before 'End' or 'Eof'
+            }
+
+            // Enforce separator after each statement, except before 'End' or 'Eof'
+            if !matches!(
+                self.cur_token.kind,
+                TokenKind::Semicolon | TokenKind::NewLine
+            ) {
+                return parse_err!("expected ';' or newline between statements");
+            }
+
+            // Consume any number of NewLine or Semicolon separators
             while matches!(
                 self.cur_token.kind,
                 TokenKind::Semicolon | TokenKind::NewLine
             ) {
-                self.next_token()
+                self.next_token();
             }
-
-            if self.cur_token_is(&TokenKind::Eof) {
-                return parse_err!("unexpected end of file while parsing block");
+            // If we encounter 'End' or 'Eof' after consuming separators, break out of the loop
+            if matches!(
+                self.cur_token.kind,
+                TokenKind::End | TokenKind::Eof | TokenKind::Otherwise
+            ) {
+                break;
             }
         }
 
         Ok(list)
     }
 
-    fn parse_block(&mut self) -> Result<StatementList, Error> {
-        // <block> -> `LCurly` `NewLine`? <statements>? `NewLine`? `RCurly`
-        // <statements> -> <statement> ((`Semi`|`NewLine`) <statement>)* (`Semi`|`NewLine`)?
-        let mut block = StatementList::new();
+    // fn parse_statement_list(&mut self) -> Result<StatementList, Error> {
+    //     // <statements> -> `NewLine`? <statement> ((`Semi`|`NewLine`) <statement>)*
+    //     // (`Semi`|`NewLine`)?
 
-        block.span.start = self.cur_token.span.start;
+    //     let mut list = StatementList::new();
 
-        self.eat(&TokenKind::LCurly)?;
+    //     list.span.start = self.cur_token.span.start;
 
-        if self.cur_token_is(&TokenKind::NewLine) {
-            self.next_token()
-        }
+    //     if self.cur_token_is(&TokenKind::NewLine) {
+    //         self.next_token()
+    //     }
 
-        while !self.cur_token_is(&TokenKind::RCurly) {
-            block.statements.push(self.parse_statement()?);
+    //     while !matches!(self.cur_token.kind, TokenKind::End | TokenKind::Otherwise) {
+    //         list.statements.push(self.parse_statement()?);
 
-            while matches!(
-                self.cur_token.kind,
-                TokenKind::Semicolon | TokenKind::NewLine
-            ) {
-                self.next_token()
-            }
+    //         while matches!(
+    //             self.cur_token.kind,
+    //             TokenKind::Semicolon | TokenKind::NewLine
+    //         ) {
+    //             self.next_token()
+    //         }
 
-            if self.cur_token_is(&TokenKind::Eof) {
-                return parse_err!("unexpected end of file while parsing block");
-            }
-        }
+    //         if self.cur_token_is(&TokenKind::Eof) {
+    //             return parse_err!("unexpected end of file while parsing block");
+    //         }
+    //     }
 
-        block.span.end = self.cur_token.span.end;
+    //     if let Some(statement) = list.statements.last() {
+    //         list.span.end = statement.span().end;
+    //     } else {
+    //         list.span.end = list.span.start;
+    //     }
 
-        self.eat(&TokenKind::RCurly)?;
-
-        return Ok(block);
-    }
+    //     Ok(list)
+    // }
 
     fn parse_statement(&mut self) -> Result<Statement, Error> {
-        // <statement> -> <set_stmt> | <return_stmt> | <expression>
+        // <statement> -> <set_stmt> | <return_stmt> | <expression> | <fn_decl_stmt>
         match self.cur_token.kind {
             TokenKind::Set => self.parse_set_stmt(),
             TokenKind::Return => self.parse_return_stmt(),
+            TokenKind::DefineFunction => self.parse_fn_decl_stmt(),
             _ => self.parse_expr_stmt(),
         }
     }
@@ -204,6 +218,70 @@ impl<'lexer> Parser<'lexer> {
         let span = Span::new(start, self.cur_token.span.end);
         return Ok(Statement::Return(Return {
             value: return_value,
+            span,
+        }));
+    }
+
+    fn parse_fn_decl_stmt(&mut self) -> Result<Statement, Error> {
+        // <fn_decl_expr> -> <fn_decl_expr> -> `defineFunction` `Ident` `LParen` <fn_params>
+        // `RParen` <statements>? `End`
+        // <fn_params> -> `LParen` (`Ident` (`,` `Ident`)*)? `RParen`
+        let start = self.cur_token.span.start;
+
+        self.eat(&TokenKind::DefineFunction)?;
+
+        let name = self.parse_identifier()?;
+
+        self.eat(&TokenKind::LParen)?;
+        let parameters = match self.cur_token_is(&TokenKind::RParen) {
+            false => {
+                // `Ident` (`,` `Ident`)*
+                let mut identifiers: Vec<Identifier> = Vec::new();
+                let prev_token_kind = self.cur_token.kind.clone();
+                match self.parse_identifier() {
+                    Ok(ident) => identifiers.push(ident),
+                    Err(_) => {
+                        return parse_err!("expected function parameter, got '{}'", prev_token_kind)
+                    }
+                }
+                while self.cur_token_is(&TokenKind::Comma) {
+                    self.eat(&TokenKind::Comma)?;
+                    let prev_token_kind = self.cur_token.kind.clone();
+                    match self.parse_identifier() {
+                        Ok(ident) => identifiers.push(ident),
+                        Err(_) => {
+                            return parse_err!(
+                                "expected function parameter, got '{}'",
+                                prev_token_kind
+                            )
+                        }
+                    }
+                }
+                identifiers
+            }
+            true => vec![],
+        };
+        self.eat(&TokenKind::RParen)?;
+
+        // Here we do a switch case to check if the function body is empty
+        let body = match self.cur_token_is(&TokenKind::End) {
+            false => self.parse_statement_list()?,
+            true => StatementList {
+                statements: vec![],
+                span: Span::new(self.cur_token.span.start, self.cur_token.span.start),
+            },
+        };
+
+        let end = self.cur_token.span.end;
+
+        self.eat(&TokenKind::End)?;
+
+        let span = Span::new(start, end);
+
+        return Ok(Statement::FunctionDeclaration(FunctionDeclaration {
+            name,
+            parameters,
+            body,
             span,
         }));
     }
@@ -357,12 +435,10 @@ impl<'lexer> Parser<'lexer> {
 
     fn parse_entity_expr(&mut self) -> Result<Expression, Error> {
         // <entity_expr> -> <selection_expr>
-        //                | <fn_decl_expr>
         //                | <array_expr>
         //                | <literal>
         match &self.cur_token.kind {
             TokenKind::If => self.parse_selection_expr(),
-            TokenKind::Fn => self.parse_fn_decl_expr(),
             TokenKind::LBracket => self.parse_array_expr(),
             _ => {
                 let literal = self.parse_literal()?;
@@ -392,73 +468,39 @@ impl<'lexer> Parser<'lexer> {
         self.eat(&TokenKind::If)?;
         let condition_expr = self.parse_expression()?;
         self.eat(&TokenKind::Then)?;
-        let conditional_statements = self.parse_statement_list()?;
+        let conditional_statements =
+            match matches!(self.cur_token.kind, TokenKind::End | TokenKind::Otherwise) {
+                false => self.parse_statement_list()?,
+                true => StatementList {
+                    statements: vec![],
+                    span: Span::new(self.cur_token.span.start, self.cur_token.span.start),
+                },
+            };
 
-        let (else_conditional_block, span) = if self.cur_token_is(&TokenKind::Otherwise) {
+        let else_conditional_block = if self.cur_token_is(&TokenKind::Otherwise) {
             self.eat(&TokenKind::Otherwise)?;
-            let else_conditional_statements = self.parse_statement_list()?;
-            let span = Span::new(start, else_conditional_statements.span.end);
-            (Some(else_conditional_statements), span)
+            let else_conditional_statements = match matches!(self.cur_token.kind, TokenKind::End) {
+                false => self.parse_statement_list()?,
+                true => StatementList {
+                    statements: vec![],
+                    span: Span::new(self.cur_token.span.start, self.cur_token.span.start),
+                },
+            };
+            Some(else_conditional_statements)
         } else {
-            let span = Span::new(start, conditional_statements.span.end);
-            (None, span)
+            None
         };
 
+        let end = self.cur_token.span.end;
+
         self.eat(&TokenKind::End)?;
+
+        let span = Span::new(start, end);
 
         return Ok(Expression::Selection(Selection {
             condition: Box::new(condition_expr),
             conditional: conditional_statements,
             else_conditional: else_conditional_block,
-            span,
-        }));
-    }
-
-    fn parse_fn_decl_expr(&mut self) -> Result<Expression, Error> {
-        // <fn_decl_expr> -> `Fn` `LParen` <fn_params> `RParen` <block>
-        // <fn_params> -> `LParen` (`Ident` (`,` `Ident`)*)? `RParen`
-        let start = self.cur_token.span.start;
-
-        self.eat(&TokenKind::Fn)?;
-
-        self.eat(&TokenKind::LParen)?;
-        let parameters = match self.cur_token_is(&TokenKind::RParen) {
-            false => {
-                // `Ident` (`,` `Ident`)*
-                let mut identifiers: Vec<Identifier> = Vec::new();
-                let prev_token_kind = self.cur_token.kind.clone();
-                match self.parse_identifier() {
-                    Ok(ident) => identifiers.push(ident),
-                    Err(_) => {
-                        return parse_err!("expected function parameter, got '{}'", prev_token_kind)
-                    }
-                }
-                while self.cur_token_is(&TokenKind::Comma) {
-                    self.eat(&TokenKind::Comma)?;
-                    let prev_token_kind = self.cur_token.kind.clone();
-                    match self.parse_identifier() {
-                        Ok(ident) => identifiers.push(ident),
-                        Err(_) => {
-                            return parse_err!(
-                                "expected function parameter, got '{}'",
-                                prev_token_kind
-                            )
-                        }
-                    }
-                }
-                identifiers
-            }
-            true => vec![],
-        };
-        self.eat(&TokenKind::RParen)?;
-
-        let body = self.parse_block()?;
-
-        let span = Span::new(start, body.span.end);
-
-        return Ok(Expression::FunctionDeclaration(FunctionDeclaration {
-            parameters,
-            body,
             span,
         }));
     }

@@ -11,11 +11,13 @@ The order of statements is representative of the hierarchy of the AST.
 
 ## Statements
 
-    <statement> -> <set_stmt> | <return_stmt> | <expression>
+    <statement> -> <set_stmt> | <return_stmt> | <expression> | <fn_decl_stmt>
 
     <set_stmt> -> `Set` `Ident` `Assign` <expression>
 
     <return_stmt> -> `Return` <expression>
+
+    <fn_decl_stmt> -> `defineFunction` `LParen` <fn_params> `RParen` <statements>? `End`
 
 ## Expressions
 
@@ -50,13 +52,10 @@ The order of statements is representative of the hierarchy of the AST.
 
     Entities
         <entity_expr> -> <selection_expr>
-                    | <fn_decl_expr>
                     | <array_expr>
                     | <literal>
 
         <selection_expr> -> `If` <expr> `Then` <statements>? (`Otherwise` <statements>?)? `End`
-
-        <fn_decl_expr> -> `Fn` `LParen` <fn_params> `RParen` <block>
 
         <array_expr> -> `LBracket` <expr_list>? `LBracket`
 

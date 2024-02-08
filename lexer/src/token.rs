@@ -85,7 +85,7 @@ pub enum TokenKind {
     RBracket, // ]
 
     // Keywords
-    Fn,
+    DefineFunction,
     Set,
     True,
     False,
@@ -112,7 +112,7 @@ impl TokenKind {
     /// The corresponding token kind for the identifier.
     pub fn lookup_ident(ident: &str) -> TokenKind {
         match ident {
-            "fn" => TokenKind::Fn,
+            "defineFunction" => TokenKind::DefineFunction,
             "set" => TokenKind::Set,
             "if" => TokenKind::If,
             "otherwise" => TokenKind::Otherwise,
@@ -163,7 +163,7 @@ impl Display for TokenKind {
             Self::RCurly => "}",
             Self::LBracket => "[",
             Self::RBracket => "]",
-            Self::Fn => "fn",
+            Self::DefineFunction => "defineFunction",
             Self::Set => "set",
             Self::If => "if",
             Self::Otherwise => "otherwise",

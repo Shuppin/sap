@@ -3,11 +3,9 @@ use std::ops::ControlFlow;
 use std::ops::ControlFlow::{Break, Continue};
 use std::rc::Rc;
 
-use ast::expression::{
-    Binary, Expression, FunctionCall, FunctionDeclaration, Identifier, Selection, Unary,
-};
+use ast::expression::{Binary, Expression, FunctionCall, Identifier, Selection, Unary};
 use ast::literal::Literal;
-use ast::statement::{Return, Set, Statement};
+use ast::statement::{FunctionDeclaration, Return, Set, Statement};
 use ast::Program;
 use lexer::token::TokenKind;
 use shared::err;
@@ -73,11 +71,12 @@ fn eval_statement(env: &EnvRef, statement: &Statement) -> EvalOutcome {
     match statement {
         Statement::Expression(expression) => eval_expression(env, expression),
         Statement::Return(ret) => eval_return_statement(env, ret),
-        Statement::Set(set_stmt) => eval_let_statement(env, set_stmt),
+        Statement::Set(set_stmt) => eval_set_statement(env, set_stmt),
+        Statement::FunctionDeclaration(func) => eval_func_decl_statement(env, func),
     }
 }
 
-fn eval_let_statement(env: &EnvRef, let_stmt: &Set) -> EvalOutcome {
+fn eval_set_statement(env: &EnvRef, let_stmt: &Set) -> EvalOutcome {
     let value = eval_expression(env, &let_stmt.expr)?;
     let name = let_stmt.ident.name.clone();
     env.borrow_mut().store(name, value);
@@ -89,6 +88,24 @@ fn eval_return_statement(env: &EnvRef, ret: &Return) -> EvalOutcome {
     return Break(TraversalBreak::ReturnValue(value));
 }
 
+fn eval_func_decl_statement(env: &EnvRef, func: &FunctionDeclaration) -> EvalOutcome {
+    let parameters = func
+        .parameters
+        .iter()
+        .map(|ident| ident.name.clone())
+        .collect();
+
+    let name = func.name.name.clone();
+    let value = Rc::new(Value::Function(Function {
+        parameters,
+        body: func.body.statements.clone(),
+        env: env.clone(),
+    }));
+
+    env.borrow_mut().store(name, value);
+    return Continue(Rc::new(Value::Null));
+}
+
 fn eval_expression(env: &EnvRef, expression: &Expression) -> EvalOutcome {
     match expression {
         Expression::Literal(literal) => eval_literal(literal),
@@ -96,7 +113,6 @@ fn eval_expression(env: &EnvRef, expression: &Expression) -> EvalOutcome {
         Expression::Binary(binary) => eval_binary_expression(env, binary),
         Expression::Selection(selection) => eval_selection_expression(env, selection),
         Expression::Identifier(ident) => eval_identifier_expression(env, ident),
-        Expression::FunctionDeclaration(func) => eval_func_decl_expression(env, func),
         Expression::FunctionCall(func_call) => eval_func_call_expression(env, func_call),
         _ => todo!(),
     }
@@ -150,6 +166,7 @@ fn eval_binary_expression(env: &EnvRef, binary: &Binary) -> EvalOutcome {
         TokenKind::GtEq => left.ge(right),
         TokenKind::And => left.and(right),
         TokenKind::Or => left.or(right),
+        // TODO: mod
         _ => todo!(),
     };
     match result {
@@ -180,20 +197,6 @@ fn eval_selection_expression(env: &EnvRef, selection: &Selection) -> EvalOutcome
 
 fn eval_identifier_expression(env: &EnvRef, ident: &Identifier) -> EvalOutcome {
     return lookup_variable_name(env, &ident.name);
-}
-
-fn eval_func_decl_expression(env: &EnvRef, func: &FunctionDeclaration) -> EvalOutcome {
-    let parameters = func
-        .parameters
-        .iter()
-        .map(|ident| ident.name.clone())
-        .collect();
-
-    return Continue(Rc::new(Value::Function(Function {
-        parameters,
-        body: func.body.statements.clone(),
-        env: env.clone(),
-    })));
 }
 
 fn eval_func_call_expression(env: &EnvRef, func_call: &FunctionCall) -> EvalOutcome {

@@ -216,7 +216,7 @@ fn eval_set_statements() {
 
 #[test]
 fn eval_function_declaration() {
-    let input = "fn(x) {return x + 2;}";
+    let input = "defineFunction abc(x) return x + 2 end; abc";
     let expected_body = "return (x + 2)";
 
     let value_rc = eval(input);
@@ -253,7 +253,7 @@ fn eval_function_declaration() {
                 )
             }
         }
-        _ => panic!("Unexpected value"),
+        _ => panic!("Unexpected value {}", value),
     }
 }
 
@@ -262,15 +262,14 @@ fn eval_function_declaration() {
 #[test]
 fn eval_function_cool() {
     let tests = [
-        ("set identity = fn(x) { return x; }; identity(5);", 5),
-        ("set identity = fn(x) { return x; }; identity(5);", 5),
-        ("set double = fn(x) { return x * 2; }; double(5);", 10),
-        ("set add = fn(x, y) { return x + y; }; add(5, 5);", 10),
+        ("defineFunction identity(x) return x end; identity(5);", 5),
+        ("defineFunction identity(x) return x; end; identity(5);", 5),
+        ("defineFunction double(x) return x * 2 end; double(5);", 10),
+        ("defineFunction add(x, y) return x + y; end; add(5, 5);", 10),
         (
-            "set add = fn(x, y) { return x + y; }; add(5 + 5, add(5, 5));",
+            "defineFunction add(x, y) return x + y; end; add(5 + 5, add(5, 5));",
             20,
         ),
-        ("fn(x) { return x; }(5)", 5),
     ];
 
     for (input, expected_output) in tests {

@@ -201,24 +201,20 @@ fn lexer_bool() {
 #[test]
 fn lexer_function() {
     lexer_common(
-        "set add = fn(a,b) { a+b };",
+        "defineFunction add(a,b) a+b end",
         vec![
-            token!(Set, 0, 3),
-            ident!("add".to_string(), 4, 7),
-            token!(Assign, 8, 9),
-            token!(Fn, 10, 12),
-            token!(LParen, 12, 13),
-            ident!("a".to_string(), 13, 14),
-            token!(Comma, 14, 15),
-            ident!("b".to_string(), 15, 16),
-            token!(RParen, 16, 17),
-            token!(LCurly, 18, 19),
-            ident!("a".to_string(), 20, 21),
-            token!(Plus, 21, 22),
-            ident!("b".to_string(), 22, 23),
-            token!(RCurly, 24, 25),
-            token!(Semicolon, 25, 26),
-            token!(Eof, 26, 26),
+            token!(DefineFunction, 0, 14),
+            ident!("add".to_string(), 15, 18),
+            token!(LParen, 18, 19),
+            ident!("a".to_string(), 19, 20),
+            token!(Comma, 20, 21),
+            ident!("b".to_string(), 21, 22),
+            token!(RParen, 22, 23),
+            ident!("a".to_string(), 24, 25),
+            token!(Plus, 25, 26),
+            ident!("b".to_string(), 26, 27),
+            token!(End, 28, 31),
+            token!(Eof, 31, 31),
         ],
     )
 }
@@ -227,9 +223,9 @@ fn lexer_function() {
 fn lexer_multiline() {
     let input = "set five = 5;
 set ten = 10;
-set add = fn(x, y) {
+defineFunction add(x, y)
   x + y;
-};
+end
 
 set result = add(five, ten);";
 
@@ -248,36 +244,32 @@ set result = add(five, ten);";
             int!(10, 24, 26),
             token!(Semicolon, 26, 27),
             token!(NewLine, 27, 28),
-            token!(Set, 28, 31),
-            ident!("add".to_string(), 32, 35),
-            token!(Assign, 36, 37),
-            token!(Fn, 38, 40),
-            token!(LParen, 40, 41),
-            ident!("x".to_string(), 41, 42),
-            token!(Comma, 42, 43),
-            ident!("y".to_string(), 44, 45),
-            token!(RParen, 45, 46),
-            token!(LCurly, 47, 48),
-            token!(NewLine, 50, 51),
-            ident!("x".to_string(), 51, 52),
-            token!(Plus, 53, 54),
-            ident!("y".to_string(), 55, 56),
-            token!(Semicolon, 56, 57),
-            token!(NewLine, 57, 58),
-            token!(RCurly, 58, 59),
-            token!(Semicolon, 59, 60),
+            token!(DefineFunction, 28, 42),
+            ident!("add".to_string(), 43, 46),
+            token!(LParen, 46, 47),
+            ident!("x".to_string(), 47, 48),
+            token!(Comma, 48, 49),
+            ident!("y".to_string(), 50, 51),
+            token!(RParen, 51, 52),
+            token!(NewLine, 54, 55),
+            ident!("x".to_string(), 55, 56),
+            token!(Plus, 57, 58),
+            ident!("y".to_string(), 59, 60),
+            token!(Semicolon, 60, 61),
             token!(NewLine, 61, 62),
-            token!(Set, 62, 65),
-            ident!("result".to_string(), 66, 72),
-            token!(Assign, 73, 74),
-            ident!("add".to_string(), 75, 78),
-            token!(LParen, 78, 79),
-            ident!("five".to_string(), 79, 83),
-            token!(Comma, 83, 84),
-            ident!("ten".to_string(), 85, 88),
-            token!(RParen, 88, 89),
-            token!(Semicolon, 89, 90),
-            token!(Eof, 90, 90),
+            token!(End, 62, 65),
+            token!(NewLine, 66, 67),
+            token!(Set, 67, 70),
+            ident!("result".to_string(), 71, 77),
+            token!(Assign, 78, 79),
+            ident!("add".to_string(), 80, 83),
+            token!(LParen, 83, 84),
+            ident!("five".to_string(), 84, 88),
+            token!(Comma, 88, 89),
+            ident!("ten".to_string(), 90, 93),
+            token!(RParen, 93, 94),
+            token!(Semicolon, 94, 95),
+            token!(Eof, 95, 95),
         ],
     );
 }

@@ -12,7 +12,6 @@ pub enum Expression {
     Unary(Unary),
     Binary(Binary),
     Selection(Selection),
-    FunctionDeclaration(FunctionDeclaration),
     FunctionCall(FunctionCall),
     Array(Array),
     Index(Index),
@@ -26,7 +25,6 @@ impl GetSpan for Expression {
             Expression::Unary(unary) => &unary.span,
             Expression::Binary(binary) => &binary.span,
             Expression::Selection(selection) => &selection.span,
-            Expression::FunctionDeclaration(function_declaration) => &function_declaration.span,
             Expression::FunctionCall(function_call) => &function_call.span,
             Expression::Array(array) => &array.span,
             Expression::Index(index) => &index.span,
@@ -68,13 +66,7 @@ pub struct Selection {
     pub span: Span,
 }
 
-#[derive(Debug, Serialize, PartialEq, Clone)]
-#[serde(tag = "type")]
-pub struct FunctionDeclaration {
-    pub parameters: Vec<Identifier>,
-    pub body: StatementList,
-    pub span: Span,
-}
+
 
 #[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]

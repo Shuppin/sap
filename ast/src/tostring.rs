@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter, Result};
 
 use crate::expression::*;
 use crate::literal::Literal;
-use crate::statement::{Return, Set, Statement};
+use crate::statement::{FunctionDeclaration, Return, Set, Statement};
 use crate::{Program, StatementList};
 
 fn format_items<T: ToString>(items: &Vec<T>) -> String {
@@ -35,6 +35,29 @@ impl Display for Statement {
                 write!(f, "return {}", value)
             }
             Statement::Expression(expr) => write!(f, "{}", expr),
+            Statement::FunctionDeclaration(FunctionDeclaration {
+                name,
+                parameters,
+                body,
+                ..
+            }) => {
+                let body_block = match body.statements.is_empty() {
+                    true => " ".to_string(),
+                    false => format!(" {} ", body),
+                };
+
+                write!(
+                    f,
+                    "defineFunction {}({}){}end",
+                    name,
+                    parameters
+                        .iter()
+                        .map(|expr| expr.to_string())
+                        .collect::<Vec<String>>()
+                        .join(", "),
+                    body_block
+                )
+            }
         }
     }
 }
@@ -89,26 +112,6 @@ impl Display for Expression {
                     f,
                     "if {} then{}{} end",
                     condition, conditional_str, else_conditional_str
-                )
-            }
-
-            Expression::FunctionDeclaration(FunctionDeclaration {
-                parameters, body, ..
-            }) => {
-                let body_block = match body.statements.is_empty() {
-                    true => "{}".to_string(),
-                    false => format!("{{ {} }}", body),
-                };
-
-                write!(
-                    f,
-                    "fn ({}) {}",
-                    parameters
-                        .iter()
-                        .map(|expr| expr.to_string())
-                        .collect::<Vec<String>>()
-                        .join(", "),
-                    body_block
                 )
             }
             Expression::Array(Array { elements, .. }) => write!(

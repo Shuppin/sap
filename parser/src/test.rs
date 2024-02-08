@@ -321,9 +321,9 @@ fn parse_if_else_expression() {
 #[test]
 fn parse_fn_decl_expression() {
     let tests = [
-        ("fn() {};", "fn () {}"),
-        ("fn(x) {};", "fn (x) {}"),
-        ("fn(x, y, z) { x };", "fn (x, y, z) { x }"),
+        ("defineFunction fn() end;", "defineFunction fn() end"),
+        ("defineFunction fn(x) end;", "defineFunction fn(x) end"),
+        ("defineFunction fn(x, y, z) x end;", "defineFunction fn(x, y, z) x end"),
     ];
     validate_parse_to_string(&tests);
 }
@@ -352,32 +352,34 @@ fn parse_complex_expression() {
 fn parse_complex_program() {
     let tests = [
         (
-            r#"set fizzbuzz = fn(n) {
-if n % 3 == 0 && n % 5 != 0 then
-    print("Fizz")
-otherwise
-    if n % 5 == 0 && n % 3 != 0 then
-        print("Buzz");
+            r#"defineFunction fizzbuzz(n)
+    if n % 3 == 0 && n % 5 != 0 then
+        print("Fizz")
     otherwise
-        if n % 5 == 0 && n % 3 == 0 then
-            print("FizzBuzz");
+        if n % 5 == 0 && n % 3 != 0 then
+            print("Buzz");
         otherwise
-            print(n);
+            if n % 5 == 0 && n % 3 == 0 then
+                print("FizzBuzz");
+            otherwise
+                print(n);
+            end
         end
     end
-end
-};"#,
-            r#"set fizzbuzz = fn (n) { if (((n % 3) == 0) && ((n % 5) != 0)) then print("Fizz") otherwise if (((n % 5) == 0) && ((n % 3) != 0)) then print("Buzz") otherwise if (((n % 5) == 0) && ((n % 3) == 0)) then print("FizzBuzz") otherwise print(n) end end end }"#,
+end"#,
+            r#"defineFunction fizzbuzz(n) if (((n % 3) == 0) && ((n % 5) != 0)) then print("Fizz") otherwise if (((n % 5) == 0) && ((n % 3) != 0)) then print("Buzz") otherwise if (((n % 5) == 0) && ((n % 3) == 0)) then print("FizzBuzz") otherwise print(n) end end end end"#,
         ),
+
+        
         (
             r#"set hello_world = "Hello, world";
 set x = (true||false) && 1==5;
 set y = 2.5;
 1 + 2;
-set ADD = fn (a, b) {
+defineFunction ADD(a, b)
     return a + b;
-};"#,
-            r#"set hello_world = "Hello, world"; set x = ((true || false) && (1 == 5)); set y = 2.5; (1 + 2); set ADD = fn (a, b) { return (a + b) }"#,
+end"#,
+            r#"set hello_world = "Hello, world"; set x = ((true || false) && (1 == 5)); set y = 2.5; (1 + 2); defineFunction ADD(a, b) return (a + b) end"#,
         ),
     ];
 

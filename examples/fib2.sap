@@ -1,15 +1,17 @@
-set fizzbuzz = fn(n) {
-if n % 3 == 0 && n % 5 != 0 then
-    print("Fizz");
-otherwise
-    if n % 5 == 0 && n % 3 != 0 then
-        print("Buzz");
+defineFunction fizzbuzz(n)
+    if n % 3 == 0 && n % 5 != 0 then
+        print("Fizz")
     otherwise
-        if n % 5 == 0 && n % 3 == 0 then
-            print("FizzBuzz");
+        if n % 5 == 0 && n % 3 != 0 then
+            print("Buzz");
         otherwise
-            print(n);
+            if n % 5 == 0 && n % 3 == 0 then
+                print("FizzBuzz");
+            otherwise
+                print(n);
+            end
         end
     end
 end
-};
+
+fizzbuzz(15)

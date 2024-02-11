@@ -3,12 +3,19 @@
 /**
 */
 export function do_some_stuff(): void;
+/**
+* @param {string} source
+*/
+export function interpret(source: string): void;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly do_some_stuff: () => void;
+  readonly interpret: (a: number, b: number) => void;
+  readonly __wbindgen_malloc: (a: number, b: number) => number;
+  readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;

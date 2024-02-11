@@ -1,22 +1,39 @@
-<!doctype html>
-<html lang="en-US">
-  <head>
-    <meta charset="utf-8" />
-    <title>hello-wasm example</title>
-  </head>
-  <body>
-    <div id="output" style="white-space: pre"></div>
-    <script type="module">
-      import init, {do_some_stuff} from "./playground.js";
-      init().then(() => {
-        do_some_stuff();
-      })
-    </script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Input Output Website</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="input-section">
+            <textarea id="codeEditor" name="code"></textarea>
+        </div>
+        <div class="control-section">
+            <p>Output mode</p>
+            <select id="output-mode">
+                <option value="eval">Evaluate</option>
+                <option value="env">Environment</option>
+                <option value="ast">AST</option>
+                <option value="tokens">Tokens</option>
+            </select>
+            <button id="submitBtn" onclick="run()">Run</button>
+        </div>
+        <div class="output-section">
+            <div id="stdout" class="stdout"></div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/mode/javascript/javascript.min.js"></script>
+    <script src="script.js" type="module"></script>
     <script>
         function appendTextToOutput(text) {
-          var outputDiv = document.getElementById('output');
-          outputDiv.textContent += text;
+            var output = document.getElementById('stdout');
+            output.textContent += text;
         }
     </script>
-  </body>
+</body>
 </html>

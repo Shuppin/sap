@@ -7,4 +7,6 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
+interpreter = { version = "0.1.0", path = "../interpreter" }
+parser = { version = "0.1.0", path = "../parser" }
 wasm-bindgen = "0.2"

@@ -6,7 +6,7 @@ use serde::{Serialize, Serializer};
 ///
 /// If `true`, spans will be serialised into: `"span": "157..160"`, instead of
 /// `"span": {"start": 157, "end": 160}`.
-const SHORTHAND_SPAN_SERIALISATION: bool = false;
+const SHORTHAND_SPAN_SERIALISATION: bool = true;
 
 /// Represents a span of characters in the source code.
 ///

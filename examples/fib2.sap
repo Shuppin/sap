@@ -1,17 +1,15 @@
-defineFunction fizzbuzz(n)
-    if n % 3 == 0 && n % 5 != 0 then
-        print("Fizz")
-    otherwise
-        if n % 5 == 0 && n % 3 != 0 then
-            print("Buzz");
-        otherwise
-            if n % 5 == 0 && n % 3 == 0 then
-                print("FizzBuzz");
-            otherwise
-                print(n);
-            end
-        end
+defineFunction fib(n)
+    set a = 0
+    set b = 1
+    set counter = 0
+    repeat until counter == n
+        set counter = counter + 1
+        set temp = a
+        set a = b
+        set b = temp+b
     end
+    return a
 end
 
-fizzbuzz(15)
+fib(30)
+

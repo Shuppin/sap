@@ -1,0 +1,22 @@
+defineFunction fizzbuzz(n)
+    if n % 3 == 0 and n % 5 != 0 then
+        display "Fizz"
+    otherwise
+        if n % 5 == 0 and n % 3 != 0 then
+            display "Buzz"
+        otherwise
+            if n % 5 == 0 and n % 3 == 0 then
+                display "FizzBuzz"
+            otherwise
+                display n
+            end
+        end
+    end
+end
+
+
+set i = 1
+repeat 100 times
+    fizzbuzz(i)
+    set i = i + 1
+end

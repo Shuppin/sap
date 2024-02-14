@@ -139,7 +139,7 @@ fn lexer_numbers() {
 }
 
 #[test]
-fn lexer_let() {
+fn lexer_set() {
     lexer_common(
         "set x=5;",
         vec![

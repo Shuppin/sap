@@ -383,10 +383,10 @@ impl<'lexer> Lexer<'lexer> {
         //
         // Note: The parser does depend on this functionality, so don't remove it. :)
         let mut encountered_newline = false;
-        while matches!(self.chr, ' ' | '\n' | '\r' | '/') {
+        while matches!(self.chr, ' ' | '\t' | '\n' | '\r' | '/') {
             match self.chr {
                 // Skip whitespace
-                ' ' => self.skip_whitespace(),
+                ' ' | '\t' => self.skip_whitespace(),
                 // Skip newlines
                 '\n' | '\r' => {
                     encountered_newline = true;
@@ -408,7 +408,7 @@ impl<'lexer> Lexer<'lexer> {
 
     /// Skips over any whitespace characters in the current input.
     fn skip_whitespace(&mut self) {
-        while matches!(self.chr, ' ' | '\t' | '\n' | '\r') {
+        while matches!(self.chr, ' ' | '\t') {
             self.read_char();
         }
     }

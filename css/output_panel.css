@@ -6,6 +6,7 @@
     margin-bottom: 5px;
 }
 
-.output-content {
+.output-content, .result-content {
     white-space: pre-wrap;
+    font-family: monospace;
 }

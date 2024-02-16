@@ -1,0 +1,11 @@
+.output-header {
+    color: grey;
+    text-align: center;
+    border-bottom: 1px solid grey;
+    padding: 10px;
+    margin-bottom: 5px;
+}
+
+.output-content {
+    white-space: pre-wrap;
+}

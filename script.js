@@ -1,6 +1,10 @@
-import init, {interpret} from "./playground.js";
+import init, {interpret, parse, lex} from "./playground.js";
 
-var editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+let wasmModulePromise = init().then(wasmModule => {
+    return wasmModule;
+});
+
+var editor = CodeMirror.fromTextArea(document.getElementById('codeeditor'), {
     lineNumbers: true,
     mode: "the only way to disable syntax highlighting is to put some non-existant language into this argument",
     theme: "default",
@@ -8,16 +12,38 @@ var editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
     indentWithTabs: true
 });
 
-let wasmModulePromise = init().then(wasmModule => {
-    return wasmModule;
-});
+editor.setSize("100%", "100%")
 
-window.run = function() {
+// Select the button using its unique ID
+const button = document.getElementById('run-button');
+
+// Add an event listener for the 'click' event
+button.addEventListener('click', function() {
     wasmModulePromise.then(() => {
-        var output = document.getElementById("stdout");
-        output.textContent = ""
+        // Retrieve the selected value from the <select> element when the  button is clicked
+        const selectedOutputMode = document.getElementById('output-modes').value;
+        var resultOutput = document.getElementById("result-content");
+        var stdoutOutput = document.getElementById("stdout-content");
+        resultOutput.textContent = ""
+        stdoutOutput.textContent = ""
         var source = editor.getValue();
-        interpret(source);
+        switch (selectedOutputMode) {
+            case 'eval':
+                interpret(false, source);
+                break;
+            case 'env':
+                interpret(true, source);
+                break;
+            case 'ast':
+                parse(source);
+                break;
+            case 'tokens':
+                lex(source);
+                break;
+            default:
+                console.log("Unexpected output mode:", selectedOutputMode)
+
+        }
     });
-    // output.textContent = editor.getValue()
-}
+
+});

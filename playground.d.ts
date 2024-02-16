@@ -4,16 +4,27 @@
 */
 export function do_some_stuff(): void;
 /**
+* @param {boolean} display_env
 * @param {string} source
 */
-export function interpret(source: string): void;
+export function interpret(display_env: boolean, source: string): void;
+/**
+* @param {string} source
+*/
+export function parse(source: string): void;
+/**
+* @param {string} source
+*/
+export function lex(source: string): void;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly do_some_stuff: () => void;
-  readonly interpret: (a: number, b: number) => void;
+  readonly interpret: (a: number, b: number, c: number) => void;
+  readonly parse: (a: number, b: number) => void;
+  readonly lex: (a: number, b: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
 }

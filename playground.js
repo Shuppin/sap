@@ -79,12 +79,31 @@ function passStringToWasm0(arg, malloc, realloc) {
     return ptr;
 }
 /**
+* @param {boolean} display_env
 * @param {string} source
 */
-export function interpret(source) {
+export function interpret(display_env, source) {
     const ptr0 = passStringToWasm0(source, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
-    wasm.interpret(ptr0, len0);
+    wasm.interpret(display_env, ptr0, len0);
+}
+
+/**
+* @param {string} source
+*/
+export function parse(source) {
+    const ptr0 = passStringToWasm0(source, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    wasm.parse(ptr0, len0);
+}
+
+/**
+* @param {string} source
+*/
+export function lex(source) {
+    const ptr0 = passStringToWasm0(source, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    wasm.lex(ptr0, len0);
 }
 
 async function __wbg_load(module, imports) {

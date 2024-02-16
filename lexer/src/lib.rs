@@ -361,8 +361,8 @@ impl<'lexer> Lexer<'lexer> {
     /// # Returns
     ///
     /// An `Ok(())` if the multi-line comment was successfully skipped, or an
-    /// `Err(String)` containing an error message if the comment was not terminated.
-    fn skip_multi_comment(&mut self) -> Result<(), String> {
+    /// `Err(())` error if the comment was not terminated.
+    fn skip_multi_comment(&mut self) -> Result<(), ()> {
         // Consume the opening '/*'
         if self.chr == '/' && self.peek_char() == '*' {
             self.read_char();
@@ -374,7 +374,7 @@ impl<'lexer> Lexer<'lexer> {
         while !(self.chr == '*' && self.peek_char() == '/') {
             self.read_char();
             if self.chr == '\0' {
-                return Err("Unexpected end of file while parsing multiline comment".to_string());
+                return Err(());
             };
         }
         // Consume the closing '*/'
@@ -389,9 +389,8 @@ impl<'lexer> Lexer<'lexer> {
     /// # Returns
     ///
     /// A `Result` containing a `bool` indicating whether a newline character was
-    /// encountered. If an error occurs, it returns an `Err(String)` containing an error
-    /// message.
-    fn skip_garbage(&mut self) -> Result<bool, String> {
+    /// encountered. If an error occurs, it returns an `Err(())`.
+    fn skip_garbage(&mut self) -> Result<bool, ()> {
         // We store whether we encountered a newline because the lexer does
         // count newlines, however it only needs to know if it encountered one,
         // not how many it encountered.

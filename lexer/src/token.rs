@@ -44,6 +44,7 @@ pub enum TokenKind {
     NewLine,
     Illegal(String),
     UnterminatedComment,
+    UnterminatedString,
     Eof,
 
     // Value holders
@@ -194,6 +195,7 @@ impl Display for TokenKind {
             Self::Or => "or",
             Self::Eof => "<EOF>",
             Self::UnterminatedComment => "<UnterminatedComment>",
+            Self::UnterminatedString => "<UnterminatedString>",
             Self::NewLine => "\\n",
         }
         .to_string();

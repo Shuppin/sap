@@ -186,13 +186,25 @@ impl<'lexer> Lexer<'lexer> {
 
             // String literals
             '"' => {
-                let string = self.read_string();
-                return Token {
-                    span: Span {
-                        start: start_position,
-                        end: self.position,
-                    },
-                    kind: TokenKind::String(string),
+                match self.read_string() {
+                    Ok(string) => {
+                        return Token {
+                            span: Span {
+                                start: start_position,
+                                end: self.position,
+                            },
+                            kind: TokenKind::String(string),
+                        }
+                    }
+                    Err(_) => {
+                        return Token {
+                            span: Span {
+                                start: start_position,
+                                end: self.position,
+                            },
+                            kind: TokenKind::UnterminatedString,
+                        }
+                    }
                 };
             }
 
@@ -233,13 +245,16 @@ impl<'lexer> Lexer<'lexer> {
     /// # Returns
     ///
     /// A `String` containing the contents of the string literal.
-    fn read_string(&mut self) -> String {
+    fn read_string(&mut self) -> Result<String, ()> {
         let mut string = String::new();
         // Read opening '"'
         self.read_char();
 
         // Read string contents
-        while !(self.chr == '"' || self.chr == '\0') {
+        while !(self.chr == '"') {
+            if self.chr == '\0' {
+                return Err(());
+            }
             string.push(self.chr);
             self.read_char();
         }
@@ -247,7 +262,7 @@ impl<'lexer> Lexer<'lexer> {
         // Read closing '"'
         self.read_char();
 
-        string
+        Ok(string)
     }
 
     /// Reads an identifier starting from the current character position.

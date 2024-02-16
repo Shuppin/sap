@@ -1,9 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
-*/
-export function do_some_stuff(): void;
-/**
 * @param {boolean} display_env
 * @param {string} source
 */
@@ -21,7 +18,6 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly do_some_stuff: () => void;
   readonly interpret: (a: number, b: number, c: number) => void;
   readonly parse: (a: number, b: number) => void;
   readonly lex: (a: number, b: number) => void;

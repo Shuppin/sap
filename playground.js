@@ -17,11 +17,6 @@ function getStringFromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
 }
-/**
-*/
-export function do_some_stuff() {
-    wasm.do_some_stuff();
-}
 
 let WASM_VECTOR_LEN = 0;
 
@@ -140,8 +135,11 @@ async function __wbg_load(module, imports) {
 function __wbg_get_imports() {
     const imports = {};
     imports.wbg = {};
-    imports.wbg.__wbg_appendTextToOutput_b1cf4fe9118e48b5 = function(arg0, arg1) {
-        appendTextToOutput(getStringFromWasm0(arg0, arg1));
+    imports.wbg.__wbg_appendTextToResultOutput_edfc050a9a0e9e75 = function(arg0, arg1) {
+        appendTextToResultOutput(getStringFromWasm0(arg0, arg1));
+    };
+    imports.wbg.__wbg_appendTextToStandardOutput_b66ef38e0d5dd5f5 = function(arg0, arg1) {
+        appendTextToStandardOutput(getStringFromWasm0(arg0, arg1));
     };
 
     return imports;

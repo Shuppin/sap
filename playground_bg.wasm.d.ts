@@ -1,7 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
-export function do_some_stuff(): void;
 export function interpret(a: number, b: number, c: number): void;
 export function parse(a: number, b: number): void;
 export function lex(a: number, b: number): void;

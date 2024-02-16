@@ -10,8 +10,10 @@ use ast::statement::{
 };
 use ast::Program;
 use lexer::token::TokenKind;
-use shared::err;
 use shared::error::{Error, ErrorKind};
+#[cfg(target_family = "wasm")]
+use shared::output::stdoutln_fn;
+use shared::{err, stdoutln};
 
 use crate::runtime::{EnvRef, Environment};
 use crate::value::{Function, Value};
@@ -120,7 +122,7 @@ fn eval_display_statement(env: &EnvRef, display: &Display) -> EvalOutcome {
             _ => unreachable!(),
         };
     }
-    println!("{}", values.join(" "));
+    stdoutln!("{}", values.join(" "));
     return Continue(Rc::new(Value::Null));
 }
 

@@ -11,6 +11,9 @@ use std::time::Instant;
 
 use clap::{Arg, Command};
 use interpreter::runtime::Environment;
+#[cfg(target_family = "wasm")]
+use shared::output::{stdout_fn, stdoutln_fn};
+use shared::{stdout, stdoutln};
 
 // Attempt to obtain the current version of the CLI package
 pub const VERSION: Option<&str> = std::option_env!("CARGO_PKG_VERSION");
@@ -103,7 +106,7 @@ fn main() -> Result<(), String> {
         // If the start variable is not `None`, then calculate the time elapsed and print it.
         if let Some(start) = start {
             let time_elapsed = Instant::now() - start;
-            println!("Execution finished in {}ms", time_elapsed.as_millis())
+            stdoutln!("Execution finished in {}ms", time_elapsed.as_millis())
         }
 
         return Ok(()); // Exit the program
@@ -114,7 +117,7 @@ fn main() -> Result<(), String> {
         // This overrides the default behaviour of Ctrl-C, instead of terminating the program, it
         // will print "Bye!" and then exit the program with a success state.
         ctrlc::set_handler(move || {
-            println!("\nBye!");
+            stdoutln!("\nBye!");
             std::process::exit(0);
         })
         .expect("Error setting Ctrl-C handler");
@@ -187,8 +190,8 @@ fn interpreter_repl(display_env: bool) -> Result<(), String> {
     // Print the welcome message for the interpreter.
     let title = "SAP Interpreter";
     let version = interpreter::VERSION.unwrap_or("<unknown>");
-    println!("{}", construct_info_message(title, version));
-    println!("Enter an expression to evaluate, or Ctrl-C to exit");
+    stdoutln!("{}", construct_info_message(title, version));
+    stdoutln!("Enter an expression to evaluate, or Ctrl-C to exit");
 
     // Create the global environment (variable store).
     let env = interpreter::create_env();
@@ -219,8 +222,8 @@ fn parser_repl() -> Result<(), String> {
     // Print the welcome message for the parser.
     let title = "SAP Parser";
     let version = parser::VERSION.unwrap_or("<unknown>");
-    println!("{}", construct_info_message(title, version));
-    println!("Enter an expression to parse, or Ctrl-C to exit");
+    stdoutln!("{}", construct_info_message(title, version));
+    stdoutln!("Enter an expression to parse, or Ctrl-C to exit");
 
     // Begin the REPL loop.
     loop {
@@ -248,8 +251,8 @@ fn lexer_repl() -> Result<(), String> {
     // Print the welcome message for the lexer.
     let title = "SAP Lexer";
     let version = lexer::VERSION.unwrap_or("<unknown>");
-    println!("{}", construct_info_message(title, version));
-    println!("Enter an expression to generate tokens with, or Ctrl-C to exit");
+    stdoutln!("{}", construct_info_message(title, version));
+    stdoutln!("Enter an expression to generate tokens with, or Ctrl-C to exit");
 
     // Begin the REPL loop.
     loop {
@@ -334,17 +337,17 @@ fn print_evaluation(
 ) {
     if display_env {
         // Display the environment.
-        println!("\n{}", evaluation.0.borrow());
+        stdoutln!("\n{}", evaluation.0.borrow());
         // On a new line, display the evaluation result.
         match *evaluation.1 {
             interpreter::value::Value::Null => {}
-            _ => println!("\nEvaluated as: {}", evaluation.1),
+            _ => stdoutln!("\nEvaluated as: {}", evaluation.1),
         }
     } else {
         // Seperate logic for displaying values if we don't want to display the environment.
         match *evaluation.1 {
             interpreter::value::Value::Null => {}
-            _ => println!("{}", evaluation.1),
+            _ => stdoutln!("{}", evaluation.1),
         }
     }
 }
@@ -360,17 +363,17 @@ fn parse_and_print(input: &str) {
         Ok(parsed_ast) => {
             // Here, we serialise (convert to JSON) the AST before printing it. This improves the
             // readability of the AST, and makes it easier to follow.
-            print!("\n=== Serialised AST start ===\n");
-            print!(
+            stdout!("\n=== Serialised AST start ===\n");
+            stdout!(
                 "{}",
                 ast::ast_to_json(&parsed_ast).unwrap_or(parsed_ast.to_string())
             );
-            print!("\n=== Serialised AST end ===\n");
+            stdout!("\n=== Serialised AST end ===\n");
 
             // Printing the AST directly like this converts it back into a form which is almost
             // identical to the original input, but with parentheses around expressions and uniform
             // whitespace.
-            println!("\nParsed as:\n{}", parsed_ast);
+            stdout!("\nParsed as:\n{}", parsed_ast);
         }
         Err(err) => print_error(&err),
     }
@@ -382,7 +385,7 @@ fn lex_and_print(input: &str) {
     // Loop through the tokens and print them.
     loop {
         let token = lexer.next_token();
-        println!("{}", token);
+        stdoutln!("{}", token);
         // If the token is an end of file (EOF) token, then we have reached the end of the input.
         if token.kind == lexer::token::TokenKind::Eof {
             break;
@@ -392,5 +395,5 @@ fn lex_and_print(input: &str) {
 
 // Helper function to print errors.
 fn print_error(err: &shared::error::Error) {
-    println!("{:?}: {}", err.kind, err.message);
+    stdoutln!("{:?}: {}", err.kind, err.message);
 }

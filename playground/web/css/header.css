@@ -1,0 +1,80 @@
+.header {
+    height: auto; 
+    padding: 10px;
+    padding-bottom: 0px;
+    background-color: #dedede;
+    display: grid;
+    position: relative;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.header-left, .header-right, .header-middle {
+    grid-row: 1;
+    align-self: center;
+}
+
+.header-middle {
+    margin: 0;
+    text-align: center;
+    font-size: 150%;
+}
+
+.header-right {
+    text-align: end;
+}
+
+.header-dropdown-label {
+    display: inline-block;
+    font-size: 90%;
+    color: #a5a5a5;
+    margin: 0;
+    vertical-align: middle;
+}
+
+.header-dropdown {
+    /* padding: 10px 20px; */
+    padding: 5px;
+    margin-right: 5px;
+    border: 1px solid #ccc; /* Light grey border */
+    border-radius: 5px;
+    font-size: 100%;
+    color: #333; /* Dark grey text */
+    background-color: #fff; /* White background */
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.header-button {
+    background-color: #d3552b; /* This is a placeholder orange color */
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 100%;
+    cursor: pointer;
+    border-radius: 5px; /* Adjust as needed */
+    vertical-align: middle;
+}
+
+.header-button:hover {
+    background-color: #AA4422; /* Darker orange on hover */
+}
+
+.header-button:disabled {
+    background-color: #cccccc;
+    cursor: default;
+    color: #666666;
+}
+
+.header-vl {
+    display: inline-block; /* Makes the element inline but allows height and width */
+    height: 40px; /* Fixed height of the separator */
+    width: 2px; /* Thin line width */
+    background-color: #b5b5b5; /* Color of the separator, black in this example */
+    margin-left: 10px; /* Optional: space before the separator */
+    margin-right: 10px; /* Optional: space after the separator */
+    vertical-align: middle;
+  }
+
+

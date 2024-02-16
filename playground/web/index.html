@@ -3,37 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Input Output Website</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SAP Playground</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/output_panel.css">
+    <link rel="stylesheet" href="css/help_table_panel.css">
+    <link rel="stylesheet" href="css/tooltip.css">
+    <script src="wasm_bindings.js" defer></script>
+    <script src="script.js" type="module" defer></script>
+    <!-- External imports -->
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Code mirror -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/mode/javascript/javascript.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <div class="input-section">
-            <textarea id="codeEditor" name="code"></textarea>
+        <div class="header">
+            <div class="header-left">
+                <button class="header-button" id="run-button">Run ▶</button>
+                <button class="header-button" disabled>Stop ◼</button>
+                <div class="header-vl"></div>
+                <p class="header-dropdown-label">Output mode:</p>
+                <select name="output-modes" id="output-modes" class="header-dropdown">
+                    <option value="eval" selected>Evaluation</option> 
+                    <option value="env">Environment</option> 
+                    <option value="ast">Syntax Tree</option> 
+                    <option value="tokens">Tokens</option> 
+                </select>
+                <div class="tooltip" style="vertical-align: middle;">
+                    <i class="fa fa-question-circle" style="font-size:20px;color: #a5a5a5;"></i>
+                    <span class="tooltiptext">What output should the interpreter produce?</span>
+                </div> 
+            </div>
+            <div class="header-middle"><strong>SAP Playground</strong></div>
+            <div class="header-right">
+                <a href="https://github.com/Shuppin/sap">
+                    <i class="fa fa-github" style="font-size:36px;color: #a5a5a5;"></i>
+                </a>
+            </div>
         </div>
-        <div class="control-section">
-            <p>Output mode</p>
-            <select id="output-mode">
-                <option value="eval">Evaluate</option>
-                <option value="env">Environment</option>
-                <option value="ast">AST</option>
-                <option value="tokens">Tokens</option>
-            </select>
-            <button id="submitBtn" onclick="run()">Run</button>
-        </div>
-        <div class="output-section">
-            <div id="stdout" class="stdout"></div>
+        <div class="content">
+            <div class="content-left">
+                <textarea id="codeeditor"></textarea>
+            </div>
+            <div class="content-right">
+                <div class="top-right">
+                    <div class="output-header">Standard Output</div>
+                    <div class="output-content" id="stdout-content"></div>
+                    <div class="output-header">Result</div>
+                    <div class="output-content" id="result-content"></div>
+                </div>
+                <div class="bottom-right">
+                    <table border="1" id="help-table">
+                        <tr>
+                          <th>Keyword</th>
+                          <th>Use</th>
+                        </tr>
+                        <tr>
+                          <td>set</td>
+                          <td>Setting a new variable</td>
+                        </tr>
+                        <tr>
+                          <td>if</td>
+                          <td>Checking if a condition is true</td>
+                        </tr>
+                        <tr>
+                          <td>otherwise</td>
+                          <td>If a condition is not true, do this instead</td>
+                        </tr>
+                        <tr>
+                          <td>repeat n times</td>
+                          <td>Repeat a section of code n times</td>
+                        </tr>
+                        <tr>
+                          <td>repeat until</td>
+                          <td>Repeat until a condition is not true</td>
+                        </tr>
+                        <tr>
+                          <td>repeat forever</td>
+                          <td>Repeat forever</td>
+                        </tr>
+                        <tr>
+                          <td>defineFunction</td>
+                          <td>Define a new reusable section of code</td>
+                        </tr>
+                        <tr>
+                          <td>display</td>
+                          <td>Display a value on the screen</td>
+                        </tr>
+                        <tr>
+                          <td>end</td>
+                          <td>Denotes the end of a section</td>
+                        </tr>
+                      </table>
+                      
+                </div>
+            </div>
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/mode/javascript/javascript.min.js"></script>
-    <script src="script.js" type="module"></script>
-    <script>
-        function appendTextToOutput(text) {
-            var output = document.getElementById('stdout');
-            output.textContent += text;
-        }
-    </script>
+    
 </body>
 </html>

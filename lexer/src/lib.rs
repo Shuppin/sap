@@ -244,7 +244,8 @@ impl<'lexer> Lexer<'lexer> {
     ///
     /// # Returns
     ///
-    /// A `String` containing the contents of the string literal.
+    /// A `String` containing the contents of the string literal or an `Err(())` if the
+    /// string was not terminated.
     fn read_string(&mut self) -> Result<String, ()> {
         let mut string = String::new();
         // Read opening '"'

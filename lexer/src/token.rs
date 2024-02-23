@@ -165,9 +165,8 @@ impl Display for TokenKind {
         // Match the `TokenKind` variant and assign the corresponding string literal.
         let string_literal = match self {
             Self::Identifier { name } => name,
-            // TODO: Remove use of `write!` macro and return the string literal directly.
-            Self::Int(num) => return write!(f, "{}", num),
-            Self::Float(num) => return write!(f, "{}", num),
+            Self::Int(num) => num,
+            Self::Float(num) => num,
             Self::String(string) => string,
             Self::Illegal(string) => string,
             Self::Assign => "=",

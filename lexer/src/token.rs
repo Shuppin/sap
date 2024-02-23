@@ -36,24 +36,33 @@ impl Display for Token {
 
 /// Represents a specific variant of a token.
 ///
-/// A `TokenKind` can be one of several variants, such as `Identifier`, `IntegerLiteral`,
-/// etc. Each variant contains additional data specific to that kind of token.
+/// A `TokenKind` can be one of several variants, such as `Identifier`, `Int`,
+/// etc. Variants may contain additional data specific to that kind of token.
 #[derive(PartialEq, Debug, Clone, Serialize)]
 pub enum TokenKind {
     // Special
+    // -------
     NewLine,
+    /// Represents a character that does not match any other token.
     Illegal(String),
+    /// Represents a multi-line comment `/*` that does not have a corresponding `*/`.
     UnterminatedComment,
+    /// Represents a string literal that does not have a closing quote.
     UnterminatedString,
+    /// Represents the end of the file.
     Eof,
 
     // Value holders
-    Identifier { name: String },
+    // -------------
+    Identifier {
+        name: String,
+    },
     Int(String),
     Float(String),
     String(String),
 
     // Arithmetic operators
+    // --------------------
     Assign, // =
     Plus,   // +
     Minus,  // -
@@ -62,6 +71,7 @@ pub enum TokenKind {
     Mod,    // %
 
     // Comparison operators
+    // --------------------
     Lt,    // <
     LtEq,  // <=
     Gt,    // >
@@ -70,11 +80,13 @@ pub enum TokenKind {
     NotEq, // !=
 
     // Delimiters
+    // ----------
     Comma,     // ,
     Semicolon, // ;
     Colon,     // :
 
     // Brackets
+    // --------
     LParen,   // (
     RParen,   // )
     LCurly,   // {
@@ -83,6 +95,7 @@ pub enum TokenKind {
     RBracket, // ]
 
     // Keywords
+    // --------
     DefineFunction,
     Set,
     True,
@@ -99,9 +112,10 @@ pub enum TokenKind {
     Display,
 
     // Boolean operator keywords
-    Not, // not
-    And, // and
-    Or,  // or
+    // -------------------------
+    Not,
+    And,
+    Or,
 }
 
 impl TokenKind {
@@ -151,6 +165,7 @@ impl Display for TokenKind {
         // Match the `TokenKind` variant and assign the corresponding string literal.
         let string_literal = match self {
             Self::Identifier { name } => name,
+            // TODO: Remove use of `write!` macro and return the string literal directly.
             Self::Int(num) => return write!(f, "{}", num),
             Self::Float(num) => return write!(f, "{}", num),
             Self::String(string) => string,

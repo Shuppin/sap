@@ -184,6 +184,9 @@ impl<'lexer> Lexer<'lexer> {
                 }
             }
 
+            // The following rules return immediately, because the size of the token is not fixed,
+            // so is handled separately.
+
             // String literals
             '"' => {
                 match self.read_string() {
@@ -196,6 +199,7 @@ impl<'lexer> Lexer<'lexer> {
                             kind: TokenKind::String(string),
                         }
                     }
+                    // An error represents an unterminated string.
                     Err(_) => {
                         return Token {
                             span: Span {

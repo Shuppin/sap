@@ -1,15 +1,30 @@
-//! The `lexer` module provides a lexer for tokenising input strings.
+//! # Lexer module
 //!
-//! The `Lexer` provides methods for tokenising input strings into individual tokens.
-//! It supports various token types such as identifiers, numbers, strings, and operators.
-//! The `Lexer` uses a cursor-based approach to iterate over the input string and extract
-//! tokens.
+//! The lexer module is responsible for tokenising input strings. The lexer supports
+//! various token types such as identifiers, numbers, strings, and operators. The lexer
+//! uses a cursor-based approach to iterate over the input string and extract tokens.
+//!
+//! The lexer is implemented as a struct called `Lexer`, which provides methods for
+//! tokenising input strings into individual tokens. The `Lexer` struct contains an
+//! iterator over the characters of the input string, and uses this iterator to extract
+//! tokens from the input.
+//!
+//! The `Lexer` struct provides a method called `next_token`, which advances the lexer to
+//! the next token in the input stream and returns the token. This method is essentially a
+//! large switch statement, containing branches corresponding to every token type. The
+//! `next_token` method skips any whitespace and comments before identifying the next token.
+//!
+//! The token is represented by a `Token` struct, which contains information about its kind
+//! (e.g., identifier, operator, literal) and its span in the input stream.
+//!
+//! The lexer module is used by the parser to tokenise the input string before parsing it
+//! into an abstract syntax tree (AST).
 use std::str::Chars;
 
 use shared::span::Span;
 use token::{Token, TokenKind};
 
-// Attempt to obtain the current version of the CLI package
+// Attempt to obtain the current version of the lexer module.
 pub const VERSION: Option<&str> = std::option_env!("CARGO_PKG_VERSION");
 
 #[cfg(test)]

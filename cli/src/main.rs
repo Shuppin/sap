@@ -15,7 +15,7 @@ use interpreter::runtime::Environment;
 use shared::output::{stdout_fn, stdoutln_fn};
 use shared::{stdout, stdoutln};
 
-// Attempt to obtain the current version of the CLI package
+// Attempt to obtain the current version of the CLI module.
 pub const VERSION: Option<&str> = std::option_env!("CARGO_PKG_VERSION");
 
 /// The `create_cli_parser` function constructs a `Command` object from the `clap` crate

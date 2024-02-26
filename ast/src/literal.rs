@@ -1,7 +1,12 @@
+//! Literal value representation for the SAP language.
+//!
+//! A literal can be an integer, float, string, or boolean value.
 use serde::Serialize;
 use shared::span::{GetSpan, Span};
 
-
+/// Represents a literal value in the SAP language.
+///
+/// A literal can be an integer, float, string, or boolean value.
 #[derive(Debug, Serialize, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub enum Literal {

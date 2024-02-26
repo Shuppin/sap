@@ -1,3 +1,7 @@
+//! This module contains the `Display` trait implementations for the AST nodes.
+//!
+//! The `Display` trait is used to convert an AST node to a string representation. This
+//! is useful for debugging and testing the code.
 use std::fmt::{Display, Formatter, Result};
 
 use lexer::token::TokenKind;
@@ -9,31 +13,15 @@ use crate::statement::{
 };
 use crate::{Program, StatementList};
 
-fn semi_seperated<T: ToString>(items: &Vec<T>) -> String {
-    return items
-        .iter()
-        .map(|item| item.to_string())
-        .collect::<Vec<String>>()
-        .join("; ");
-}
-
-fn comma_seperated<T: ToString>(items: &Vec<T>) -> String {
-    return items
-        .iter()
-        .map(|item| item.to_string())
-        .collect::<Vec<String>>()
-        .join(", ");
-}
-
 impl Display for Program {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}", semi_seperated(&self.statements))
+        write!(f, "{}", format_semi_seperated(&self.statements))
     }
 }
 
 impl Display for StatementList {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}", semi_seperated(&self.statements))
+        write!(f, "{}", format_semi_seperated(&self.statements))
     }
 }
 
@@ -41,10 +29,10 @@ impl Display for Statement {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
             Statement::Set(Set { ident, expr, .. }) => {
-                return write!(f, "set {} = {}", ident.name, expr);
+                write!(f, "{} {} = {}", TokenKind::Set, ident.name, expr)
             }
             Statement::Return(Return { value, .. }) => {
-                write!(f, "return {}", value)
+                write!(f, "{} {}", TokenKind::Return, value)
             }
             Statement::Expression(expr) => write!(f, "{}", expr),
             Statement::FunctionDeclaration(FunctionDeclaration {
@@ -53,47 +41,54 @@ impl Display for Statement {
                 body,
                 ..
             }) => {
-                let body_block = match body.statements.is_empty() {
-                    true => " ".to_string(),
-                    false => format!(" {} ", body),
-                };
-
                 write!(
                     f,
-                    "defineFunction {}({}){}end",
-                    name,
-                    comma_seperated(&parameters),
-                    body_block
+                    "{} {name}({}){}{}",
+                    TokenKind::DefineFunction,
+                    format_comma_seperated(&parameters),
+                    format_stmt_list(body),
+                    TokenKind::End
                 )
             }
             Statement::RepeatNTimes(RepeatNTimes { n, body, .. }) => {
-                let body_block = match body.statements.is_empty() {
-                    true => " ".to_string(),
-                    false => format!(" {} ", body),
-                };
-
-                write!(f, "repeat {} times{}end", n, body_block)
+                write!(
+                    f,
+                    "{} {n} {}{}{}",
+                    TokenKind::Repeat,
+                    TokenKind::Times,
+                    format_stmt_list(body),
+                    TokenKind::End
+                )
             }
             Statement::RepeatUntil(RepeatUntil {
                 condition, body, ..
             }) => {
-                let body_block = match body.statements.is_empty() {
-                    true => " ".to_string(),
-                    false => format!(" {} ", body),
-                };
-
-                write!(f, "repeat until {}{}end", condition, body_block)
+                write!(
+                    f,
+                    "{} {} {condition}{}{}",
+                    TokenKind::Repeat,
+                    TokenKind::Until,
+                    format_stmt_list(body),
+                    TokenKind::End
+                )
             }
             Statement::RepeatForever(RepeatForever { body, .. }) => {
-                let body_block = match body.statements.is_empty() {
-                    true => " ".to_string(),
-                    false => format!(" {} ", body),
-                };
-
-                write!(f, "repeat forever{}end", body_block)
+                write!(
+                    f,
+                    "{} {}{}{}",
+                    TokenKind::Repeat,
+                    TokenKind::Forever,
+                    format_stmt_list(body),
+                    TokenKind::End
+                )
             }
             Statement::Display(display) => {
-                write!(f, "display {}", comma_seperated(&display.expressions))
+                write!(
+                    f,
+                    "{} {}",
+                    TokenKind::Display,
+                    format_comma_seperated(&display.expressions)
+                )
             }
         }
     }
@@ -118,7 +113,7 @@ impl Display for Expression {
             }) => write!(f, "({} {} {})", left, operator, right),
             Expression::FunctionCall(FunctionCall {
                 callee, arguments, ..
-            }) => write!(f, "{}({})", callee, comma_seperated(arguments)),
+            }) => write!(f, "{}({})", callee, format_comma_seperated(arguments)),
             Expression::Index(Index { object, index, .. }) => write!(f, "{}[{}]", object, index),
             Expression::Selection(Selection {
                 condition,
@@ -126,27 +121,29 @@ impl Display for Expression {
                 else_conditional,
                 ..
             }) => {
-                let conditional_str = match conditional.statements.is_empty() {
+                let formatted_conditional = match conditional.statements.is_empty() {
                     true => "".to_string(),
                     false => format!(" {}", conditional),
                 };
 
-                let else_conditional_str = match else_conditional {
+                let formatted_else_conditional = match else_conditional {
                     Some(else_conditional) => match else_conditional.statements.is_empty() {
-                        true => " otherwise".to_string(),
-                        false => format!(" otherwise {}", else_conditional),
+                        true => format!(" {}", TokenKind::Otherwise),
+                        false => format!(" {} {else_conditional}", TokenKind::Otherwise),
                     },
                     None => "".to_string(),
                 };
 
                 write!(
                     f,
-                    "if {} then{}{} end",
-                    condition, conditional_str, else_conditional_str
+                    "{} {condition} {}{formatted_conditional}{formatted_else_conditional} {}",
+                    TokenKind::If,
+                    TokenKind::Then,
+                    TokenKind::End,
                 )
             }
             Expression::Array(Array { elements, .. }) => {
-                write!(f, "[{}]", comma_seperated(&elements))
+                write!(f, "[{}]", format_comma_seperated(&elements))
             }
         }
     }
@@ -167,4 +164,33 @@ impl Display for Literal {
             Literal::String { value, .. } => write!(f, "\"{}\"", value),
         }
     }
+}
+
+/// Formats a list of statements into a string representation.
+fn format_stmt_list(list: &StatementList) -> String {
+    // Some formatting to make the output more readable.
+    // If the body is empty, insert a single space between in place of the body.
+    // Otherwise, insert the body with a single space before and after it.
+    match list.statements.is_empty() {
+        true => " ".to_string(),
+        false => format!(" {} ", list),
+    }
+}
+
+/// Formats a list of items into a semi-colon separated string representation.
+fn format_semi_seperated<T: ToString>(items: &Vec<T>) -> String {
+    return items
+        .iter()
+        .map(|item| item.to_string())
+        .collect::<Vec<String>>()
+        .join("; ");
+}
+
+/// Formats a list of items into a comma separated string representation.
+fn format_comma_seperated<T: ToString>(items: &Vec<T>) -> String {
+    return items
+        .iter()
+        .map(|item| item.to_string())
+        .collect::<Vec<String>>()
+        .join(", ");
 }

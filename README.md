@@ -25,7 +25,7 @@ SAP has a small set of simple, yet powerful features, including:
 
 ## Quick start
 
-There is an [**online playground**](https://shuppin.github.io/sap/) available if you want try out the language without installing anything. You can also install the `sap` command line tool to run SAP programs locally. You can install it using [Cargo]:
+There is an [**online playground**](https://shuppin.github.io/sap/) available if you want try out the language without installing anything. To run SAP programs locally, you can install the `sap` command line tool using [Cargo]:
 
 ```sh
 cargo install sap-cli
@@ -125,3 +125,5 @@ The `playground` crate wont compile in it's current state, as it is primarily de
 3. Install wasm-pack using `cargo install wasm-pack`
 4. Build the `playground` crate using `wasm-pack build ./playground --target web`
 5. Serve the `playground` crate using whatever method you prefer (e.g. `python -m http.server`).
+
+[Cargo]: https://doc.rust-lang.org/cargo/getting-started/installation.html

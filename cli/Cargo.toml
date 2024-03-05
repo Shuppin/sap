@@ -7,7 +7,7 @@ authors = ["Shuppin <shuppin93@outlook.com>"]
 license = "MIT OR Apache-2.0"
 description = "The command line interface for the SAP programming language"
 repository = "https://github.com/Shuppin/sap"
-keywords = ["cli", "sap", "interpreter", "language", "programming language"]
+keywords = ["cli", "sap", "interpreter", "language", "programming-language"]
 categories = ["compilers"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

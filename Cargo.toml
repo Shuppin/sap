@@ -1,3 +1,11 @@
 [workspace]
 resolver = "2"
-members = ["lexer", "parser", "ast", "interpreter", "cli", "shared", "playground"]
+members = [
+    "lexer",
+    "parser",
+    "ast",
+    "interpreter",
+    "cli",
+    "shared",
+    "playground",
+] 

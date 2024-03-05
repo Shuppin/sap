@@ -1,8 +1,15 @@
 [package]
-name = "lexer"
+name = "sap-lexer"
 version = "1.0.0"
 edition = "2021"
+authors = ["Shuppin <shuppin93@outlook.com>"]
+license = "MIT OR Apache-2.0"
+description = "The lexer crate for the SAP programming language"
+repository = "https://github.com/Shuppin/sap"
+
+[lib]
+name = "lexer"
 
 [dependencies]
-shared = { path = "../shared" }
+sap-shared = { path = "../shared", version = "*" }
 serde = { version = "1.0.195", features = ["derive"] }

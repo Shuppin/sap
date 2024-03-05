@@ -1,12 +1,18 @@
 [package]
-name = "ast"
-version = "0.1.0"
+name = "sap-ast"
+version = "1.0.0"
 edition = "2021"
+authors = ["Shuppin <shuppin93@outlook.com>"]
+license = "MIT OR Apache-2.0"
+description = "The abstractact syntax tree crate for the SAP programming language"
+repository = "https://github.com/Shuppin/sap"
 
+[lib]
+name = "ast"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-lexer = { path = "../lexer" }
-shared = { path = "../shared" }
+sap-lexer = { path = "../lexer", version = "*" }
+sap-shared = { path = "../shared", version = "*" }
 serde = { version = "1.0.195", features = ["derive"] }
 serde_json = "1.0.111"

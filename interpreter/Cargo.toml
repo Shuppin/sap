@@ -1,12 +1,18 @@
 [package]
-name = "interpreter"
-version = "0.1.0"
+name = "sap-interpreter"
+version = "1.0.0"
 edition = "2021"
+authors = ["Shuppin <shuppin93@outlook.com>"]
+license = "MIT OR Apache-2.0"
+description = "The interpreter crate for the SAP programming language"
+repository = "https://github.com/Shuppin/sap"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "interpreter"
 
 [dependencies]
-ast = { path = "../ast" }
-lexer = { path = "../lexer" }
-parser = { path = "../parser" }
-shared = { path = "../shared" }
+sap-ast = { path = "../ast", version = "*" }
+sap-lexer = { path = "../lexer", version = "*" }
+sap-parser = { path = "../parser", version = "*" }
+sap-shared = { path = "../shared", version = "*" }

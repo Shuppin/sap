@@ -6,12 +6,9 @@ The order of statements is representative of the hierarchy of the AST.
 
     <program> -> <statements>? `Eof`
 
-    <block> -> `LCurly` <statements>? `RCurly`
-
-
 ## Statements
 
-    <statement> -> <set_stmt> | <return_stmt> | <expression> | <fn_decl_stmt> | <repeat_stmt>
+    <statement> -> <set_stmt> | <return_stmt> | <expression> | <fn_decl_stmt> | <repeat_stmt> | <display_stmt>
 
     <set_stmt> -> `Set` `Ident` `Assign` <expression>
 
@@ -27,7 +24,7 @@ The order of statements is representative of the hierarchy of the AST.
 
     <repeat_forever> -> `Forever` <statements>? `End`
 
-    <display> -> `Display` <expr_list>?
+    <display_stmt> -> `Display` <expr_list>?
 
 ## Expressions
 

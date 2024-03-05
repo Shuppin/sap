@@ -155,7 +155,8 @@ impl<'lexer> Parser<'lexer> {
     }
 
     fn parse_statement(&mut self) -> Result<Statement, Error> {
-        // <statement> -> <set_stmt> | <return_stmt> | <expression> | <fn_decl_stmt>
+        // <statement> -> <set_stmt> | <return_stmt> | <expression> | <fn_decl_stmt> |
+        //                <repeat_stmt> | <display_stmt>
         match self.cur_token.kind {
             TokenKind::Set => self.parse_set_stmt(),
             TokenKind::Return => self.parse_return_stmt(),

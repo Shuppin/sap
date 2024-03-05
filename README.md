@@ -31,10 +31,10 @@ There is an [**online playground**](https://shuppin.github.io/sap/) available if
 cargo install sap-cli
 ```
 
-You can then run a SAP program using the `sap` command:
+Once installed, use `sap --help` to see the available options, or to run a SAP program, use the `sap` command followed by the path to the SAP program:
 
 ```sh
-sap main.sap
+sap path/to/program.sap
 ```
 
 ### Building from source

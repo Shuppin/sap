@@ -137,6 +137,7 @@ impl Value {
             (Self::Integer(a), Self::Integer(b)) => Ok(Self::Boolean(*a == *b)),
             (Self::Float(a), Self::Float(b)) => Ok(Self::Boolean(*a == *b)),
             (Self::Boolean(a), Self::Boolean(b)) => Ok(Self::Boolean(*a == *b)),
+            (Self::String(a), Self::String(b)) => Ok(Self::Boolean(*a == *b)),
             (Self::Null, Self::Null) => Ok(Self::Boolean(true)),
             _ => err!(
                 ErrorKind::TypeError,

@@ -1,0 +1,86 @@
+(* Base *)
+
+    program = [statements] , "\0";
+
+    statements = statement , {( ";" | "\n" ) statement} , [ ";" | "\n" ];
+
+(* Statements *)
+
+    statement = set_stmt
+                | return_stmt
+                | expression
+                | fn_decl_stmt
+                | repeat_stmt;
+
+    set_stmt = "set" , ident , "=" , expression;
+
+    return_stmt = "return" expression;
+
+    fn_decl_stmt = "defineFunction" , "(" , [args] , ")" , [statements]
+                   , "end";
+        
+        args = expression , {"," , expression};
+
+    repeat_stmt = "repeat"
+                  , (repeat_n_times | repeat_until | repeat_forever);
+
+        repeat_n_times = expression , "times" , [statements] , "end";
+
+        repeat_until = "until" , expression , [statements] , "end";
+
+        repeat_forever = "forever" , [statements] , "end";
+
+(* Expressions *)
+
+    expression = or_expr;
+
+    or_expr = and_expr {"or" , and_expr};
+
+    and_expr = eq_expr {"and" , eq_expr};
+
+    eq_expr = comp_expr {("==" | "!=") , comp_expr};
+
+    sum_expr = product_expr {("+" | "-") , product_expr};
+
+    product_expr = postfix_expr {("*" | "/" | "%") , postfix_expr};
+
+    postfix_expr = prefix_expr {fn_call};
+
+        fn_call = "(" , [args] , ")";
+
+        args = expression , {"," , expression};
+
+    prefix_expr = {"not" | "-"} , ident_expr;
+
+    ident_expr = ident | group_expr;
+
+    group_expr = ("(" , expression , ")") | entity_expr;
+
+    entity_expr = selection_expr | literal;
+
+    selection_expr = "if" , expression , "then" , [statements]
+                     , ["otherwise" [statements]] "end";
+
+(* Literals *)
+
+    literal = int | float | bool | string
+
+    int = digit , {digit};
+
+    float = int , "." , int;
+
+    bool = "true" | "false";
+
+    string = '"' , {char} , '"';
+
+(* Primitives *)
+
+    ident = letter , {letter | digit};
+
+    digit = "0" | "1" | "2" | "3" | "4"
+            | "5" | "6" | "7" | "8" | "9";
+
+    letter = ? any letter including underscore "_" ?;
+
+    char = ? any character except quote '"' ?;
+

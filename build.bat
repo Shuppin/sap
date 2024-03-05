@@ -1,3 +1,3 @@
 @echo off
 cargo build --release
-move .\target\release\cli.exe .\sap.exe
+move .\target\release\sap.exe .\sap.exe

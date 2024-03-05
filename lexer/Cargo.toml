@@ -11,5 +11,5 @@ repository = "https://github.com/Shuppin/sap"
 name = "lexer"
 
 [dependencies]
-sap-shared = { path = "../shared", version = "*" }
+sap-shared = { path = "../shared", version = "1.0.0" }
 serde = { version = "1.0.195", features = ["derive"] }

@@ -11,14 +11,12 @@ use ast::statement::{
 use ast::Program;
 use lexer::token::TokenKind;
 use shared::error::{Error, ErrorKind};
-#[cfg(target_family = "wasm")]
-use shared::output::stdoutln_fn;
 use shared::{err, stdoutln};
 
 use crate::runtime::{EnvRef, Environment};
 use crate::value::{Function, Value};
 
-// Attempt to obtain the current version of the CLI package
+// Attempt to obtain the current version of the interpreter module.
 pub const VERSION: Option<&str> = std::option_env!("CARGO_PKG_VERSION");
 
 #[cfg(test)]

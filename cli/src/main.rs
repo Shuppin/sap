@@ -11,8 +11,6 @@ use std::time::Instant;
 
 use clap::{Arg, Command};
 use interpreter::runtime::Environment;
-#[cfg(target_family = "wasm")]
-use shared::output::{stdout_fn, stdoutln_fn};
 use shared::{stdout, stdoutln};
 
 // Attempt to obtain the current version of the CLI module.

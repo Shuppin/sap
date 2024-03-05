@@ -11,11 +11,3 @@ macro_rules! stdoutln {
         println!($($arg)*)
     }
 }
-
-pub fn stdout_fn(text: &str) {
-    print!("{}", text)
-}
-
-pub fn stdoutln_fn(text: &str) {
-    println!("{}", text)
-}

@@ -18,7 +18,7 @@ path = "src/main.rs"
 
 [dependencies]
 sap-ast = { path = "../ast", version = "1.0.0" }
-sap-interpreter = { path = "../interpreter", version = "1.0.0" }
+sap-interpreter = { path = "../interpreter", version = "1.0.1" }
 sap-parser = { path = "../parser", version = "1.0.0" }
 sap-lexer = { path = "../lexer", version = "1.0.0" }
 sap-shared = { path = "../shared", version = "1.0.0" }

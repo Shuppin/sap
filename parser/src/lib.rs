@@ -13,7 +13,7 @@ use lexer::Lexer;
 use shared::error::{Error, ErrorKind};
 use shared::span::{GetSpan, Span};
 
-// Attempt to obtain the current version of the CLI package
+// Attempt to obtain the current version of the parser module.
 pub const VERSION: Option<&str> = std::option_env!("CARGO_PKG_VERSION");
 
 #[cfg(test)]

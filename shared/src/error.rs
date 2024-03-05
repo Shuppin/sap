@@ -19,7 +19,8 @@ macro_rules! err {
     }
 }
 
-/// The error struct represents is used for every error throughout the program.
+/// The Error struct is used to represent errors that occur during execution.
+/// It contains a message and a kind, which is used to categorise the error.
 #[derive(Debug, PartialEq, Clone)]
 pub struct Error {
     pub message: String,
@@ -28,6 +29,15 @@ pub struct Error {
 
 impl Error {
     /// Creates a new error with a message and a kind.
+    ///
+    /// # Arguments
+    ///
+    /// * `message` - The error message.
+    /// * `kind` - The kind of error.
+    ///
+    /// # Returns
+    ///
+    /// A new error with the given message and kind.
     pub fn new(message: &str, kind: ErrorKind) -> Self {
         Self {
             message: message.to_string(),

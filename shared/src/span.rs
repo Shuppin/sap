@@ -50,7 +50,8 @@ impl Serialize for Span {
     }
 }
 
-/// A trait for enums whose variants all contain a `Span`.
+/// Trait for getting the span of a node. For enums, this is useful for getting the span
+/// of the current variant, without having to match on each variant.
 pub trait GetSpan {
     fn span(&self) -> &Span;
 }

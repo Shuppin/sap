@@ -1,12 +1,12 @@
 defineFunction fizzbuzz(n)
-    if n % 3 == 0 and n % 5 != 0 then
-        display "Fizz"
+    if n % 15 == 0 then
+        display "fizzbuzz"
     otherwise
-        if n % 5 == 0 and n % 3 != 0 then
-            display "Buzz"
+        if n % 3 == 0 then
+            display "fizz"
         otherwise
-            if n % 5 == 0 and n % 3 == 0 then
-                display "FizzBuzz"
+            if n % 5 == 0 then
+                display "buzz"
             otherwise
                 display n
             end

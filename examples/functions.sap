@@ -1,0 +1,69 @@
+/* Functions are treated the same as variables. They have their own type,
+   and can be passed as arguments as normal.
+*/
+
+defineFunction add(x, y)
+    // Compute the sum, and return the value back to the caller
+    return x + y
+end
+
+
+display "add(1, 3):", add(1, 3)
+
+// Functional patterns like currying are also supported:
+defineFunction adder(x)
+    defineFunction inner(y)
+        return x + y
+    end
+
+    return inner
+end
+
+set addTwo = adder(2)
+display "addTwo(4):", addTwo(4)
+display "adder(3)(4):", adder(3)(4)
+
+
+// Functions can also be used like closures, as they store their environment.
+defineFunction myClosure(x)
+    set y = 4
+    
+    defineFunction inner()
+        return x + y
+        //         ^ Accessing the variable `y` from the outer scope
+    end
+
+    return inner
+end
+
+set inner_func = myClosure(5)
+/*  ^ `inner_func` references the `y` variable from the scope
+    of the `myClosure` function, which no longer exists in memory.
+    However, because the environment is stored, this code still works.
+*/
+
+// This behaviour allows for some interesting patterns, for example
+// this kind of immutable compound data structure:
+defineFunction person(name, age, height)
+
+    defineFunction getter(property)
+        if property == "name" then
+            return name
+        otherwise
+            if property == "age" then
+                return age
+            otherwise
+                if property == "height" then
+                    return height
+                end
+            end
+        end
+    end
+
+    return getter
+end
+
+set bob = person("Bob", 32, 104.2)
+
+display "bob('name'):", bob("name")
+display "bob('height'):", bob("height")

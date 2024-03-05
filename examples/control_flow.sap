@@ -1,0 +1,30 @@
+/* Instead of the typical if/else syntax, SAP uses if/otherwise.
+
+   The boolean condition doesn't need to be surrounded by parentheses.
+*/
+
+set n = -5;
+
+if n < 0 then
+    display n, "is negative."
+otherwise
+    if n > 0 then
+        display n, "is positive."
+    otherwise
+        display n, "is zero."
+    end
+end
+
+
+set big_n = if n < 10 and n > -10 then
+        display n, "is a small number, increase ten-fold."
+
+        // This expression returns the value of 10 times n
+        10 * n
+    otherwise
+        display n, "is a big number, halve it."
+
+        n / 2
+    end
+
+display n, "to", big_n

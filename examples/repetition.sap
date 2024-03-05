@@ -1,0 +1,22 @@
+/* SAP uses a `repeat` keyword instead of the traditional for and while loops.
+
+   Note: Currently the only way to get out of a forever
+         loop is to return from a function.
+*/
+
+repeat 10 times
+    display "hello!"
+end
+
+set x = 0
+repeat until x > 5
+    set x = x + 5
+    display x
+end
+
+
+set i = 0
+repeat forever
+    display i
+    set i = i + 1
+end

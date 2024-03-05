@@ -1,0 +1,11 @@
+// Booleans
+set logical = true
+set logical = false
+
+// Numbers
+set my_float = 3.14
+set my_int = 10
+
+// Strings
+set message = "Hello, world!"
+display message

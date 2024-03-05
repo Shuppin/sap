@@ -1,0 +1,12 @@
+// Create variable "x"
+set x = 5;
+
+// Expression:
+x
+x + 1
+15
+
+// Conditional statements are considered expressions to:
+set message = if x > 5 then "good" otherwise "bad" end
+display "x is", message
+

@@ -135,10 +135,10 @@ async function __wbg_load(module, imports) {
 function __wbg_get_imports() {
     const imports = {};
     imports.wbg = {};
-    imports.wbg.__wbg_appendTextToResultOutput_edfc050a9a0e9e75 = function(arg0, arg1) {
+    imports.wbg.__wbg_appendTextToResultOutput_4d62e34ed1229ff9 = function(arg0, arg1) {
         appendTextToResultOutput(getStringFromWasm0(arg0, arg1));
     };
-    imports.wbg.__wbg_appendTextToStandardOutput_b66ef38e0d5dd5f5 = function(arg0, arg1) {
+    imports.wbg.__wbg_appendTextToStandardOutput_30f28a3816c1241a = function(arg0, arg1) {
         appendTextToStandardOutput(getStringFromWasm0(arg0, arg1));
     };
 

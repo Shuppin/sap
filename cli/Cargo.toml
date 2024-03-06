@@ -1,6 +1,6 @@
 [package]
 name = "sap-cli"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 default-run = "sap"
 authors = ["Shuppin <shuppin93@outlook.com>"]
@@ -18,7 +18,7 @@ path = "src/main.rs"
 
 [dependencies]
 sap-ast = { path = "../ast", version = "1.0.0" }
-sap-interpreter = { path = "../interpreter", version = "1.0.1" }
+sap-interpreter = { path = "../interpreter", version = "1.0.2" }
 sap-parser = { path = "../parser", version = "1.0.0" }
 sap-lexer = { path = "../lexer", version = "1.0.0" }
 sap-shared = { path = "../shared", version = "1.0.0" }

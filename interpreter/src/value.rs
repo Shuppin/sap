@@ -70,7 +70,7 @@ macro_rules! generate_binary_arithmetic_op {
                 _ => err!(
                     ErrorKind::TypeError,
                     "invalid operation '{}' between {} and {}",
-                    stringify!($float_op),
+                    stringify!($symbol_op),
                     self.variant_name(),
                     other.variant_name()
                 ),

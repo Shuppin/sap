@@ -10,16 +10,17 @@
                 | return_stmt
                 | expression
                 | fn_decl_stmt
-                | repeat_stmt;
+                | repeat_stmt
+                | display_stmt;
 
     set_stmt = "set" , ident , "=" , expression;
 
     return_stmt = "return" expression;
 
-    fn_decl_stmt = "defineFunction" , "(" , [args] , ")" , [statements]
+    fn_decl_stmt = "defineFunction" , "(" , [params] , ")" , [statements]
                    , "end";
         
-        args = expression , {"," , expression};
+        params = ident , {"," , ident};
 
     repeat_stmt = "repeat"
                   , (repeat_n_times | repeat_until | repeat_forever);
@@ -29,6 +30,8 @@
         repeat_until = "until" , expression , [statements] , "end";
 
         repeat_forever = "forever" , [statements] , "end";
+
+    display_stmt = "display" , expression , {"," , expression};
 
 (* Expressions *)
 
@@ -40,11 +43,15 @@
 
     eq_expr = comp_expr {("==" | "!=") , comp_expr};
 
+    comp_expr = sum_expr {("<" | "<=" | ">" | ">=") , sum_expr};
+
     sum_expr = product_expr {("+" | "-") , product_expr};
 
     product_expr = postfix_expr {("*" | "/" | "%") , postfix_expr};
 
-    postfix_expr = prefix_expr {fn_call};
+    postfix_expr = prefix_expr {fn_call | array_index};
+
+        array_index = "[" , expression , "]";
 
         fn_call = "(" , [args] , ")";
 
@@ -56,14 +63,18 @@
 
     group_expr = ("(" , expression , ")") | entity_expr;
 
-    entity_expr = selection_expr | literal;
+    entity_expr = selection_expr | array_expr | literal;
+
+    array_expr = "[" , [elements] , "]";
+
+        elements = expression , {"," , expression};
 
     selection_expr = "if" , expression , "then" , [statements]
                      , ["otherwise" [statements]] "end";
 
 (* Literals *)
 
-    literal = int | float | bool | string
+    literal = int | float | bool | string;
 
     int = digit , {digit};
 
@@ -80,7 +91,7 @@
     digit = "0" | "1" | "2" | "3" | "4"
             | "5" | "6" | "7" | "8" | "9";
 
-    letter = ? any letter including underscore "_" ?;
+    letter = ? any alphabetical character ? | "_";
 
-    char = ? any character except quote '"' ?;
+    char = ? any character ? -'"';
 

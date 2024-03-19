@@ -15,6 +15,7 @@ extern "C" {
     fn appendTextToResultOutput(text: &str);
 }
 
+/// Output the given text to the (web) standard output.
 #[macro_export]
 macro_rules! stdout {
     ($($arg:tt)*) => {
@@ -23,6 +24,7 @@ macro_rules! stdout {
     }
 }
 
+/// Output the given text to the (web) standard output, followed by a newline.
 #[macro_export]
 macro_rules! stdoutln {
     ($($arg:tt)*) => {

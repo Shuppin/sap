@@ -1,6 +1,6 @@
 [package]
 name = "sap-interpreter"
-version = "1.0.2"
+version = "1.0.3"
 edition = "2021"
 authors = ["Shuppin <shuppin93@outlook.com>"]
 license = "MIT OR Apache-2.0"
@@ -12,7 +12,7 @@ repository = "https://github.com/Shuppin/sap"
 name = "interpreter"
 
 [dependencies]
-sap-ast = { path = "../ast", version = "1.0.0" }
-sap-lexer = { path = "../lexer", version = "1.0.0" }
-sap-parser = { path = "../parser", version = "1.0.0" }
-sap-shared = { path = "../shared", version = "1.0.0" }
+sap-ast = { path = "../ast", version = "1.0.1" }
+sap-lexer = { path = "../lexer", version = "1.0.1" }
+sap-parser = { path = "../parser", version = "1.0.1" }
+sap-shared = { path = "../shared", version = "1.0.1" }

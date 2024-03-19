@@ -1,6 +1,6 @@
 [package]
 name = "sap-cli"
-version = "1.0.2"
+version = "1.0.3"
 edition = "2021"
 default-run = "sap"
 authors = ["Shuppin <shuppin93@outlook.com>"]
@@ -17,11 +17,11 @@ path = "src/main.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sap-ast = { path = "../ast", version = "1.0.0" }
-sap-interpreter = { path = "../interpreter", version = "1.0.2" }
-sap-parser = { path = "../parser", version = "1.0.0" }
-sap-lexer = { path = "../lexer", version = "1.0.0" }
-sap-shared = { path = "../shared", version = "1.0.0" }
+sap-ast = { path = "../ast", version = "1.0.1" }
+sap-interpreter = { path = "../interpreter", version = "1.0.3" }
+sap-parser = { path = "../parser", version = "1.0.1" }
+sap-lexer = { path = "../lexer", version = "1.0.1" }
+sap-shared = { path = "../shared", version = "1.0.1" }
 clap = "4.4.18"
 ctrlc = "3.4.2"
 os_info = { version = "3.7.0", default-features = false }

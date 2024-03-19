@@ -1,6 +1,6 @@
 [package]
 name = "sap-parser"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 authors = ["Shuppin <shuppin93@outlook.com>"]
 license = "MIT OR Apache-2.0"
@@ -12,6 +12,6 @@ name = "parser"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sap-lexer = { path = "../lexer", version = "1.0.0" }
-sap-ast = { path = "../ast", version = "1.0.0" }
-sap-shared = { path = "../shared", version = "1.0.0" }
+sap-lexer = { path = "../lexer", version = "1.0.1" }
+sap-ast = { path = "../ast", version = "1.0.1" }
+sap-shared = { path = "../shared", version = "1.0.1" }

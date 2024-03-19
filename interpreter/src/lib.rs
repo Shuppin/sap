@@ -1,3 +1,52 @@
+//! # Interpreter Module
+//!
+//! The Interpreter module is responsible for the execution, and runtime management of a
+//! SAP program. Through the `eval_program()` function, the AST is traversed, and the
+//! actual runtime logic of each node is applied. For example if a `Binary` node is
+//! encountered, it is converted into it's actual value (i.e. `1+2` becomes `3`).
+//!
+//! ## Values
+//!
+//! Values a repsented as enum in the `value.rs` module. The module also contains all the
+//! logic for manipulating values, such as comparing, adding, subtracting and so on...
+//!
+//! ## Environment
+//!
+//! At runtime, values which aren't directly stored in the AST (i.e variables) are stored
+//! in an `Environment`. An environment is made up of 2 things: A hashmap binding the
+//! variable names to the data they store, and a reference to the outer/parent
+//! environment.
+//!
+//! ## Execution
+//!
+//! As previosuly mentioned, a SAP program is executed by traversing it's AST, and
+//! applying the runtime logic of each node. This can be evaluating numerical expression,
+//! retrieving/storing variables, repetition or displaying to the console.
+//!
+//! Before understanding traversal interrupts, it is important to note that the call stack
+//! is reflective of where in the tree the code has traversed, as each AST node has it's
+//! own dedicated function.
+//!
+//! There are two things which can interrupt the traversal of the tree:
+//! - Runtime errors
+//! - Return statements
+//!
+//! When a runtime error is encountered, traversal stops completely and
+//! the error is returned to the caller of the `eval_program()` function.
+//!
+//! When a return statement in encountered, the code backtracks up the tree until reaching
+//! a `FunctionCall` node, or the root (`Program`) node. If the root node is reached, this
+//! indicates the return statement was used outside of a function, which is treated as an
+//! error.
+//!
+//! If a `FunctionalCall` node is reached, this indicates the return statement was used
+//! inside a function, which was invoked by this function call. The return value is
+//! unwrapped into a normal value, and can be used as normal in the place of the function
+//! call.
+//!
+//! For example, take the expression `set x = 1+add(1, 3)`, the function `add(1, 3)` might
+//! produce a `Return(Value(4))` which is then unwrapped into a `Value(4)`. The resulting
+//! statement now looks like `set x = 1+4`.
 use std::cell::RefCell;
 use std::ops::ControlFlow;
 use std::ops::ControlFlow::{Break, Continue};
@@ -25,43 +74,79 @@ mod test;
 pub mod runtime;
 pub mod value;
 
-/// Represents a break in traversal of the AST.
+/// Represents an interruption in traversal of the AST.
 ///
-/// The reasons we would want to stop traversal are:
-/// 1. We encountered an error.
-/// 2. The AST contains a return statement, and we need to stop traversal of the current
-///    branch and return the value back to the start of that branch.
-pub enum TraversalBreak {
+/// The reasons traversal may be interrupted are:
+/// 1. An error in encountered, in which case backtrack all the way up the call stack and
+///    return the error to the caller of the `eval_program()` function.
+/// 2. Or, a `Return` statement in encountered.
+///
+/// In the case of a `Return` statement, the code backtracks up the call stack to the
+/// point where the function containing the `Return` statement was called, and hands over
+/// the return value to the caller. If the return statement was used outside of a
+/// function, and the code reaches the end of the call stack, it is treated as an error.
+pub enum TraversalInterrupt {
     ReturnValue(Rc<Value>),
     Error(Error),
 }
 
-type EvalOutcome = ControlFlow<TraversalBreak, Rc<Value>>;
+/// Type alias representing what the evaluation of a node produces.
+///
+/// It may either produce a `Value`, indicating that the evaluation was a success and
+/// traversal may continue as normal, and it may produce a `TraversalInterrupt`, which
+/// should be immediately returned from the current function, unless specified otherwise.
+type EvaluationOutcome = ControlFlow<TraversalInterrupt, Rc<Value>>;
 
+/// Shorthand macro for creating an `Error` wrapped in an `EvaluationOutcome`.
+///
+/// # Arguments
+///
+/// Either:
+/// * `kind` - An `ErrorKind`.
+/// * `err_msg` - The error message (Same syntax as the `format!` macro).
+///
+/// Or
+/// * `err` - An already constructed `Error`.
 macro_rules! traversal_error {
     ($kind:expr, $($arg:tt)*) => {
-        Break(TraversalBreak::Error(Error::new(&format!($($arg)*), $kind)))
+        Break(TraversalInterrupt::Error(Error::new(&format!($($arg)*), $kind)))
     };
     ($err:ident) => {
-        Break(TraversalBreak::Error($err))
+        Break(TraversalInterrupt::Error($err))
     }
 }
 
+/// Shorthand function for creating a new empty `EnvRef`
 pub fn create_env() -> EnvRef {
     return Rc::new(RefCell::new(Environment::new()));
 }
 
+/// Probably the most important function in the whole program, the main entry point of the
+/// SAP interpreter. It performs the actual execution of a program, returning a final
+/// result.
+///
+/// # Arguments
+///
+/// * `env` - An `EnvRef` representing the starting global environment. Data may be
+///   inserted ahead of time.
+/// * `ast` - An AST root (`Program`) node representing the program that is to be
+///   executed.
+///
+/// # Returns
+///
+/// Either an `Ok` containing a tuple
 pub fn eval_program(env: &EnvRef, ast: Program) -> Result<(EnvRef, Rc<Value>), Error> {
     match eval_statements(env, &ast.statements) {
-        Break(TraversalBreak::ReturnValue(_)) => {
+        Break(TraversalInterrupt::ReturnValue(_)) => {
             err!(ErrorKind::TypeError, "'return' used outside of function")
         }
-        Break(TraversalBreak::Error(error)) => Err(error),
+        Break(TraversalInterrupt::Error(error)) => Err(error),
         Continue(value) => Ok((env.clone(), value)),
     }
 }
 
-fn eval_statements(env: &EnvRef, statements: &Vec<Statement>) -> EvalOutcome {
+/// Evaluates a list of statements, returning the result of the last statement.
+fn eval_statements(env: &EnvRef, statements: &Vec<Statement>) -> EvaluationOutcome {
     let mut value = Rc::new(Value::Null);
     for statement in statements {
         value = eval_statement(env, &statement)?;
@@ -69,7 +154,7 @@ fn eval_statements(env: &EnvRef, statements: &Vec<Statement>) -> EvalOutcome {
     return Continue(value);
 }
 
-fn eval_statement(env: &EnvRef, statement: &Statement) -> EvalOutcome {
+fn eval_statement(env: &EnvRef, statement: &Statement) -> EvaluationOutcome {
     match statement {
         Statement::Expression(expression) => eval_expression(env, expression),
         Statement::Return(ret) => eval_return_statement(env, ret),
@@ -82,19 +167,19 @@ fn eval_statement(env: &EnvRef, statement: &Statement) -> EvalOutcome {
     }
 }
 
-fn eval_set_statement(env: &EnvRef, let_stmt: &Set) -> EvalOutcome {
+fn eval_set_statement(env: &EnvRef, let_stmt: &Set) -> EvaluationOutcome {
     let value = eval_expression(env, &let_stmt.expr)?;
     let name = let_stmt.ident.name.clone();
     env.borrow_mut().store(name, value);
     return Continue(Rc::new(Value::Null));
 }
 
-fn eval_return_statement(env: &EnvRef, ret: &Return) -> EvalOutcome {
+fn eval_return_statement(env: &EnvRef, ret: &Return) -> EvaluationOutcome {
     let value = eval_expression(env, &ret.value)?;
-    return Break(TraversalBreak::ReturnValue(value));
+    return Break(TraversalInterrupt::ReturnValue(value));
 }
 
-fn eval_func_decl_statement(env: &EnvRef, func: &FunctionDeclaration) -> EvalOutcome {
+fn eval_func_decl_statement(env: &EnvRef, func: &FunctionDeclaration) -> EvaluationOutcome {
     let parameters = func
         .parameters
         .iter()
@@ -112,7 +197,7 @@ fn eval_func_decl_statement(env: &EnvRef, func: &FunctionDeclaration) -> EvalOut
     return Continue(Rc::new(Value::Null));
 }
 
-fn eval_display_statement(env: &EnvRef, display: &Display) -> EvalOutcome {
+fn eval_display_statement(env: &EnvRef, display: &Display) -> EvaluationOutcome {
     let mut values = Vec::new();
     for expression in &display.expressions {
         match eval_expression(env, expression)?.cast_to_string() {
@@ -124,13 +209,13 @@ fn eval_display_statement(env: &EnvRef, display: &Display) -> EvalOutcome {
     return Continue(Rc::new(Value::Null));
 }
 
-fn eval_repeat_forever_statement(env: &EnvRef, repeat: &RepeatForever) -> EvalOutcome {
+fn eval_repeat_forever_statement(env: &EnvRef, repeat: &RepeatForever) -> EvaluationOutcome {
     loop {
         eval_statements(env, &repeat.body.statements)?;
     }
 }
 
-fn eval_repeat_n_times_statement(env: &EnvRef, repeat: &RepeatNTimes) -> EvalOutcome {
+fn eval_repeat_n_times_statement(env: &EnvRef, repeat: &RepeatNTimes) -> EvaluationOutcome {
     let n_rc = eval_expression(env, &repeat.n)?;
     let n = match n_rc.as_ref() {
         Value::Integer(n) => {
@@ -159,12 +244,12 @@ fn eval_repeat_n_times_statement(env: &EnvRef, repeat: &RepeatNTimes) -> EvalOut
     return Continue(Rc::new(Value::Null));
 }
 
-fn eval_repeat_until_statement(env: &EnvRef, repeat: &RepeatUntil) -> EvalOutcome {
+fn eval_repeat_until_statement(env: &EnvRef, repeat: &RepeatUntil) -> EvaluationOutcome {
     loop {
         let condition = eval_expression(env, &repeat.condition)?.cast_to_boolean();
         let condition_value = match condition {
             Ok(value) => value,
-            Err(e) => return Break(TraversalBreak::Error(e)),
+            Err(e) => return Break(TraversalInterrupt::Error(e)),
         };
         match condition_value {
             Value::Boolean(b) => {
@@ -179,7 +264,7 @@ fn eval_repeat_until_statement(env: &EnvRef, repeat: &RepeatUntil) -> EvalOutcom
     return Continue(Rc::new(Value::Null));
 }
 
-fn eval_expression(env: &EnvRef, expression: &Expression) -> EvalOutcome {
+fn eval_expression(env: &EnvRef, expression: &Expression) -> EvaluationOutcome {
     match expression {
         Expression::Literal(literal) => eval_literal(literal),
         Expression::Unary(unary) => eval_unary_expression(env, unary),
@@ -195,7 +280,7 @@ fn eval_expression(env: &EnvRef, expression: &Expression) -> EvalOutcome {
     }
 }
 
-fn eval_literal(literal: &Literal) -> EvalOutcome {
+fn eval_literal(literal: &Literal) -> EvaluationOutcome {
     let result = match literal {
         Literal::Integer { value, .. } => Ok(Value::Integer(*value)),
         Literal::Float { value, .. } => Ok(Value::Float(*value)),
@@ -208,7 +293,7 @@ fn eval_literal(literal: &Literal) -> EvalOutcome {
     }
 }
 
-fn eval_unary_expression(env: &EnvRef, unary: &Unary) -> EvalOutcome {
+fn eval_unary_expression(env: &EnvRef, unary: &Unary) -> EvaluationOutcome {
     let left_rc = eval_expression(env, &unary.operand)?;
     let left = left_rc.as_ref();
     let result = match unary.operator {
@@ -229,7 +314,7 @@ fn eval_unary_expression(env: &EnvRef, unary: &Unary) -> EvalOutcome {
     }
 }
 
-fn eval_binary_expression(env: &EnvRef, binary: &Binary) -> EvalOutcome {
+fn eval_binary_expression(env: &EnvRef, binary: &Binary) -> EvaluationOutcome {
     let left_rc = eval_expression(env, &binary.left)?;
     let right_rc = eval_expression(env, &binary.right)?;
 
@@ -267,11 +352,11 @@ fn eval_binary_expression(env: &EnvRef, binary: &Binary) -> EvalOutcome {
     }
 }
 
-fn eval_selection_expression(env: &EnvRef, selection: &Selection) -> EvalOutcome {
+fn eval_selection_expression(env: &EnvRef, selection: &Selection) -> EvaluationOutcome {
     let result = eval_expression(env, &selection.condition)?.cast_to_boolean();
     let condition_value = match result {
         Ok(value) => value,
-        Err(e) => return Break(TraversalBreak::Error(e)),
+        Err(e) => return Break(TraversalInterrupt::Error(e)),
     };
     match condition_value {
         Value::Boolean(b) => {
@@ -287,11 +372,11 @@ fn eval_selection_expression(env: &EnvRef, selection: &Selection) -> EvalOutcome
     }
 }
 
-fn eval_identifier_expression(env: &EnvRef, ident: &Identifier) -> EvalOutcome {
+fn eval_identifier_expression(env: &EnvRef, ident: &Identifier) -> EvaluationOutcome {
     return lookup_variable_name(env, &ident.name);
 }
 
-fn eval_func_call_expression(env: &EnvRef, func_call: &FunctionCall) -> EvalOutcome {
+fn eval_func_call_expression(env: &EnvRef, func_call: &FunctionCall) -> EvaluationOutcome {
     // Evaluate callee
     let callee = eval_expression(env, &func_call.callee)?;
 
@@ -306,7 +391,7 @@ fn eval_func_call_expression(env: &EnvRef, func_call: &FunctionCall) -> EvalOutc
     return apply_function(&callee, &arguments);
 }
 
-fn apply_function(callee: &Rc<Value>, arguments: &Vec<Rc<Value>>) -> EvalOutcome {
+fn apply_function(callee: &Rc<Value>, arguments: &Vec<Rc<Value>>) -> EvaluationOutcome {
     match &**callee {
         Value::Function(function) => {
             let mut env = Environment::new_enclosed_environment(&function.env);
@@ -317,8 +402,8 @@ fn apply_function(callee: &Rc<Value>, arguments: &Vec<Rc<Value>>) -> EvalOutcome
 
             // Execute the body of the function and handle the result
             match eval_statements(&Rc::new(RefCell::new(env)), &function.body) {
-                Break(TraversalBreak::ReturnValue(value)) => Continue(value),
-                Break(TraversalBreak::Error(err)) => traversal_error!(err),
+                Break(TraversalInterrupt::ReturnValue(value)) => Continue(value),
+                Break(TraversalInterrupt::Error(err)) => traversal_error!(err),
                 _ => Continue(Rc::new(Value::Null)),
             }
         }
@@ -330,7 +415,7 @@ fn apply_function(callee: &Rc<Value>, arguments: &Vec<Rc<Value>>) -> EvalOutcome
     }
 }
 
-fn lookup_variable_name(env: &EnvRef, name: &str) -> EvalOutcome {
+fn lookup_variable_name(env: &EnvRef, name: &str) -> EvaluationOutcome {
     if let Some(value) = env.borrow().lookup(name) {
         Continue(value)
     } else {

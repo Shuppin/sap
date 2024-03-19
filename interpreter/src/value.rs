@@ -1,3 +1,10 @@
+//! This module contains the `Environment` struct, which is used to store and lookup
+//! SAP variables and functions. It also contains a type alias for a shared `Environment`
+//! reference.
+//!
+//! This module contains the `Value` struct, which represents a variable or function
+//! stored within an `Environment`. It also contains all the logic for manipulating values
+//! (such as addition).
 use std::fmt::{self, Debug};
 
 use ast::statement::Statement;

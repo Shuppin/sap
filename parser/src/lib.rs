@@ -895,8 +895,8 @@ impl<'lexer> Parser<'lexer> {
 ///
 /// # Returns
 ///
-/// * If there are no syntax errors, an `Ok(Program)`, which is the root node containing the
-/// entire AST (Abstract Syntax Tree) which represents the program.
+/// * If there are no syntax errors, an `Ok(Program)`, which is the root node containing
+///   the entire AST (Abstract Syntax Tree) which represents the program.
 ///
 /// * If there are syntax errors, then an `Err(Error)` is returned, containing information
 /// about what went wrong.

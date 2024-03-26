@@ -80,7 +80,9 @@ impl std::fmt::Display for Environment {
         let mut formatted_members = self
             .members
             .iter()
-            .map(|(key, value)| format!("    <{}> {} = {:?}", (**value).variant_name(), key, value))
+            .map(|(key, value)| {
+                format!("    <{}> {} = {:?}", (**value).variant_name(), key, value)
+            })
             .collect::<Vec<String>>();
         formatted_members.sort();
 

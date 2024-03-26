@@ -55,7 +55,8 @@ use std::rc::Rc;
 use ast::expression::{Binary, Expression, FunctionCall, Identifier, Selection, Unary};
 use ast::literal::Literal;
 use ast::statement::{
-    Display, FunctionDeclaration, RepeatForever, RepeatNTimes, RepeatUntil, Return, Set, Statement,
+    Display, FunctionDeclaration, RepeatForever, RepeatNTimes, RepeatUntil, Return, Set,
+    Statement,
 };
 use ast::Program;
 use lexer::token::TokenKind;
@@ -186,7 +187,10 @@ fn eval_return_statement(env: &EnvRef, ret: &Return) -> EvaluationOutcome {
 
 /// Evaluates a [`FunctionDeclaration`] statement, storing the function in the
 /// environment.
-fn eval_func_decl_statement(env: &EnvRef, func: &FunctionDeclaration) -> EvaluationOutcome {
+fn eval_func_decl_statement(
+    env: &EnvRef,
+    func: &FunctionDeclaration,
+) -> EvaluationOutcome {
     let parameters = func
         .parameters
         .iter()
@@ -207,8 +211,8 @@ fn eval_func_decl_statement(env: &EnvRef, func: &FunctionDeclaration) -> Evaluat
 /// Evaluates a [`Display`] statement, printing the result of the expressions to the
 /// console (or whatever [`stdoutln!`] outputs to).
 fn eval_display_statement(env: &EnvRef, display: &Display) -> EvaluationOutcome {
-    // Evaluate each item in the display statement, convert it to a string and print it as one
-    // string, separated by spaces.
+    // Evaluate each item in the display statement, convert it to a string and print it as
+    // one string, separated by spaces.
     let mut values = Vec::new();
     for expression in &display.expressions {
         match eval_expression(env, expression)?.cast_to_string() {
@@ -221,14 +225,20 @@ fn eval_display_statement(env: &EnvRef, display: &Display) -> EvaluationOutcome 
 }
 
 /// Evaluates a [`RepeatForever`] statement, repeating the body of the statement forever.
-fn eval_repeat_forever_statement(env: &EnvRef, repeat: &RepeatForever) -> EvaluationOutcome {
+fn eval_repeat_forever_statement(
+    env: &EnvRef,
+    repeat: &RepeatForever,
+) -> EvaluationOutcome {
     loop {
         eval_statements(env, &repeat.body.statements)?;
     }
 }
 
 /// Evaluates a [`RepeatNTimes`] statement, repeating the body of the statement `n` times.
-fn eval_repeat_n_times_statement(env: &EnvRef, repeat: &RepeatNTimes) -> EvaluationOutcome {
+fn eval_repeat_n_times_statement(
+    env: &EnvRef,
+    repeat: &RepeatNTimes,
+) -> EvaluationOutcome {
     // From the given `repeat` arugment, determine the number of times to repeat the body.
     let n_rc = eval_expression(env, &repeat.n)?;
     let n = match n_rc.as_ref() {
@@ -389,8 +399,9 @@ fn eval_selection_expression(env: &EnvRef, selection: &Selection) -> EvaluationO
         Err(e) => return traversal_error!(e),
     };
 
-    // If the condition is `true`, evaluate the body of the selection statement. Otherwise,
-    // evaluate the body of the `else` statement, if it exists (otherwise, return `null`).
+    // If the condition is `true`, evaluate the body of the selection statement.
+    // Otherwise, evaluate the body of the `else` statement, if it exists (otherwise,
+    // return `null`).
     match condition_value {
         Value::Boolean(b) => {
             if b {
@@ -413,7 +424,10 @@ fn eval_identifier_expression(env: &EnvRef, ident: &Identifier) -> EvaluationOut
 }
 
 /// Evaluates a [`FunctionCall`] expression, returning the result of the evaluation.
-fn eval_func_call_expression(env: &EnvRef, func_call: &FunctionCall) -> EvaluationOutcome {
+fn eval_func_call_expression(
+    env: &EnvRef,
+    func_call: &FunctionCall,
+) -> EvaluationOutcome {
     // Evaluate callee
     let callee = eval_expression(env, &func_call.callee)?;
 
@@ -438,7 +452,9 @@ fn apply_function(callee: &Rc<Value>, arguments: &Vec<Rc<Value>>) -> EvaluationO
             let mut env = Environment::new_enclosed_environment(&function.env);
 
             // Transfer the arguments into the new environment.
-            for (param_name, arg_value) in function.parameters.iter().zip(arguments.iter()) {
+            for (param_name, arg_value) in
+                function.parameters.iter().zip(arguments.iter())
+            {
                 env.store(param_name.clone(), arg_value.clone())
             }
 

@@ -114,7 +114,9 @@ impl Display for Expression {
             Expression::FunctionCall(FunctionCall {
                 callee, arguments, ..
             }) => write!(f, "{}({})", callee, format_comma_seperated(arguments)),
-            Expression::Index(Index { object, index, .. }) => write!(f, "{}[{}]", object, index),
+            Expression::Index(Index { object, index, .. }) => {
+                write!(f, "{}[{}]", object, index)
+            }
             Expression::Selection(Selection {
                 condition,
                 conditional,
@@ -127,10 +129,14 @@ impl Display for Expression {
                 };
 
                 let formatted_else_conditional = match else_conditional {
-                    Some(else_conditional) => match else_conditional.statements.is_empty() {
-                        true => format!(" {}", TokenKind::Otherwise),
-                        false => format!(" {} {else_conditional}", TokenKind::Otherwise),
-                    },
+                    Some(else_conditional) => {
+                        match else_conditional.statements.is_empty() {
+                            true => format!(" {}", TokenKind::Otherwise),
+                            false => {
+                                format!(" {} {else_conditional}", TokenKind::Otherwise)
+                            }
+                        }
+                    }
                     None => "".to_string(),
                 };
 

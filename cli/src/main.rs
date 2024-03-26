@@ -38,12 +38,13 @@ fn create_cli_parser() -> Command {
             Arg::new("FILE").help("Sets the input file to use").index(1), // Positional
         )
         .arg(
-            // The `--output` (`-o`) option is used to specify the type of output to be printed to
-            // the console. The `--output` option can take one of the following values:
+            // The `--output` (`-o`) option is used to specify the type of output to be
+            // printed to the console. The `--output` option can take one of
+            // the following values:
             //
             // * `eval` - (Default) Evaluate the input and print the result
-            // * `env` - Evaluate the input and print the result, along with the environment (which
-            //   is a hashmap storing variable names and their values)
+            // * `env` - Evaluate the input and print the result, along with the
+            //   environment (which is a hashmap storing variable names and their values)
             // * `ast` - Parse the input and print the Abstract Syntax Tree (AST)
             // * `parse` - alias for `ast`
             // * `lex` - Lex the input and print the tokens
@@ -57,7 +58,8 @@ fn create_cli_parser() -> Command {
                 .help("Sets the output type"),
         )
         .arg(
-            // The `--timer` (`-t`) option is used to enable the timing of the execution duration.
+            // The `--timer` (`-t`) option is used to enable the timing of the execution
+            // duration.
             //
             // Example: `sap -t`, `sap --timer`
             Arg::new("timer")
@@ -75,8 +77,8 @@ fn main() -> Result<(), String> {
     // Parse the command line arguments and options.
     let matches = create_cli_parser().get_matches();
 
-    // The `start` variable is used to store the start time of the execution, if the `--timer`
-    // option was used, if not, it will be `None`.
+    // The `start` variable is used to store the start time of the execution, if the
+    // `--timer` option was used, if not, it will be `None`.
     let mut start: Option<Instant> = None;
 
     // Access the FILE argument
@@ -101,7 +103,8 @@ fn main() -> Result<(), String> {
             Some(_) => return Err("Invalid output option provided".to_string()),
         };
 
-        // If the start variable is not `None`, then calculate the time elapsed and print it.
+        // If the start variable is not `None`, then calculate the time elapsed and print
+        // it.
         if let Some(start) = start {
             let time_elapsed = Instant::now() - start;
             stdoutln!("Execution finished in {}ms", time_elapsed.as_millis())
@@ -109,11 +112,13 @@ fn main() -> Result<(), String> {
 
         return Ok(()); // Exit the program
     } else {
-        // If the FILE argument was not provided, then enter the (Read Eval Print Loop) REPL mode.
+        // If the FILE argument was not provided, then enter the (Read Eval Print Loop)
+        // REPL mode.
 
         // Set the Ctrl-C handler to exit the program.
-        // This overrides the default behaviour of Ctrl-C, instead of terminating the program, it
-        // will print "Bye!" and then exit the program with a success state.
+        // This overrides the default behaviour of Ctrl-C, instead of terminating the
+        // program, it will print "Bye!" and then exit the program with a success
+        // state.
         ctrlc::set_handler(move || {
             stdoutln!("\nBye!");
             std::process::exit(0);
@@ -160,8 +165,8 @@ fn construct_info_message(title: &str, version: &str) -> String {
     // Retrieve information about the operating system.
     let info = os_info::get();
 
-    // Construct the information message, which includes the title, version, operating system
-    // type, version, and bitness (64/32 bit).
+    // Construct the information message, which includes the title, version, operating
+    // system type, version, and bitness (64/32 bit).
     return format!(
         "{} v{} for {} {} [{}]",
         title,
@@ -275,8 +280,8 @@ fn lexer_repl() -> Result<(), String> {
 fn readline() -> Result<String, String> {
     // Write a prompt (">>> ") to the standard output (usually your terminal or console).
     // `write!` is a macro that formats and writes data to a given output.
-    // If an error occurs during writing, it converts the error to a String and returns it as
-    // an Err variant of Result.
+    // If an error occurs during writing, it converts the error to a String and returns it
+    // as an Err variant of Result.
     write!(std::io::stdout(), ">>> ").map_err(|e| e.to_string())?;
 
     // Flush the output buffer of the standard output to ensure that ">>> " is displayed
@@ -289,16 +294,16 @@ fn readline() -> Result<String, String> {
     let mut buffer = String::new();
 
     // Read a line from the standard input (`std::io::stdin()`) and append it to `buffer`.
-    // If an error occurs during reading, convert the error to a String and return it as an
-    // Err. `&mut buffer` is a mutable reference to `buffer`, allowing `read_line` to
-    // modify its contents.
+    // If an error occurs during reading, convert the error to a String and return it as
+    // an Err. `&mut buffer` is a mutable reference to `buffer`, allowing `read_line`
+    // to modify its contents.
     std::io::stdin()
         .read_line(&mut buffer)
         .map_err(|e| e.to_string())?;
 
     // If everything succeeds, return the input as an Ok variant of Result.
-    // `buffer` contains the line read from the input, including a newline character at the
-    // end.
+    // `buffer` contains the line read from the input, including a newline character at
+    // the end.
     Ok(buffer)
 }
 
@@ -309,7 +314,11 @@ fn readline() -> Result<String, String> {
 /// * `input` - The input to evaluate
 /// * `env` - The environment to use for evaluation
 /// * `display_env` - Whether to display the environment
-fn evaluate_and_print(input: &str, env: Option<interpreter::runtime::EnvRef>, display_env: bool) {
+fn evaluate_and_print(
+    input: &str,
+    env: Option<interpreter::runtime::EnvRef>,
+    display_env: bool,
+) {
     // If the environment is not provided, then create a new environment.
     let env = env.unwrap_or(interpreter::create_env());
 
@@ -342,7 +351,8 @@ fn print_evaluation(
             _ => stdoutln!("\nEvaluated as: {}", evaluation.1),
         }
     } else {
-        // Seperate logic for displaying values if we don't want to display the environment.
+        // Seperate logic for displaying values if we don't want to display the
+        // environment.
         match *evaluation.1 {
             interpreter::value::Value::Null => {}
             _ => stdoutln!("{}", evaluation.1),
@@ -359,8 +369,9 @@ fn parse_and_print(input: &str) {
     let result = parser::parse(input);
     match result {
         Ok(parsed_ast) => {
-            // Here, we serialise (convert to JSON) the AST before printing it. This improves the
-            // readability of the AST, and makes it easier to follow.
+            // Here, we serialise (convert to JSON) the AST before printing it. This
+            // improves the readability of the AST, and makes it easier to
+            // follow.
             stdout!("\n=== Serialised AST start ===\n");
             stdout!(
                 "{}",
@@ -368,9 +379,9 @@ fn parse_and_print(input: &str) {
             );
             stdout!("\n=== Serialised AST end ===\n");
 
-            // Printing the AST directly like this converts it back into a form which is almost
-            // identical to the original input, but with parentheses around expressions and uniform
-            // whitespace.
+            // Printing the AST directly like this converts it back into a form which is
+            // almost identical to the original input, but with parentheses
+            // around expressions and uniform whitespace.
             stdout!("\nParsed as:\n{}", parsed_ast);
         }
         Err(err) => print_error(&err),
@@ -384,7 +395,8 @@ fn lex_and_print(input: &str) {
     loop {
         let token = lexer.next_token();
         stdoutln!("{}", token);
-        // If the token is an end of file (EOF) token, then we have reached the end of the input.
+        // If the token is an end of file (EOF) token, then we have reached the end of the
+        // input.
         if token.kind == lexer::token::TokenKind::Eof {
             break;
         }

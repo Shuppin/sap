@@ -21,8 +21,8 @@ use crate::StatementList;
 
 /// Represents a single expression in the SAP language.
 #[derive(Debug, Serialize, PartialEq, Clone)]
-// Tell serde not to include this enum in the JSON output, since it only adds clutter and doesn't
-// provide any useful information.
+// Tell serde not to include this enum in the JSON output, since it only adds clutter and
+// doesn't provide any useful information.
 #[serde(untagged)]
 pub enum Expression {
     Identifier(Identifier),

@@ -15,6 +15,7 @@ use_field_init_shorthand = true
 # improves readability of printed code
 wrap_comments = true
 comment_width = 90
+max_width = 90
 # better import formatting
 imports_granularity = "Module"
 group_imports = "StdExternalCrate"

@@ -16,8 +16,8 @@ use crate::StatementList;
 
 /// Represents a single statement in the SAP language.
 #[derive(Debug, Serialize, PartialEq, Clone)]
-// Tell serde not to include this enum in the JSON output, since it only adds clutter and doesn't
-// provide any useful information.
+// Tell serde not to include this enum in the JSON output, since it only adds clutter and
+// doesn't provide any useful information.
 #[serde(untagged)]
 pub enum Statement {
     Set(Set),
@@ -36,7 +36,9 @@ impl GetSpan for Statement {
             Statement::Set(set_stmt) => &set_stmt.span,
             Statement::Return(ret_stmt) => &ret_stmt.span,
             Statement::Expression(expr) => expr.span(),
-            Statement::FunctionDeclaration(function_declaration) => &function_declaration.span,
+            Statement::FunctionDeclaration(function_declaration) => {
+                &function_declaration.span
+            }
             Statement::RepeatNTimes(repeat_n_times) => &repeat_n_times.span,
             Statement::RepeatUntil(repeat_until) => &repeat_until.span,
             Statement::RepeatForever(repeat_forever) => &repeat_forever.span,

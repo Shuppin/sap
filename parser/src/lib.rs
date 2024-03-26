@@ -72,8 +72,8 @@ macro_rules! parse_binary_expr {
         // Parse the left hand side
         let mut node = $self.$downstream_parse_fn()?;
 
-        // While the current token matches the expected operator, repeatedly parse the right hand
-        // side and construct a new binary expression.
+        // While the current token matches the expected operator, repeatedly parse the
+        // right hand side and construct a new binary expression.
         while matches!(&$self.cur_token.kind, $pattern) {
             let operator = $self.cur_token.kind.clone();
             // Move onto next token
@@ -81,7 +81,8 @@ macro_rules! parse_binary_expr {
             // Parse the right hand side
             let right = $self.$downstream_parse_fn()?;
             let span = Span::new(start, $self.cur_token.span.end);
-            // Construct a new binary expression, placing the old `node` inside the new one.
+            // Construct a new binary expression, placing the old `node` inside the new
+            // one.
             node = Expression::Binary(Binary {
                 operator,
                 left: Box::new(node),
@@ -131,8 +132,8 @@ impl<'lexer> Parser<'lexer> {
             self.next_token();
             Ok(())
         } else {
-            // This is essentially the default syntax error, any error which doesn't have a specific
-            // handler be caught by this.
+            // This is essentially the default syntax error, any error which doesn't have
+            // a specific handler be caught by this.
             parse_err!("expected {}, got {}", expected_kind, self.cur_token.kind)
         }
     }
@@ -174,8 +175,8 @@ impl<'lexer> Parser<'lexer> {
             // Parse a statement and add it to the list
             list.statements.push(self.parse_statement()?);
 
-            // If the next token is 'End' or 'Eof' or 'Otherwise', this represents the end of the
-            // statement list, so we break out of the loop.
+            // If the next token is 'End' or 'Eof' or 'Otherwise', this represents the end
+            // of the statement list, so we break out of the loop.
             if matches!(
                 self.cur_token.kind,
                 TokenKind::End | TokenKind::Eof | TokenKind::Otherwise
@@ -183,9 +184,10 @@ impl<'lexer> Parser<'lexer> {
                 break; // No separator needed before 'End' or 'Eof'
             }
 
-            // Each statement must be separated by a `NewLine` or `Semicolon`, which is enforced
-            // here. The exception is when the next token is 'End' or 'Eof' or 'Otherwise', which is
-            // handled by the previous if statement.
+            // Each statement must be separated by a `NewLine` or `Semicolon`, which is
+            // enforced here. The exception is when the next token is 'End' or
+            // 'Eof' or 'Otherwise', which is handled by the previous if
+            // statement.
             if !matches!(
                 self.cur_token.kind,
                 TokenKind::Semicolon | TokenKind::NewLine
@@ -200,7 +202,8 @@ impl<'lexer> Parser<'lexer> {
                 self.next_token();
             }
 
-            // If we encounter 'End' or 'Eof' after consuming separators, break out of the loop.
+            // If we encounter 'End' or 'Eof' after consuming separators, break out of the
+            // loop.
             if matches!(
                 self.cur_token.kind,
                 TokenKind::End | TokenKind::Eof | TokenKind::Otherwise
@@ -290,8 +293,8 @@ impl<'lexer> Parser<'lexer> {
         self.eat(&TokenKind::RParen)?;
 
         // Parse the function body.
-        // If the function body is empty, return an empty statement list. Otherwise, parse the
-        // function body.
+        // If the function body is empty, return an empty statement list. Otherwise, parse
+        // the function body.
         let body = if self.cur_token_is(&TokenKind::End) {
             self.create_empty_statement_list()
         } else {
@@ -341,7 +344,8 @@ impl<'lexer> Parser<'lexer> {
     fn parse_fn_decl_parameter(&mut self) -> Result<Identifier, Error> {
         let prev_token_kind = self.cur_token.kind.clone();
         self.parse_identifier().map_err(|mut err| {
-            err.message = format!("expected function parameter, got '{}'", prev_token_kind);
+            err.message =
+                format!("expected function parameter, got '{}'", prev_token_kind);
             return err;
         })
     }
@@ -582,8 +586,10 @@ impl<'lexer> Parser<'lexer> {
                     let arguments = self
                         .parse_expr_list_maybe_empty(&TokenKind::RParen)
                         .map_err(|mut err| {
-                            err.message =
-                                format!("expected function parameter, got {}", self.cur_token.kind);
+                            err.message = format!(
+                                "expected function parameter, got {}",
+                                self.cur_token.kind
+                            );
                             err
                         })?;
                     self.eat(&TokenKind::RParen)?;
@@ -609,8 +615,8 @@ impl<'lexer> Parser<'lexer> {
     ///     prefix_expr = {"not" | "-"} , ident_expr;
     /// ```
     fn parse_prefix_expr(&mut self) -> Result<Expression, Error> {
-        // Add each prefix operation into an array. For example, if the expression was `not -1`,
-        // the array would be `[TokenKind::Not, TokenKind::Minus]`.
+        // Add each prefix operation into an array. For example, if the expression was
+        // `not -1`, the array would be `[TokenKind::Not, TokenKind::Minus]`.
         let mut prefix_operations = Vec::new();
         while matches!(&self.cur_token.kind, TokenKind::Not | TokenKind::Minus) {
             prefix_operations.push(self.cur_token.clone());
@@ -620,9 +626,9 @@ impl<'lexer> Parser<'lexer> {
         // Parse the expression.
         let mut node: Expression = self.parse_ident_expr()?;
 
-        // Now, add each operation to the syntax tree IN REVERSE, since the tree starts from the
-        // root node (the expression), and then the prefix operation closest to the expression is
-        // added to the tree first.
+        // Now, add each operation to the syntax tree IN REVERSE, since the tree starts
+        // from the root node (the expression), and then the prefix operation
+        // closest to the expression is added to the tree first.
         for operation in prefix_operations.into_iter().rev() {
             let operator = operation.kind.clone();
             let span = Span::new(operation.span.start, node.span().end);
@@ -644,7 +650,9 @@ impl<'lexer> Parser<'lexer> {
     /// ```
     fn parse_ident_expr(&mut self) -> Result<Expression, Error> {
         match &self.cur_token.kind.clone() {
-            TokenKind::Identifier { .. } => Ok(Expression::Identifier(self.parse_identifier()?)),
+            TokenKind::Identifier { .. } => {
+                Ok(Expression::Identifier(self.parse_identifier()?))
+            }
             _ => self.parse_group_expr(),
         }
     }
@@ -742,10 +750,11 @@ impl<'lexer> Parser<'lexer> {
     fn parse_selection_else_body(&mut self) -> Result<Option<StatementList>, Error> {
         if self.cur_token_is(&TokenKind::Otherwise) {
             self.eat(&TokenKind::Otherwise)?;
-            let else_conditional_statements = match matches!(self.cur_token.kind, TokenKind::End) {
-                false => self.parse_statement_list()?,
-                true => self.create_empty_statement_list(),
-            };
+            let else_conditional_statements =
+                match matches!(self.cur_token.kind, TokenKind::End) {
+                    false => self.parse_statement_list()?,
+                    true => self.create_empty_statement_list(),
+                };
             Ok(Some(else_conditional_statements))
         } else {
             Ok(None)
@@ -793,7 +802,10 @@ impl<'lexer> Parser<'lexer> {
     }
 
     /// Converts a string into an integer literal.
-    fn parse_integer_literal(&mut self, integer_to_parse: &String) -> Result<Literal, Error> {
+    fn parse_integer_literal(
+        &mut self,
+        integer_to_parse: &String,
+    ) -> Result<Literal, Error> {
         let span = self.cur_token.span.clone();
         self.next_token();
         match integer_to_parse.parse::<i64>() {

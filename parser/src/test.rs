@@ -81,7 +81,9 @@ fn parse_return_statements() {
                         }
                         _ => panic!("expected Literal::Integer, got '{:?}'", literal),
                     },
-                    _ => panic!("expected Expression::Literal, got '{:?}'", ret_stmt.value),
+                    _ => {
+                        panic!("expected Expression::Literal, got '{:?}'", ret_stmt.value)
+                    }
                 },
                 _ => panic!("expected Statement::Return, got '{:?}'", stmt),
             }
@@ -164,7 +166,9 @@ fn parse_prefix_expression() {
                         Expression::Literal(Literal::Integer { value, .. }) => {
                             assert_eq!(*value, test_value);
                         }
-                        _ => panic!("expected Literal::Integer, got '{:?}'", unary.operand),
+                        _ => {
+                            panic!("expected Literal::Integer, got '{:?}'", unary.operand)
+                        }
                     }
                 }
                 _ => panic!("expected Expression::Unary, got '{:?}'", expr),
@@ -206,7 +210,9 @@ fn parse_infix_expression() {
                         Expression::Literal(Literal::Integer { value, .. }) => {
                             assert_eq!(*value, right);
                         }
-                        _ => panic!("expected Literal::Integer, got '{:?}'", binary.right),
+                        _ => {
+                            panic!("expected Literal::Integer, got '{:?}'", binary.right)
+                        }
                     }
                 }
                 _ => panic!("expected Expression::Infix, got '{:?}'", expr),
@@ -323,7 +329,10 @@ fn parse_fn_decl_expression() {
     let tests = [
         ("defineFunction fn() end;", "defineFunction fn() end"),
         ("defineFunction fn(x) end;", "defineFunction fn(x) end"),
-        ("defineFunction fn(x, y, z) x end;", "defineFunction fn(x, y, z) x end"),
+        (
+            "defineFunction fn(x, y, z) x end;",
+            "defineFunction fn(x, y, z) x end",
+        ),
     ];
     validate_parse_to_string(&tests);
 }
@@ -369,8 +378,6 @@ fn parse_complex_program() {
 end"#,
             r#"defineFunction fizzbuzz(n) if (((n % 3) == 0) and ((n % 5) != 0)) then print("Fizz") otherwise if (((n % 5) == 0) and ((n % 3) != 0)) then print("Buzz") otherwise if (((n % 5) == 0) and ((n % 3) == 0)) then print("FizzBuzz") otherwise print(n) end end end end"#,
         ),
-
-        
         (
             r#"set hello_world = "Hello, world";
 set x = (true or false) and 1==5;
@@ -386,14 +393,19 @@ end"#,
     validate_parse_to_string(&tests);
 }
 
-
 #[test]
 fn parse_repeat_forever_statements() {
     let tests = [
         ("repeat forever end", "repeat forever end"),
         ("repeat forever(1+1)end", "repeat forever (1 + 1) end"),
-        ("repeat forever set x = 5; end", "repeat forever set x = 5 end"),
-        ("repeat forever defineFunction foo() end end", "repeat forever defineFunction foo() end end"),
+        (
+            "repeat forever set x = 5; end",
+            "repeat forever set x = 5 end",
+        ),
+        (
+            "repeat forever defineFunction foo() end end",
+            "repeat forever defineFunction foo() end end",
+        ),
     ];
 
     validate_parse_to_string(&tests);
@@ -403,8 +415,14 @@ fn parse_repeat_forever_statements() {
 fn parse_repeat_n_times_statements() {
     let tests = [
         ("repeat 5 times end", "repeat 5 times end"),
-        ("repeat 5+5 times set x = 5; end", "repeat (5 + 5) times set x = 5 end"),
-        ("repeat n times defineFunction foo() end end", "repeat n times defineFunction foo() end end"),
+        (
+            "repeat 5+5 times set x = 5; end",
+            "repeat (5 + 5) times set x = 5 end",
+        ),
+        (
+            "repeat n times defineFunction foo() end end",
+            "repeat n times defineFunction foo() end end",
+        ),
     ];
 
     validate_parse_to_string(&tests);
@@ -414,9 +432,18 @@ fn parse_repeat_n_times_statements() {
 fn parse_repeat_until_statements() {
     let tests = [
         ("repeat until 5 > 10 end", "repeat until (5 > 10) end"),
-        ("repeat until 5+5 > 10 end", "repeat until ((5 + 5) > 10) end"),
-        ("repeat until 5+5 > 10 set x = 5; end", "repeat until ((5 + 5) > 10) set x = 5 end"),
-        ("repeat until 5+5 > 10 defineFunction foo() end end", "repeat until ((5 + 5) > 10) defineFunction foo() end end"),
+        (
+            "repeat until 5+5 > 10 end",
+            "repeat until ((5 + 5) > 10) end",
+        ),
+        (
+            "repeat until 5+5 > 10 set x = 5; end",
+            "repeat until ((5 + 5) > 10) set x = 5 end",
+        ),
+        (
+            "repeat until 5+5 > 10 defineFunction foo() end end",
+            "repeat until ((5 + 5) > 10) defineFunction foo() end end",
+        ),
     ];
 
     validate_parse_to_string(&tests);
@@ -426,9 +453,12 @@ fn parse_repeat_until_statements() {
 fn parse_display_statements() {
     let tests = [
         ("display 5;", "display 5"),
-        ("display this,is, a,really,long,     message", "display this, is, a, really, long, message"),
+        (
+            "display this,is, a,really,long,     message",
+            "display this, is, a, really, long, message",
+        ),
         ("display 5+5;", "display (5 + 5)"),
-        ("display 5+5, 5+5;", "display (5 + 5), (5 + 5)")
+        ("display 5+5, 5+5;", "display (5 + 5), (5 + 5)"),
     ];
 
     validate_parse_to_string(&tests);

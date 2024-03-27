@@ -12,10 +12,11 @@
 //! The `Lexer` struct provides a method called `next_token`, which advances the lexer to
 //! the next token in the input stream and returns the token. This method is essentially a
 //! large switch statement, containing branches corresponding to every token type. The
-//! `next_token` method skips any whitespace and comments before identifying the next token.
+//! `next_token` method skips any whitespace and comments before identifying the next
+//! token.
 //!
-//! The token is represented by a `Token` struct, which contains information about its kind
-//! (e.g., identifier, operator, literal) and its span in the input stream.
+//! The token is represented by a `Token` struct, which contains information about its
+//! kind (e.g., identifier, operator, literal) and its span in the input stream.
 //!
 //! The lexer module is used by the parser to tokenise the input string before parsing it
 //! into an abstract syntax tree (AST).
@@ -79,8 +80,8 @@ impl<'lexer> Lexer<'lexer> {
             }
             None => {
                 // '\0' indicates the end of the file.
-                // If we are already at the end of the file, there is no need to update the
-                // character or increment the position.
+                // If we are already at the end of the file, there is no need to update
+                // the character or increment the position.
                 if self.chr != '\0' {
                     self.chr = '\0';
                     self.position += 1
@@ -121,7 +122,8 @@ impl<'lexer> Lexer<'lexer> {
         // Skip over any whitespace, comments, and newlines.
         match self.skip_garbage() {
             Ok(encountered_newline) => {
-                // If we encountered a newline character (`\n`), we return a NewLine token.
+                // If we encountered a newline character (`\n`), we return a NewLine
+                // token.
                 if encountered_newline {
                     return Token {
                         span: Span::new(self.position - 1, self.position),
@@ -199,8 +201,8 @@ impl<'lexer> Lexer<'lexer> {
                 }
             }
 
-            // The following rules return immediately, because the size of the token is not fixed,
-            // so is handled separately.
+            // The following rules return immediately, because the size of the token is
+            // not fixed, so is handled separately.
 
             // String literals
             '"' => {
@@ -227,7 +229,8 @@ impl<'lexer> Lexer<'lexer> {
                 };
             }
 
-            // Else, we a dealing with a keyword, identifier, number of an illegal character.
+            // Else, we a dealing with a keyword, identifier, number of an illegal
+            // character.
             _ => {
                 if is_valid_ident_start(self.chr) {
                     let ident = self.read_identifier();
@@ -246,8 +249,8 @@ impl<'lexer> Lexer<'lexer> {
             }
         };
 
-        // Since every branch advances the character by at least one, we move the function out
-        // here to simplify the syntax.
+        // Since every branch advances the character by at least one, we move the function
+        // out here to simplify the syntax.
         self.read_char();
 
         return Token {
@@ -432,8 +435,9 @@ impl<'lexer> Lexer<'lexer> {
                     '*' => self.skip_multi_comment()?,
                     _ => break,
                 },
-                // The while statement above ensures that there can be no other pattern, but we need
-                // to handle it in this match statement to satisfy the compiler.
+                // The while statement above ensures that there can be no other pattern,
+                // but we need to handle it in this match statement to
+                // satisfy the compiler.
                 _ => unreachable!(),
             }
         }

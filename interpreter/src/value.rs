@@ -105,9 +105,9 @@ macro_rules! generate_comparison_op {
 /// * `symbol_op` - The symbol operator to use on float operations. Must be a valid
 ///   operator for two [`f64`] values. Also used in the error message if the operation
 ///   fails.
-/// 
+///
 /// # Expands to
-/// 
+///
 /// ```compile_fail ignore
 /// pub fn method_name(&self, other: &Self) -> Result<Self, Error> {
 ///    ...  
@@ -179,7 +179,8 @@ impl Value {
             Self::Integer(i) => Self::String(i.to_string()),
             Self::Float(f) => Self::String(f.to_string()),
             Self::Boolean(b) => Self::String(b.to_string()),
-            // I suppose type coercion *should* provide ownership of the new value, so this is okay.
+            // I suppose type coercion *should* provide ownership of the new value, so
+            // this is okay.
             Self::String(s) => Self::String(s.clone()),
             Self::Null => Self::String("null".to_string()),
             Self::Function(_) => Self::String("<function reference>".to_string()),
@@ -221,8 +222,8 @@ impl Value {
     }
 
     /// This is a helper method for the comparison operations. it returns a `partial_cmp`
-    /// of the two internal values of the [`Value`] enum. Primarily used for the comparison
-    /// functions defined after this function.
+    /// of the two internal values of the [`Value`] enum. Primarily used for the
+    /// comparison functions defined after this function.
     fn compare(&self, other: &Self) -> Option<std::cmp::Ordering> {
         match (self, other) {
             (Self::Integer(a), Self::Integer(b)) => a.partial_cmp(b),
@@ -232,7 +233,8 @@ impl Value {
         }
     }
 
-    // Generate the remaining comparison operations using the `generate_comparison_op` macro.
+    // Generate the remaining comparison operations using the `generate_comparison_op`
+    // macro.
     generate_comparison_op!(lt, >, std::cmp::Ordering::Less);
     generate_comparison_op!(le, >=, std::cmp::Ordering::Less | std::cmp::Ordering::Equal);
     generate_comparison_op!(gt, <, std::cmp::Ordering::Greater);
@@ -255,8 +257,8 @@ impl Value {
         }
     }
 
-    /// This method returns the logical and of two [`Value::Boolean`]s. It returns an error
-    /// for all other types.
+    /// This method returns the logical and of two [`Value::Boolean`]s. It returns an
+    /// error for all other types.
     pub fn and(&self, other: &Self) -> Result<Self, Error> {
         match (&self, &other) {
             (Self::Boolean(a), Self::Boolean(b)) => Ok(Self::Boolean(*a && *b)),
@@ -295,8 +297,8 @@ impl Value {
 
     // add is implemented separately because it also includes string concatenation.
 
-    /// This method returns the sum of two [`Value`]s. It returns an error if the operation
-    /// is not possible.
+    /// This method returns the sum of two [`Value`]s. It returns an error if the
+    /// operation is not possible.
     pub fn add(&self, other: &Self) -> Result<Self, Error> {
         let overflow_error = Error::new(
             "this arithmetic operation overflows",

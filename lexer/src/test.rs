@@ -345,6 +345,6 @@ fn lexer_keywords() {
             token!(Forever, 78, 85),
             token!(Display, 86, 93),
             token!(Eof, 93, 93),
-        ]
+        ],
     )
 }

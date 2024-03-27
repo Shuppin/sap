@@ -48,7 +48,11 @@ fn eval_null() {
 
 #[test]
 fn eval_not_operations() {
-    let tests = [("not true", false), ("not false", true), ("not not true", true)];
+    let tests = [
+        ("not true", false),
+        ("not false", true),
+        ("not not true", true),
+    ];
 
     for (input, expected_output) in tests {
         match *eval(input) {
